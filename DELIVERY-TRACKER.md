@@ -36,7 +36,7 @@ Last updated: 2026-09-14 · Zone: Asia/Dubai (GST)
 
 | Package | Scope | Depends | Status | Evidence |
 |---|---|---|---|---|
-| WP-01 | Architecture, schemas, env, auth, CI | R0 decisions | in progress | [PR #1](https://github.com/swapnil-create/arcel-codeworks/pull/1) (`docs/WP-01-ARCHITECTURE.md`, commit `9bccc64`). Architecture record draft only; migration tests + protected preview still open. |
+| WP-01 | Architecture, schemas, env, auth, CI | R0 decisions | in progress | [PR #1](https://github.com/swapnil-create/arcel-codeworks/pull/1) architecture notes (`docs/WP-01-ARCHITECTURE.md`, `9bccc64`); [PR #3](https://github.com/swapnil-create/arcel-codeworks/pull/3) §20 security/NFR gate (`docs/WP-01-SECURITY-NFR-GATE.md`, `6faa73e`). Still not done — migration tests + protected preview Fail; R0 blockers SEC-01, REL-03, OPS-01, preview CI. |
 | WP-02 | Chat/history/settings (ACC, CHAT, PER) | WP-01 | not started | |
 | WP-03 | Model gateway/registry/metering (MOD, BIL) | WP-01 | not started | |
 | WP-04 | Upload/library/retrieval (FIL, PRJ) | WP-01 | not started | |
@@ -56,7 +56,7 @@ Last updated: 2026-09-14 · Zone: Asia/Dubai (GST)
 |---|---|---|
 | Coder | WP-01 audit → architecture notes PR open | in progress |
 | UI UX Expert | D03 clickable flows from PRD §5 + acceptance scenarios §3 | not started |
-| Standards Expert | Security/authz/NFR checklist from PRD §20; review WP-01 contracts | not started |
+| Standards Expert | Security/authz/NFR checklist from PRD §20; review WP-01 contracts | in progress | [PR #3](https://github.com/swapnil-create/arcel-codeworks/pull/3) evidence checklist open; WP-01 not done. |
 | Chief of Staff | Ops cadence; keep Swapnil unblocked on D01 decisions | not started |
 
 ---
@@ -70,3 +70,4 @@ Last updated: 2026-09-14 · Zone: Asia/Dubai (GST)
 | 2026-09-14 02:39 | Notion Codeworks Tasks board seeded — https://app.notion.com/p/ea26e00cc54643ab8d9849e89320c31e |
 | 2026-09-14 02:40 | D01 formal sign-off skipped; proceeding on PRD §28 defaults (D01 → in progress, D02 → done) |
 | 2026-09-14 02:42 | WP-01 notes PR opened — https://github.com/swapnil-create/arcel-codeworks/pull/1 (architecture draft; WP-01 remains in progress) |
+| 2026-09-14 03:00 | WP-01 §20 security/NFR gate PR opened — https://github.com/swapnil-create/arcel-codeworks/pull/3 (Standards Expert; WP-01 remains in progress / not done) |
