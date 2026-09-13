@@ -225,27 +225,47 @@
     app.innerHTML = `<div class="app-shell">${sidebar()}<section class="workspace">${header()}${content}${modelSwitcher()}</section></div>${overlays()}`;
   }
 
-  function startChat(prompt) {
+  function tierForCurrentModel() {
+    if (state.currentModel.endsWith("Fast")) return "fast";
+    if (state.currentModel.endsWith("Deep")) return "deep";
+    return "balanced";
+  }
+
+  async function requestCompletion({ messages, mode = "Chat", tier = "balanced", model = "arcel" }) {
+    const response = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messages, mode, tier, model })
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(payload.error || "The model could not complete this request.");
+    return payload;
+  }
+
+  async function startChat(prompt) {
     const value = prompt.trim();
     if (!value) return;
     state.view = "chat";
     state.messages.push({ role: "user", content: value });
     state.busy = true;
     render();
-    window.setTimeout(() => {
-      const responses = {
-        Chat: "I’ll help you work through this directly. I’ve separated the goal from the implementation details and identified the clearest next step.",
-        Research: "I reviewed the available evidence and compared the strongest options. The leading direction is the one that best balances speed, reliability, and maintainability.",
-        Code: "I’ve mapped the requested change to the smallest safe implementation. The affected surface is isolated, the interaction states are defined, and the result is ready to verify."
-      };
-      state.messages.push({ role: "assistant", content: responses[state.mode], sources: state.mode === "Research" ? ["Primary documentation", "Product reference", "Project materials"] : null });
+    try {
+      const completion = await requestCompletion({
+        messages: state.messages,
+        mode: state.mode,
+        tier: tierForCurrentModel()
+      });
+      state.messages.push({ role: "assistant", content: completion.content });
+    } catch (error) {
+      state.messages.push({ role: "assistant", content: `Unable to complete that request: ${error.message}` });
+    } finally {
       state.busy = false;
       render();
       window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
-    }, 950);
+    }
   }
 
-  function runArena() {
+  async function runArena() {
     const input = document.querySelector("#arena-input");
     const prompt = input?.value.trim();
     if (!prompt || !state.selectedModels.size) return;
@@ -253,18 +273,26 @@
     state.arenaResults = [];
     state.arenaReveal = false;
     render();
-    window.setTimeout(() => {
+    try {
       const selected = models.filter(model => state.selectedModels.has(model.id));
-      const approaches = [
-        "The strongest approach is to simplify the problem first, establish the core user outcome, and ship the smallest complete path before adding secondary controls.",
-        "I would begin with the interaction contract: define the default state, the decisive action, clear feedback, and the recovery path. That creates an MVP users can trust.",
-        "Treat this as a system-design problem. Separate presentation, state, and external services so the first release stays fast while remaining easy to extend.",
-        "Start from user intent, test the riskiest assumption immediately, and preserve only the components that materially improve completion time."
-      ];
-      state.arenaResults = selected.map((model, index) => ({ model: model.name, content: `${approaches[index % approaches.length]} Prompt considered: “${prompt}”`, time: (1.1 + index * 0.35).toFixed(1), winner: false }));
+      const results = await Promise.all(selected.map(async model => {
+        const startedAt = performance.now();
+        try {
+          const completion = await requestCompletion({
+            messages: [{ role: "user", content: prompt }],
+            tier: "balanced",
+            model: model.id
+          });
+          return { model: model.name, content: completion.content, time: ((performance.now() - startedAt) / 1000).toFixed(1), winner: false };
+        } catch (error) {
+          return { model: model.name, content: `This model could not respond: ${error.message}`, time: ((performance.now() - startedAt) / 1000).toFixed(1), winner: false };
+        }
+      }));
+      state.arenaResults = results;
+    } finally {
       state.arenaBusy = false;
       render();
-    }, 1100);
+    }
   }
 
   app.addEventListener("click", event => {
