@@ -214,6 +214,45 @@ Per PRD §5.4, implement where applicable and **never** replace with generic suc
 | Permission-denied | Missing scope or revoked connection |
 | Quota-exhausted | Remaining = 0 + cheaper route / renewal / opt-in top-up |
 
+### ACC-03 — machine-readable screen state
+
+Do **not** scrape visible copy. Query the screen root:
+
+```
+[data-state][data-screen]
+```
+
+Open a specific view with `docs/flows/prototype/index.html?screen=A2` (optional `&state=partial|cancelled|working|permission-denied|quota-exhausted|failed`).
+
+Prototype hook: `#screenRoot` (also matches that selector). Canonical `data-state` values are exactly:
+
+`empty` | `loading` | `working` | `completed` | `partial` | `failed` | `cancelled` | `permission-denied` | `quota-exhausted`
+
+`data-screen` is the map id (`A1`…`G1`). One canonical `data-state` per view; it updates on navigation and in-screen transitions.
+
+| Screen | Canonical `#screenRoot` `data-state` |
+|---|---|
+| **A1** | `empty` |
+| **A2** streaming | `loading` |
+| **A2** after Stop | `partial` |
+| **A2** after Cancel run | `cancelled` |
+| **A3** | `completed` |
+| **B1** (picker open) | prior screen’s `data-state` (else `empty`) |
+| **B2** | `completed` |
+| **C1** | `loading` (file cards keep their own `data-state`: `ready` / `partial` / `failed`) |
+| **C2** | `working` (mixed file cards keep their own `data-state`; root may be `failed` only while a Failed file is highlighted) |
+| **D1** plan | `empty` |
+| **D1** running | `working` |
+| **D1** cancel | `cancelled` |
+| **D2** | `completed` |
+| **E1** | `completed` (editing is still a completed artifact) |
+| **F1** recording | `working` |
+| **F1** permission denied | `permission-denied` |
+| **G1** default / ready | `empty` |
+| **G1** quota banner | `quota-exhausted` |
+| **G1** network / refusal | `failed` |
+| **G1** permission banner | `permission-denied` |
+
 Unavailable features are **hidden or marked unavailable**. No dead controls. High-cost research, generation and execution show an estimate and confirmation when outside the allowance. Auto must not silently access private connectors, spend beyond a cap, publish, or perform external writes.
 
 ---
@@ -259,5 +298,6 @@ Update `DELIVERY-TRACKER.md` (and the Notion Codeworks Tasks board) when this PR
 3. Walk the §3 table once. Confirm there is no AEC navigation and no LED lockup.
 4. Composer chrome on every conversation screen: Attach · Tools · Mic · Auto · Standard · Send/Stop.
 5. **G1** must show distinct quota vs provider vs permission banners, and must not offer silent overage.
+6. ACC-03: every A–G view stamps `#screenRoot` with `data-screen` and exactly one `data-state`. Query `[data-state][data-screen]`.
 
 This is the R0 UX sign-off package for D03.
