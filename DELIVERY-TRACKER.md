@@ -22,8 +22,8 @@ Last updated: 2026-09-14 · Zone: Asia/Dubai (GST)
 
 | ID | Task | Owner | Status | Notes |
 |---|---|---|---|---|
-| D01 | Approve product scope, naming, task/model/effort/expertise split | Swapnil (product) | not started | Recommended defaults in PRD §28 |
-| D02 | Traceable backlog from requirement IDs + WP-01…11 | Coder | in progress | This tracker + Notion board |
+| D01 | Approve product scope, naming, task/model/effort/expertise split | Swapnil (product) | in progress | Formal sign-off skipped 2026-09-14; proceeding on PRD §28 defaults until overridden. |
+| D02 | Traceable backlog from requirement IDs + WP-01…11 | Coder | done | Tracker commit `53b4a0f` + Notion board https://app.notion.com/p/ea26e00cc54643ab8d9849e89320c31e |
 | D03 | Clickable flows: first chat, model choice, files, research, artifacts, voice, quota/errors | UI UX Expert | not started | |
 | D04 | Provider spikes: streaming/tools, search citations, image edit, voice; log gaps + cost | Coder | not started | Depends on D01 defaults OK |
 | D05 | Identity, storage permissions, canonical data model, ledger, preview deploy pipeline | Coder + Standards | not started | WP-01 core |
@@ -66,3 +66,6 @@ Last updated: 2026-09-14 · Zone: Asia/Dubai (GST)
 | When (GST) | What |
 |---|---|
 | 2026-09-14 02:38 | Tracker created; PRD already on `main` (`ARCEL-Codeworks-PRD.md`) |
+| 2026-09-14 02:38 | Tracker pushed to `main` (`53b4a0f`) |
+| 2026-09-14 02:39 | Notion Codeworks Tasks board seeded — https://app.notion.com/p/ea26e00cc54643ab8d9849e89320c31e |
+| 2026-09-14 02:40 | D01 formal sign-off skipped; proceeding on PRD §28 defaults (D01 → in progress, D02 → done) |
