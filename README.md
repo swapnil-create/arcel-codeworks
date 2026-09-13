@@ -1,10 +1,8 @@
 # ARCEL Codeworks
 
-ARCEL Codeworks is a calm, code-native project workspace prototype. It brings durable project context, repository state, agent instructions, source chips, sessions, artifacts, and an evidence-aware composer into one responsive surface.
+ARCEL Codeworks is a responsive, high-fidelity spatial workspace for ambitious projects. It combines durable context, repository state, sessions, artifacts, and agent controls in a glassy, tactile interface.
 
 ## Run locally
-
-From this directory, start any static HTTP server:
 
 ```bash
 cd arcel-codeworks
@@ -13,14 +11,17 @@ python3 -m http.server 4173
 
 Then open [http://localhost:4173](http://localhost:4173).
 
-The app is intentionally dependency-free: `index.html` loads the local Inter and Plus Jakarta Sans font assets, `styles.css` provides the responsive visual system, and `app.js` owns the seeded prototype state and interactions.
+The MVP is dependency-free: `index.html` loads local Inter and Plus Jakarta Sans assets, `styles.css` provides the responsive visual and motion system, and `app.js` owns prototype state and interactions.
 
 ## Implemented experience
 
-- Persistent low-noise dark sidebar with projects, sessions, artifacts, automations, integrations, and recent work.
-- Responsive Projects index with search, sorting, durable-context summaries, status, and resume/context actions.
-- Project detail workspace with Sessions, Activity, and Artifacts tabs.
-- Context rail for repository/branch, instructions, sources, and agent context order.
-- Composer with Ask / Research / Build / Create intent modes, Fast / Deep / Expert depth, attachment menu, focus states, and simulated progress/result states.
-- New project, edit context, project actions, mobile navigation, source attachment, duplication, and archive flows.
+- Spatial glass interface with pointer-responsive light and project cards
+- Project index with search, sorting, status, repository state, and project pulse
+- Project workspace with Sessions, Activity, and Artifacts tabs
+- Persistent or responsive project context rail
+- Composer with work modes, reasoning depth, attachments, staged agent progress, and simulated results
+- Create, edit, duplicate, and archive project interactions
+- Command palette (`/` or `⌘K`), toast feedback, and keyboard run shortcut
+- Reduced-motion and reduced-transparency fallbacks
 
+See `DESIGN.md` for the open-source interface audit and resulting design system. `DESIGN-AUDIT.md` contains the earlier Claude, Perplexity, and Grok product-flow audit.

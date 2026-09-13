@@ -2,312 +2,102 @@
   "use strict";
 
   const seededProjects = [
-    {
-      id: "vault",
-      name: "ARCEL Vault",
-      summary: "Private, offline-first artifact vault for high-stakes teams.",
-      repository: "arcel/vault-ios",
-      branch: "feature/project-intelligence",
-      status: "In progress",
-      updated: "6 min ago",
-      activity: 98,
-      instructions: "Keep the experience calm and privacy-first. Prefer native SwiftUI patterns. Explain trade-offs before changing persistence or security boundaries.",
-      sources: ["AGENTS.md", "Product brief", "Privacy model", "Design tokens"],
-      sessions: [
-        { title: "Design project intelligence home", time: "6 min ago", status: "Building", detail: "Exploring the workspace shell and context rail." },
-        { title: "Audit sync conflict architecture", time: "Yesterday", status: "Ready", detail: "Decision log and implementation paths prepared." }
-      ],
-      activityFeed: [
-        { type: "Build", title: "Prepared workspace navigation", detail: "Updated project navigation proposal and identified three affected views.", time: "6 min ago" },
-        { type: "Context", title: "Design tokens indexed", detail: "System colors, typography, and motion defaults are available to new sessions.", time: "42 min ago" },
-        { type: "Review", title: "Sync architecture audit completed", detail: "No changes made; 4 implementation recommendations captured.", time: "Yesterday" }
-      ],
-      artifacts: [
-        { name: "project-intelligence-brief.md", kind: "Brief", updated: "6 min ago" },
-        { name: "sync-conflict-audit.md", kind: "Research", updated: "Yesterday" },
-        { name: "vault-design-system.fig", kind: "Design", updated: "2 days ago" }
-      ]
-    },
-    {
-      id: "launch",
-      name: "ARCEL Launch System",
-      summary: "A reusable launch narrative, site, and conversion toolkit.",
-      repository: "arcel/launch-system",
-      branch: "main",
-      status: "Review needed",
-      updated: "2 hr ago",
-      activity: 74,
-      instructions: "Use direct editorial language. Preserve the ARCEL voice: precise, composed, and unusually useful.",
-      sources: ["Brand narrative", "Launch brief", "Audience research"],
-      sessions: [
-        { title: "Refine platform positioning", time: "2 hr ago", status: "Review", detail: "Draft narrative is ready for a product decision." },
-        { title: "Build customer proof section", time: "Friday", status: "Ready", detail: "Component variations and evidence hierarchy complete." }
-      ],
-      activityFeed: [
-        { type: "Research", title: "Competitive language mapped", detail: "Eight positioning territories synthesized into a concise narrative matrix.", time: "2 hr ago" },
-        { type: "Artifact", title: "Launch-page outline created", detail: "A structured outline is available in Artifacts.", time: "Friday" }
-      ],
-      artifacts: [
-        { name: "positioning-matrix.md", kind: "Research", updated: "2 hr ago" },
-        { name: "launch-page-outline.md", kind: "Outline", updated: "Friday" }
-      ]
-    },
-    {
-      id: "field",
-      name: "Field Notes",
-      summary: "A small editorial system for collecting product signals and decisions.",
-      repository: "No repository connected",
-      branch: "Project-only",
-      status: "Planning",
-      updated: "3 days ago",
-      activity: 41,
-      instructions: "Turn raw observations into decisions, not generic summaries. Protect participant anonymity.",
-      sources: ["Interview notes", "Decision log"],
-      sessions: [
-        { title: "Draft research cadence", time: "3 days ago", status: "Ready", detail: "Initial operating rhythm proposed." }
-      ],
-      activityFeed: [
-        { type: "Context", title: "Interview notes added", detail: "Twelve notes are available as project context.", time: "3 days ago" }
-      ],
-      artifacts: [
-        { name: "research-cadence.md", kind: "Plan", updated: "3 days ago" }
-      ]
-    }
+    { id:"vault", name:"ARCEL Vault", monogram:"AV", summary:"Private, offline-first intelligence for high-stakes teams.", repository:"arcel/vault-ios", branch:"feature/project-intelligence", status:"Building", updated:"6 min ago", activity:84, tone:"blue", instructions:"Keep the experience calm and privacy-first. Prefer native SwiftUI patterns. Explain trade-offs before changing persistence or security boundaries.", sources:["AGENTS.md","Product brief","Privacy model","Design tokens"], sessions:[{title:"Design project intelligence home",time:"6 min ago",status:"Building",detail:"Exploring the workspace shell and context rail."},{title:"Audit sync conflict architecture",time:"Yesterday",status:"Ready",detail:"Decision log and implementation paths prepared."}], activityFeed:[{type:"Build",title:"Prepared workspace navigation",detail:"Updated project navigation proposal and identified three affected views.",time:"6 min ago"},{type:"Context",title:"Design tokens indexed",detail:"System colors, typography, and motion defaults are available to new sessions.",time:"42 min ago"}], artifacts:[{name:"project-intelligence-brief.md",kind:"Brief",updated:"6 min ago"},{name:"sync-conflict-audit.md",kind:"Research",updated:"Yesterday"},{name:"vault-design-system.fig",kind:"Design",updated:"2 days ago"}] },
+    { id:"launch", name:"ARCEL Launch System", monogram:"LS", summary:"A reusable launch narrative, site, and conversion toolkit.", repository:"arcel/launch-system", branch:"main", status:"Review", updated:"2 hr ago", activity:67, tone:"violet", instructions:"Use direct editorial language. Preserve the ARCEL voice: precise, composed, and unusually useful.", sources:["Brand narrative","Launch brief","Audience research"], sessions:[{title:"Refine platform positioning",time:"2 hr ago",status:"Review",detail:"Draft narrative is ready for a product decision."},{title:"Build customer proof section",time:"Friday",status:"Ready",detail:"Component variations and evidence hierarchy complete."}], activityFeed:[{type:"Research",title:"Competitive language mapped",detail:"Eight positioning territories synthesized into a concise narrative matrix.",time:"2 hr ago"}], artifacts:[{name:"positioning-matrix.md",kind:"Research",updated:"2 hr ago"},{name:"launch-page-outline.md",kind:"Outline",updated:"Friday"}] },
+    { id:"field", name:"Field Notes", monogram:"FN", summary:"An editorial system for product signals, evidence, and decisions.", repository:"Project-only", branch:"Private workspace", status:"Planning", updated:"3 days ago", activity:42, tone:"silver", instructions:"Turn raw observations into decisions, not generic summaries. Protect participant anonymity.", sources:["Interview notes","Decision log"], sessions:[{title:"Draft research cadence",time:"3 days ago",status:"Ready",detail:"Initial operating rhythm proposed."}], activityFeed:[{type:"Context",title:"Interview notes added",detail:"Twelve notes are available as project context.",time:"3 days ago"}], artifacts:[{name:"research-cadence.md",kind:"Plan",updated:"3 days ago"}] }
   ];
 
-  const state = {
-    projects: seededProjects,
-    view: "projects",
-    activeProjectId: "vault",
-    activeTab: "sessions",
-    search: "",
-    sort: "activity",
-    modal: null,
-    attachmentMenu: false,
-    composerMode: "Ask",
-    depth: "Deep",
-    busy: false,
-    lastResult: null
-  };
-
+  const state = { projects:seededProjects, view:"projects", activeProjectId:"vault", activeTab:"sessions", search:"", sort:"activity", modal:null, attachmentMenu:false, composerMode:"Build", depth:"Deep", busy:false, runStage:0, lastTask:"", lastResult:null, toast:null, railOpen:false };
   const app = document.querySelector("#app");
-  const icon = (symbol) => `<span aria-hidden="true">${symbol}</span>`;
-  const escapeHTML = (value) => String(value).replace(/[&<>'"]/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#039;", '"': "&quot;" })[character]);
-  const project = () => state.projects.find((item) => item.id === state.activeProjectId);
-  const activeNav = (id) => state.view === "projects" && id === "projects" ? ' aria-current="page"' : "";
+  const escapeHTML = value => String(value).replace(/[&<>'"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#039;",'"':"&quot;"})[c]);
+  const project = () => state.projects.find(item => item.id === state.activeProjectId);
+  const paths = {
+    plus:'<path d="M12 5v14M5 12h14"/>', search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>', grid:'<rect x="4" y="4" width="6" height="6" rx="2"/><rect x="14" y="4" width="6" height="6" rx="2"/><rect x="4" y="14" width="6" height="6" rx="2"/><rect x="14" y="14" width="6" height="6" rx="2"/>', spark:'<path d="m12 3 1.4 4.1L17 9l-3.6 1.9L12 15l-1.4-4.1L7 9l3.6-1.9L12 3Z"/><path d="m5 15 .8 2.2L8 18l-2.2.8L5 21l-.8-2.2L2 18l2.2-.8L5 15Z"/>', file:'<path d="M6 3h8l4 4v14H6z"/><path d="M14 3v5h5M9 13h6M9 17h5"/>', clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>', link:'<path d="M10 13a5 5 0 0 0 7.1.1l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1"/><path d="M14 11a5 5 0 0 0-7.1-.1l-2 2A5 5 0 0 0 12 20l1.1-1.1"/>', settings:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.2h-4V21a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14H2.8v-4H3a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.6v-.2h4V3a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v4H21a1.7 1.7 0 0 0-1.6 1Z"/>', arrow:'<path d="M5 12h14M14 7l5 5-5 5"/>', back:'<path d="m15 18-6-6 6-6"/>', paperclip:'<path d="m20.5 11.5-8.8 8.8a6 6 0 0 1-8.5-8.5l9.5-9.5a4 4 0 0 1 5.7 5.7l-9.5 9.5a2 2 0 1 1-2.8-2.8l8.8-8.8"/>', branch:'<circle cx="6" cy="5" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="6" cy="19" r="2"/><path d="M6 7v10M8 7c6 0 4-1 8-1"/>', close:'<path d="m6 6 12 12M18 6 6 18"/>', more:'<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>', layers:'<path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5M3 16l9 5 9-5"/>', check:'<path d="m5 12 4 4L19 6"/>'
+  };
+  const icon = (name, cls="") => `<svg class="icon ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[name]}</svg>`;
 
-  function navigation() {
-    return `
-      <aside class="sidebar" aria-label="Codeworks navigation" data-region="persistent-sidebar">
-        <div class="stack">
-          <div class="brand-lockup">
-            <img class="arcel-wordmark" src="./assets/arcel-wordmark.svg" alt="ARCEL" />
-            <span>CODEWORKS</span>
-          </div>
-          <button class="primary" data-action="new-session">${icon("+")} New session</button>
-          <nav aria-label="Primary">
-            <ul class="nav-list">
-              <li><button data-action="global-search">${icon("⌕")} Search</button></li>
-              <li><button data-action="go-projects"${activeNav("projects")}>${icon("▦")} Projects</button></li>
-              <li><button data-action="sessions">${icon("◌")} Sessions</button></li>
-              <li><button data-action="artifacts">${icon("◇")} Artifacts</button></li>
-              <li><button data-action="automations">${icon("↻")} Automations</button></li>
-              <li><button data-action="integrations">${icon("⊹")} Integrations</button></li>
-            </ul>
-          </nav>
-          <section aria-labelledby="recent-heading">
-            <p id="recent-heading" class="eyebrow">RECENT SESSIONS</p>
-            <ul class="plain-list stack">
-              <li><button class="ghost" data-action="open-project" data-project="vault">Project intelligence home</button></li>
-              <li><button class="ghost" data-action="open-project" data-project="launch">Platform positioning</button></li>
-              <li><button class="ghost" data-action="open-project" data-project="field">Research cadence</button></li>
-            </ul>
-          </section>
-        </div>
-      </aside>`;
-  }
-
-  function topbar() {
-    const selected = project();
-    return `<header class="topbar" data-region="topbar">
-      <div class="row">
-        <button class="secondary mobile-only icon-button" aria-label="Open navigation" data-action="open-mobile-nav">☰</button>
-        <div><p class="eyebrow">${state.view === "projects" ? "WORKSPACES" : "PROJECT / " + escapeHTML(selected.name.toUpperCase())}</p><strong>${state.view === "projects" ? "Projects" : escapeHTML(selected.name)}</strong></div>
-      </div>
-      <div class="row"><button class="secondary" data-action="open-context">Context</button><button class="secondary" data-action="show-notifications">${icon("◉")} Updates</button><button class="ghost" data-action="account">SM</button></div>
-    </header>`;
-  }
-
-  function projectsIndex() {
-    const displayed = [...state.projects]
-      .filter((item) => `${item.name} ${item.summary} ${item.repository}`.toLowerCase().includes(state.search.toLowerCase()))
-      .sort((a, b) => state.sort === "name" ? a.name.localeCompare(b.name) : state.sort === "status" ? a.status.localeCompare(b.status) : b.activity - a.activity);
-    return `<section class="page-main" aria-labelledby="projects-title" data-view="projects-index">
-      <div class="split"><div><p class="eyebrow">DURABLE CONTEXT FOR CODEWORK</p><h1 id="projects-title">Projects</h1><p class="muted">Repository state, agent guidance, source context, and sessions in one place.</p></div><button class="primary" data-action="open-new-project">${icon("+")} New project</button></div>
-      <div class="toolbar" aria-label="Project controls">
-        <label class="grow"><span class="eyebrow">FIND A PROJECT</span><input type="search" data-input="search" value="${escapeHTML(state.search)}" placeholder="Search projects, repositories, or context…" aria-label="Search projects" /></label>
-        <label><span class="eyebrow">SORT BY</span><select data-input="sort" aria-label="Sort projects"><option value="activity" ${state.sort === "activity" ? "selected" : ""}>Activity</option><option value="name" ${state.sort === "name" ? "selected" : ""}>Name</option><option value="status" ${state.sort === "status" ? "selected" : ""}>Status</option></select></label>
-      </div>
-      <p class="muted" aria-live="polite">${displayed.length} ${displayed.length === 1 ? "project" : "projects"} visible</p>
-      <div class="project-grid" data-component="project-cards">
-        ${displayed.map((item) => `<article class="project-card" data-project-card="${item.id}">
-          <div class="split"><span class="status">${escapeHTML(item.status)}</span><button class="ghost icon-button" aria-label="More options for ${escapeHTML(item.name)}" data-action="project-menu" data-project="${item.id}">⋯</button></div>
-          <h2><button class="ghost" data-action="open-project" data-project="${item.id}">${escapeHTML(item.name)}</button></h2>
-          <p>${escapeHTML(item.summary)}</p>
-          <p class="muted">${escapeHTML(item.repository)} · ${escapeHTML(item.branch)}</p>
-          <div class="meta-row"><span>${item.sessions.length} sessions</span><span>Updated ${escapeHTML(item.updated)}</span></div>
-          <div class="row"><button class="primary" data-action="open-project" data-project="${item.id}">Resume work</button><button class="secondary" data-action="open-context" data-project="${item.id}">Context</button></div>
-        </article>`).join("") || `<div class="empty-state"><h2>No matching projects</h2><p>Try another project name, repository, or context source.</p></div>`}
-      </div>
-    </section>`;
-  }
-
-  function projectDetail() {
-    const item = project();
-    const tabs = ["sessions", "activity", "artifacts"];
-    return `<section class="page-main" aria-labelledby="project-title" data-view="project-detail">
-      <button class="ghost" data-action="go-projects">← All projects</button>
-      <div class="split"><div><p class="eyebrow">${escapeHTML(item.repository)}</p><h1 id="project-title">${escapeHTML(item.name)}</h1><p class="muted">${escapeHTML(item.summary)}</p></div><div class="row"><span class="status">${escapeHTML(item.status)}</span><button class="secondary" data-action="open-context">Edit context</button><button class="ghost icon-button" data-action="project-menu" aria-label="Project options">⋯</button></div></div>
-      <div class="tablist" role="tablist" aria-label="Project workspace views">
-        ${tabs.map((tab) => `<button role="tab" id="tab-${tab}" aria-controls="panel-${tab}" aria-selected="${state.activeTab === tab}" tabindex="${state.activeTab === tab ? 0 : -1}" data-action="switch-tab" data-tab="${tab}">${tab[0].toUpperCase() + tab.slice(1)}${tab === "sessions" ? ` <span class="muted">${item.sessions.length}</span>` : ""}</button>`).join("")}
-      </div>
-      ${workspacePanel(item)}
-      ${composer(item)}
-    </section>`;
-  }
-
-  function workspacePanel(item) {
-    if (state.activeTab === "sessions") {
-      return `<section role="tabpanel" id="panel-sessions" aria-labelledby="tab-sessions" class="stack" data-panel="sessions">
-        <div class="split"><div><h2>Sessions</h2><p class="muted">Focused work threads using this project’s context.</p></div><button class="secondary" data-action="new-session">${icon("+")} Start session</button></div>
-        ${item.sessions.map((session) => `<article class="activity-item"><div class="split"><div><h3>${escapeHTML(session.title)}</h3><p>${escapeHTML(session.detail)}</p></div><span class="status">${escapeHTML(session.status)}</span></div><p class="muted">${escapeHTML(session.time)}</p></article>`).join("")}
-        ${state.lastResult ? resultCard() : ""}
-      </section>`;
-    }
-    if (state.activeTab === "activity") {
-      return `<section role="tabpanel" id="panel-activity" aria-labelledby="tab-activity" class="stack" data-panel="activity"><div><h2>Activity</h2><p class="muted">An auditable stream of decisions, agent work, and context changes.</p></div>${item.activityFeed.map((entry) => `<article class="activity-item"><div class="split"><strong>${escapeHTML(entry.type)}</strong><span class="muted">${escapeHTML(entry.time)}</span></div><h3>${escapeHTML(entry.title)}</h3><p>${escapeHTML(entry.detail)}</p></article>`).join("")}</section>`;
-    }
-    return `<section role="tabpanel" id="panel-artifacts" aria-labelledby="tab-artifacts" class="stack" data-panel="artifacts"><div class="split"><div><h2>Artifacts</h2><p class="muted">Reusable outputs created in this project.</p></div><button class="secondary" data-action="attachment-menu">${icon("+")} Add source</button></div>${item.artifacts.map((artifact) => `<article class="activity-item"><div class="split"><div><h3>${escapeHTML(artifact.name)}</h3><p class="muted">${escapeHTML(artifact.kind)} · Updated ${escapeHTML(artifact.updated)}</p></div><button class="ghost" data-action="open-artifact">Open</button></div></article>`).join("")}</section>`;
-  }
-
-  function composer(item) {
-    const modes = ["Ask", "Research", "Build", "Create"];
-    const depths = ["Fast", "Deep", "Expert"];
-    return `<section class="composer stack" aria-label="Project composer" data-component="composer">
-      <div class="split"><div><strong>Work in ${escapeHTML(item.name)}</strong><p class="muted">Agent responses inherit this project’s instructions and approved sources.</p></div>${state.busy ? `<span class="status" role="status">Working…</span>` : ""}</div>
-      <label><span class="eyebrow">TASK</span><textarea id="composer-input" placeholder="Describe the outcome, change, or question…" ${state.busy ? "disabled" : ""}></textarea></label>
-      <div class="split"><div class="row" role="group" aria-label="Work mode">${modes.map((mode) => `<button class="${state.composerMode === mode ? "primary" : "secondary"}" data-action="set-mode" data-mode="${mode}" aria-pressed="${state.composerMode === mode}">${mode}</button>`).join("")}</div><div class="row"><button class="secondary" data-action="attachment-menu" aria-expanded="${state.attachmentMenu}">${icon("+")} Attach</button><select data-input="depth" aria-label="Reasoning depth">${depths.map((depth) => `<option ${state.depth === depth ? "selected" : ""}>${depth}</option>`).join("")}</select><button class="primary" data-action="send" ${state.busy ? "disabled" : ""}>${state.busy ? "Working…" : "Send"}</button></div></div>
-      ${state.attachmentMenu ? attachmentMenu() : ""}
-    </section>`;
-  }
-
-  function attachmentMenu() {
-    return `<section class="context-card" aria-label="Add project context" data-component="attachment-menu"><p class="eyebrow">ADD TO THIS TASK</p><div class="row"><button class="secondary" data-action="attach" data-kind="Files">Upload files</button><button class="secondary" data-action="attach" data-kind="Repository">Reference repository</button><button class="secondary" data-action="attach" data-kind="GitHub issue">Import issue</button><button class="secondary" data-action="attach" data-kind="Screenshot">Add screenshot</button></div></section>`;
-  }
-
-  function contextRail() {
-    const item = project();
-    if (state.view === "projects") return `<aside class="context-rail" aria-label="Projects guide"><section class="context-card"><p class="eyebrow">HOW PROJECTS WORK</p><h2>Durable context, not another inbox.</h2><p>Keep source material, project instructions, repository state, and sessions together. Chats do the work; Projects make future work smarter.</p><button class="secondary" data-action="open-new-project">Create project</button></section></aside>`;
-    return `<aside class="context-rail" aria-label="Project context" data-region="context-rail">
-      <div class="split"><div><p class="eyebrow">PROJECT CONTEXT</p><h2>Ready for this session</h2></div><button class="ghost icon-button" aria-label="Edit project context" data-action="open-context">✎</button></div>
-      <div class="stack">
-        <section class="context-card"><p class="eyebrow">REPOSITORY</p><strong>${escapeHTML(item.repository)}</strong><p class="muted">${escapeHTML(item.branch)}</p><button class="ghost" data-action="change-branch">Change branch</button></section>
-        <section class="context-card"><div class="split"><p class="eyebrow">INSTRUCTIONS</p><button class="ghost" data-action="open-context">Edit</button></div><p>${escapeHTML(item.instructions)}</p></section>
-        <section class="context-card"><div class="split"><p class="eyebrow">SOURCES</p><button class="ghost" data-action="attachment-menu">+</button></div>${item.sources.map((source) => `<span class="source-chip">${escapeHTML(source)}</span>`).join("")}</section>
-        <section class="context-card"><p class="eyebrow">AGENT CONTEXT</p><p><strong>${state.depth}</strong> reasoning · ${state.composerMode} mode</p><p class="muted">Project instructions → repository guidance → selected sources → task prompt</p></section>
-      </div>
+  function navigation(){
+    const nav=[['grid','Projects','go-projects'],['clock','Sessions','sessions'],['file','Artifacts','artifacts'],['spark','Automations','automations'],['link','Integrations','integrations']];
+    return `<aside class="sidebar glass" aria-label="Codeworks navigation">
+      <div class="brand-lockup"><span class="brand-plate"><img src="./assets/arcel-wordmark.svg" alt="ARCEL"></span><span>Codeworks</span></div>
+      <button class="new-session tactile" data-action="new-session">${icon('plus')}<span>New session</span><kbd>⌘ N</kbd></button>
+      <nav><p class="eyebrow">Workspace</p><ul class="nav-list">${nav.map(([i,l,a])=>`<li><button class="${(a==='go-projects'&&state.view==='projects')?'active':''}" data-action="${a}">${icon(i)}<span>${l}</span>${l==='Automations'?'<i class="nav-badge">3</i>':''}</button></li>`).join('')}</ul></nav>
+      <section class="recent"><div class="section-label"><p class="eyebrow">Recent</p><button aria-label="Add session" data-action="new-session">${icon('plus')}</button></div>${state.projects.map(p=>`<button class="recent-row" data-action="open-project" data-project="${p.id}"><span class="mini-orb tone-${p.tone}">${p.monogram}</span><span><strong>${escapeHTML(p.name)}</strong><small>${escapeHTML(p.updated)}</small></span></button>`).join('')}</section>
+      <div class="sidebar-footer"><div class="avatar">SM<span></span></div><div><strong>Swapnil</strong><small>ARCEL studio</small></div><button aria-label="Settings" data-action="account">${icon('settings')}</button></div>
     </aside>`;
   }
 
-  function resultCard() {
-    const result = state.lastResult;
-    return `<article class="activity-item" data-component="agent-result"><div class="split"><div><span class="status">${escapeHTML(result.mode)} complete</span><h3>${escapeHTML(result.title)}</h3></div><span class="muted">Just now</span></div><p>${escapeHTML(result.summary)}</p><div aria-label="Sources used">${result.sources.map((source) => `<span class="source-chip">${escapeHTML(source)}</span>`).join("")}</div></article>`;
+  function topbar(){ const p=project(); return `<header class="topbar glass">
+    <div class="crumb"><button class="mobile-menu" data-action="open-mobile-nav">${icon('grid')}</button><span class="live-orb"></span><div><small>${state.view==='projects'?'ARCEL CODEWORKS':'PROJECT'}</small><strong>${state.view==='projects'?'Command center':escapeHTML(p.name)}</strong></div></div>
+    <button class="command-search tactile" data-action="global-search">${icon('search')}<span>Search workspace</span><kbd>⌘ K</kbd></button>
+    <div class="top-actions"><button class="icon-btn tactile" aria-label="Toggle context" data-action="toggle-rail">${icon('layers')}</button><button class="updates tactile" data-action="show-notifications"><span class="live-orb"></span>3 updates</button><div class="avatar compact">SM</div></div>
+  </header>`; }
+
+  function projectsIndex(){
+    const displayed=[...state.projects].filter(p=>`${p.name} ${p.summary} ${p.repository}`.toLowerCase().includes(state.search.toLowerCase())).sort((a,b)=>state.sort==='name'?a.name.localeCompare(b.name):state.sort==='status'?a.status.localeCompare(b.status):b.activity-a.activity);
+    return `<section class="page-main index-view" aria-labelledby="projects-title">
+      <div class="hero reveal"><div><span class="hero-kicker"><i></i>Intelligence, with a home.</span><h1 id="projects-title">Where ambitious work<br><em>keeps its memory.</em></h1><p>Projects hold the code, context, decisions, and agent work that move ARCEL forward.</p></div><button class="hero-action tactile" data-action="open-new-project"><span>${icon('plus')}</span><strong>New project</strong><small>Give your work durable context</small>${icon('arrow','arrow')}</button></div>
+      <div class="metrics reveal"><div><span>Active projects</span><strong>03</strong><small><i class="up">↗</i> all systems focused</small></div><div><span>Context sources</span><strong>09</strong><small>across your workspace</small></div><div><span>Agent activity</span><strong>24</strong><small>runs this week</small></div><div class="pulse-card"><span class="pulse-visual"><i></i><i></i><i></i></span><small>Workspace pulse</small><strong>Healthy</strong></div></div>
+      <div class="project-controls reveal"><label class="search-field">${icon('search')}<input type="search" data-input="search" value="${escapeHTML(state.search)}" placeholder="Find a project, repository, or source…"><kbd>/</kbd></label><div class="segmented" role="group" aria-label="Sort projects">${[['activity','Active'],['name','Name'],['status','Status']].map(([v,l])=>`<button class="${state.sort===v?'selected':''}" data-action="set-sort" data-sort="${v}">${l}</button>`).join('')}</div></div>
+      <div class="project-grid">${displayed.map((p,i)=>projectCard(p,i)).join('')||`<div class="empty glass"><h2>No projects found</h2><p>Try a different name or source.</p></div>`}<button class="add-project-card reveal" data-action="open-new-project">${icon('plus')}<span><strong>Start something new</strong><small>Create a project in seconds</small></span></button></div>
+    </section>`;
   }
 
-  function modal() {
-    if (!state.modal) return "";
-    if (state.modal === "new-project") return `<div class="modal-backdrop" role="presentation"><section class="modal" role="dialog" aria-modal="true" aria-labelledby="new-project-title"><div class="split"><div><p class="eyebrow">NEW PROJECT</p><h2 id="new-project-title">Set durable context</h2></div><button class="ghost icon-button" data-action="close-modal" aria-label="Close">×</button></div><form class="stack" data-form="new-project"><label>What are you building?<input required name="name" placeholder="e.g. ARCEL Mobile Intelligence" /></label><label>What should the agent know?<textarea required name="summary" placeholder="Goal, constraints, audience, or definition of done…"></textarea></label><label>Repository or workspace<select name="repository"><option value="No repository connected">Project-only (no repository yet)</option><option value="arcel/new-mobile-intelligence">arcel/new-mobile-intelligence</option><option value="Connect later">Connect later</option></select></label><div class="row"><button class="primary" type="submit">Create project</button><button class="secondary" type="button" data-action="close-modal">Cancel</button></div></form></section></div>`;
-    if (state.modal === "context") { const item = project(); return `<div class="modal-backdrop" role="presentation"><section class="modal" role="dialog" aria-modal="true" aria-labelledby="context-title"><div class="split"><div><p class="eyebrow">PROJECT CONTEXT</p><h2 id="context-title">${escapeHTML(item.name)}</h2></div><button class="ghost icon-button" data-action="close-modal" aria-label="Close">×</button></div><form class="stack" data-form="context"><label>Repository<input name="repository" value="${escapeHTML(item.repository)}" /></label><label>Branch or working state<input name="branch" value="${escapeHTML(item.branch)}" /></label><label>Instructions for every session<textarea name="instructions">${escapeHTML(item.instructions)}</textarea></label><fieldset><legend class="eyebrow">ACTIVE CONTEXT</legend>${item.sources.map((source) => `<label class="row"><input type="checkbox" checked name="source" value="${escapeHTML(source)}" />${escapeHTML(source)}</label>`).join("")}</fieldset><div class="row"><button class="primary" type="submit">Save context</button><button class="secondary" type="button" data-action="close-modal">Cancel</button></div></form></section></div>`; }
-    if (state.modal === "project-menu") return `<div class="modal-backdrop" role="presentation"><section class="modal" role="dialog" aria-modal="true" aria-labelledby="menu-title"><div class="split"><h2 id="menu-title">Project actions</h2><button class="ghost icon-button" data-action="close-modal" aria-label="Close">×</button></div><div class="stack"><button class="secondary" data-action="open-context">Edit details & context</button><button class="secondary" data-action="archive-project">Archive project</button><button class="secondary" data-action="duplicate-project">Duplicate project</button><button class="secondary" data-action="close-modal">Cancel</button></div></section></div>`;
-    return `<div class="modal-backdrop" role="presentation"><aside class="modal" role="dialog" aria-modal="true" aria-label="Mobile navigation">${navigation()}<button class="secondary" data-action="close-modal">Close navigation</button></aside></div>`;
+  function projectCard(p,i){ return `<article class="project-card glass reveal tone-${p.tone}" style="--i:${i}">
+    <div class="card-shine"></div><div class="card-top"><div class="project-orb"><span>${p.monogram}</span><i></i></div><button class="icon-btn" aria-label="Project menu" data-action="project-menu" data-project="${p.id}">${icon('more')}</button></div>
+    <div><div class="status-line"><span class="status-dot"></span>${escapeHTML(p.status)}<span>·</span>${escapeHTML(p.updated)}</div><h2><button data-action="open-project" data-project="${p.id}">${escapeHTML(p.name)}</button></h2><p>${escapeHTML(p.summary)}</p></div>
+    <div class="repo-pill">${icon('branch')}<span>${escapeHTML(p.repository)}</span><small>${escapeHTML(p.branch)}</small></div>
+    <div class="card-bottom"><div class="progress-ring" style="--progress:${p.activity}"><span>${p.activity}</span></div><span><strong>${p.sessions.length} sessions</strong><small>${p.sources.length} context sources</small></span><button class="resume tactile" data-action="open-project" data-project="${p.id}">${icon('arrow')}</button></div>
+  </article>`; }
+
+  function projectDetail(){ const p=project(); const tabs=['sessions','activity','artifacts']; return `<section class="page-main detail-view">
+    <button class="back-link" data-action="go-projects">${icon('back')} All projects</button>
+    <div class="project-hero glass reveal tone-${p.tone}"><div class="project-orb large"><span>${p.monogram}</span><i></i></div><div class="project-identity"><span class="status-line"><i class="status-dot"></i>${escapeHTML(p.status)} · ${escapeHTML(p.updated)}</span><h1>${escapeHTML(p.name)}</h1><p>${escapeHTML(p.summary)}</p><div class="hero-tags"><span>${icon('branch')}${escapeHTML(p.repository)}</span><span>${escapeHTML(p.branch)}</span></div></div><div class="hero-score"><div class="progress-ring large" style="--progress:${p.activity}"><span>${p.activity}</span></div><small>Project pulse</small></div><button class="icon-btn" data-action="project-menu">${icon('more')}</button></div>
+    <div class="workspace-tabs glass" role="tablist">${tabs.map(t=>`<button role="tab" aria-selected="${state.activeTab===t}" data-action="switch-tab" data-tab="${t}">${t[0].toUpperCase()+t.slice(1)}${t==='sessions'?`<i>${p.sessions.length}</i>`:''}</button>`).join('')}<span class="tab-glider tab-${state.activeTab}"></span></div>
+    ${workspacePanel(p)}${composer(p)}
+  </section>`; }
+
+  function workspacePanel(p){
+    if(state.activeTab==='sessions') return `<section class="panel reveal"><div class="panel-heading"><div><p class="eyebrow">Live work</p><h2>Sessions</h2></div><button class="soft-button tactile" data-action="new-session">${icon('plus')} Start session</button></div><div class="session-list">${state.busy?runProgress():''}${state.lastResult?resultCard():''}${p.sessions.map((s,i)=>`<article class="session-row glass" style="--i:${i}"><span class="session-icon">${icon(s.status==='Building'?'spark':'check')}</span><div><h3>${escapeHTML(s.title)}</h3><p>${escapeHTML(s.detail)}</p></div><span class="session-meta"><i class="status-dot"></i>${escapeHTML(s.status)}<small>${escapeHTML(s.time)}</small></span><button class="icon-btn" data-action="open-artifact">${icon('arrow')}</button></article>`).join('')}</div></section>`;
+    if(state.activeTab==='activity') return `<section class="panel reveal"><div class="panel-heading"><div><p class="eyebrow">Traceable by design</p><h2>Activity</h2></div></div><div class="timeline">${p.activityFeed.map((x,i)=>`<article class="timeline-row"><span>${icon(i?'file':'spark')}</span><div><small>${escapeHTML(x.type)} · ${escapeHTML(x.time)}</small><h3>${escapeHTML(x.title)}</h3><p>${escapeHTML(x.detail)}</p></div></article>`).join('')}</div></section>`;
+    return `<section class="panel reveal"><div class="panel-heading"><div><p class="eyebrow">Reusable outcomes</p><h2>Artifacts</h2></div><button class="soft-button tactile" data-action="attachment-menu">${icon('plus')} Add source</button></div><div class="artifact-grid">${p.artifacts.map(a=>`<button class="artifact glass" data-action="open-artifact"><span>${icon('file')}</span><strong>${escapeHTML(a.name)}</strong><small>${escapeHTML(a.kind)} · ${escapeHTML(a.updated)}</small></button>`).join('')}</div></section>`;
   }
 
-  function render() {
-    app.innerHTML = `<div class="app-shell">${navigation()}<section class="workspace">${topbar()}<div class="workspace-grid">${state.view === "projects" ? projectsIndex() : projectDetail()}${contextRail()}</div></section></div>${modal()}`;
+  function runProgress(){ const stages=['Understanding the brief','Inspecting project context','Shaping the solution','Preparing the output']; return `<article class="run-card glass" aria-live="polite"><div class="agent-core"><span></span><span></span><b>${icon('spark')}</b></div><div class="run-copy"><small>ARCEL agent · ${escapeHTML(state.depth)} reasoning</small><h3>${escapeHTML(stages[state.runStage])}</h3><div class="run-track"><i style="width:${(state.runStage+1)*25}%"></i></div><p>${escapeHTML(state.lastTask)}</p></div><button class="soft-button" data-action="stop-run">Stop</button></article>`; }
+
+  function resultCard(){ const r=state.lastResult; return `<article class="result-card glass"><span class="result-icon">${icon('check')}</span><div><small>${escapeHTML(r.mode)} complete · just now</small><h3>${escapeHTML(r.title)}</h3><p>${escapeHTML(r.summary)}</p><div class="source-row">${r.sources.map(s=>`<span>${escapeHTML(s)}</span>`).join('')}</div></div><button class="icon-btn" data-action="open-artifact">${icon('arrow')}</button></article>`; }
+
+  function composer(p){ const modes=['Ask','Research','Build','Create']; return `<section class="composer-wrap"><div class="composer glass ${state.busy?'is-busy':''}"><div class="composer-head"><span class="agent-mark">${icon('spark')}</span><label for="composer-input">Work in <strong>${escapeHTML(p.name)}</strong></label><span><i class="live-orb"></i>${p.sources.length} sources connected</span></div><textarea id="composer-input" placeholder="Describe what you want ARCEL to build…" ${state.busy?'disabled':''}>${state.busy?escapeHTML(state.lastTask):''}</textarea><div class="composer-actions"><div class="mode-switch">${modes.map(m=>`<button class="${state.composerMode===m?'active':''}" data-action="set-mode" data-mode="${m}">${m}</button>`).join('')}</div><div class="compose-tools"><button class="tool-button" data-action="attachment-menu" aria-label="Attach context">${icon('paperclip')}</button><select data-input="depth" aria-label="Reasoning depth"><option ${state.depth==='Fast'?'selected':''}>Fast</option><option ${state.depth==='Deep'?'selected':''}>Deep</option><option ${state.depth==='Expert'?'selected':''}>Expert</option></select><button class="send-button tactile" data-action="send" ${state.busy?'disabled':''}><span>${state.busy?'Working':'Run agent'}</span>${icon('arrow')}</button></div></div>${state.attachmentMenu?attachmentMenu():''}</div><p class="composer-hint"><kbd>⌘ ↵</kbd> to run · project instructions and selected sources are applied automatically</p></section>`; }
+
+  function attachmentMenu(){ return `<div class="attachment-popover glass"><small>ADD CONTEXT</small>${[['file','Upload files'],['branch','Reference repository'],['link','Import GitHub issue'],['layers','Add screenshot']].map(([i,l])=>`<button data-action="attach" data-kind="${l}">${icon(i)}<span>${l}</span>${icon('arrow')}</button>`).join('')}</div>`; }
+
+  function contextRail(){ const p=project(); if(state.view==='projects') return `<aside class="context-rail ${state.railOpen?'open':''}"><div class="guide-card glass"><span class="guide-orbit">${icon('layers')}</span><p class="eyebrow">Project intelligence</p><h2>Context that compounds.</h2><p>Each project remembers its code, decisions, sources, and instructions—so every session starts informed.</p><ol><li><b>01</b><span><strong>Connect</strong><small>repos & sources</small></span></li><li><b>02</b><span><strong>Direct</strong><small>with instructions</small></span></li><li><b>03</b><span><strong>Build</strong><small>without starting over</small></span></li></ol><button class="soft-button" data-action="open-new-project">Create a project ${icon('arrow')}</button></div></aside>`;
+    return `<aside class="context-rail ${state.railOpen?'open':''}"><div class="rail-heading"><span><i class="live-orb"></i>Project context</span><button class="icon-btn" data-action="open-context">${icon('settings')}</button></div><section class="context-module glass"><small>REPOSITORY</small><strong>${escapeHTML(p.repository)}</strong><span>${icon('branch')}${escapeHTML(p.branch)}</span></section><section class="context-module glass"><div><small>INSTRUCTIONS</small><button data-action="open-context">Edit</button></div><p>${escapeHTML(p.instructions)}</p></section><section class="context-module glass"><div><small>ACTIVE SOURCES</small><button data-action="attachment-menu">${icon('plus')}</button></div><div class="source-stack">${p.sources.map((s,i)=>`<span><i>${i+1}</i>${escapeHTML(s)}${icon('check')}</span>`).join('')}</div></section><section class="context-module agent-module"><div class="agent-mini">${icon('spark')}</div><span><small>ARCEL AGENT</small><strong>${state.depth} · ${state.composerMode}</strong></span><i class="live-orb"></i></section></aside>`;
   }
 
-  function openProject(id) {
-    state.activeProjectId = id || state.activeProjectId;
-    state.view = "detail";
-    state.activeTab = "sessions";
-    state.modal = null;
+  function modal(){ if(!state.modal)return''; const close=`<button class="icon-btn close" data-action="close-modal">${icon('close')}</button>`; if(state.modal==='new-project') return `<div class="modal-backdrop"><section class="modal glass" role="dialog" aria-modal="true"><div class="modal-orb">${icon('plus')}</div>${close}<p class="eyebrow">New project</p><h2>Give your work a home.</h2><p class="modal-intro">Create durable context now. Connect more sources whenever you need them.</p><form data-form="new-project"><label>Project name<input required name="name" placeholder="e.g. ARCEL Intelligence"></label><label>What are you building?<textarea required name="summary" placeholder="A concise outcome, audience, and definition of done…"></textarea></label><label>Workspace<select name="repository"><option value="Project-only">Project-only</option><option value="arcel/new-project">arcel/new-project</option><option value="Connect later">Connect later</option></select></label><button class="send-button" type="submit"><span>Create project</span>${icon('arrow')}</button></form></section></div>`;
+    if(state.modal==='context'){const p=project();return `<div class="modal-backdrop"><section class="modal glass" role="dialog" aria-modal="true">${close}<p class="eyebrow">Project context</p><h2>${escapeHTML(p.name)}</h2><form data-form="context"><label>Repository<input name="repository" value="${escapeHTML(p.repository)}"></label><label>Branch<input name="branch" value="${escapeHTML(p.branch)}"></label><label>Instructions<textarea name="instructions">${escapeHTML(p.instructions)}</textarea></label><fieldset><legend>Active sources</legend>${p.sources.map(s=>`<label class="check-row"><input type="checkbox" checked name="source" value="${escapeHTML(s)}"><span>${escapeHTML(s)}</span></label>`).join('')}</fieldset><button class="send-button" type="submit"><span>Save context</span>${icon('check')}</button></form></section></div>`}
+    if(state.modal==='search') return `<div class="modal-backdrop command-backdrop"><section class="command-modal glass"><div>${icon('search')}<input autofocus data-command-search placeholder="Search projects and actions…"><kbd>esc</kbd></div><p>QUICK ACTIONS</p>${state.projects.map(p=>`<button data-action="open-project" data-project="${p.id}"><span class="mini-orb tone-${p.tone}">${p.monogram}</span><span><strong>${escapeHTML(p.name)}</strong><small>${escapeHTML(p.repository)}</small></span><kbd>↵</kbd></button>`).join('')}<button data-action="open-new-project">${icon('plus')}<span><strong>Create new project</strong><small>Start with durable context</small></span></button></section></div>`;
+    if(state.modal==='mobile-nav') return `<div class="modal-backdrop mobile-drawer">${navigation()}<button class="drawer-close" data-action="close-modal">${icon('close')}</button></div>`;
+    return `<div class="modal-backdrop"><section class="modal glass" role="dialog">${close}<p class="eyebrow">Project actions</p><h2>${escapeHTML(project().name)}</h2><div class="action-list"><button data-action="open-context">${icon('settings')} Edit details & context</button><button data-action="duplicate-project">${icon('layers')} Duplicate project</button><button data-action="archive-project">${icon('file')} Archive project</button></div></section></div>`;
   }
 
-  function addNewProject(form) {
-    const data = new FormData(form);
-    const id = `project-${Date.now()}`;
-    state.projects.unshift({ id, name: data.get("name"), summary: data.get("summary"), repository: data.get("repository"), branch: data.get("repository") === "No repository connected" ? "Project-only" : "main", status: "Planning", updated: "Just now", activity: 100, instructions: "Add project instructions to guide every agent session.", sources: ["Project brief"], sessions: [], activityFeed: [{ type: "Project", title: "Project created", detail: "Ready to add repository context and start a focused session.", time: "Just now" }], artifacts: [] });
-    openProject(id);
-  }
+  function render(){ app.innerHTML=`<div class="ambient" aria-hidden="true"><i></i><i></i><i></i><span></span></div><div class="app-shell">${navigation()}<section class="workspace">${topbar()}<div class="workspace-grid">${state.view==='projects'?projectsIndex():projectDetail()}${contextRail()}</div></section></div>${modal()}${state.toast?`<div class="toast glass">${icon('check')}<span>${escapeHTML(state.toast)}</span></div>`:''}`; requestAnimationFrame(()=>document.body.classList.add('ready')); }
+  function openProject(id){state.activeProjectId=id||state.activeProjectId;state.view='detail';state.activeTab='sessions';state.modal=null;state.railOpen=false;window.scrollTo({top:0,behavior:'smooth'});}
+  function notify(message){state.toast=message;render();clearTimeout(notify.timer);notify.timer=setTimeout(()=>{state.toast=null;render();},2200);}
+  function addNewProject(form){const data=new FormData(form),id=`project-${Date.now()}`;state.projects.unshift({id,name:data.get('name'),monogram:String(data.get('name')).split(/\s+/).map(x=>x[0]).join('').slice(0,2).toUpperCase(),summary:data.get('summary'),repository:data.get('repository'),branch:'main',status:'Planning',updated:'Just now',activity:12,tone:'blue',instructions:'Add instructions to shape every ARCEL agent session.',sources:['Project brief'],sessions:[],activityFeed:[{type:'Project',title:'Project created',detail:'Ready for context and a focused session.',time:'Just now'}],artifacts:[]});openProject(id);}
+  let runTimers=[];
+  function stopRun(){runTimers.forEach(clearTimeout);runTimers=[];state.busy=false;state.runStage=0;notify('Agent run stopped');}
+  function sendTask(){const input=document.querySelector('#composer-input'),task=input?.value.trim();if(!task){input?.focus();input?.classList.add('shake');setTimeout(()=>input?.classList.remove('shake'),450);return}state.busy=true;state.lastTask=task;state.runStage=0;state.lastResult=null;render();[650,1350,2200].forEach((ms,i)=>runTimers.push(setTimeout(()=>{state.runStage=i+1;render()},ms)));runTimers.push(setTimeout(()=>{const p=project();const title=state.composerMode==='Build'?'Build direction and affected surfaces prepared':state.composerMode==='Research'?'Evidence-backed research brief prepared':state.composerMode==='Create'?'First project artifact created':'Context-aware answer prepared';state.lastResult={mode:state.composerMode,title,summary:`A ${state.depth.toLowerCase()} pass on “${task}” is ready, grounded in this project’s current sources and repository state.`,sources:p.sources.slice(0,3)};p.sessions.unshift({title:task,time:'Just now',status:'Ready',detail:title});p.activityFeed.unshift({type:state.composerMode,title,detail:'New session output ready with attributed context.',time:'Just now'});p.updated='Just now';p.activity=Math.min(100,p.activity+4);state.busy=false;state.runStage=0;render();},3050));}
 
-  function sendTask() {
-    const input = document.querySelector("#composer-input");
-    const task = input?.value.trim();
-    if (!task) { input?.focus(); return; }
-    state.busy = true;
-    state.lastResult = null;
-    render();
-    window.setTimeout(() => {
-      const item = project();
-      const title = state.composerMode === "Build" ? "Implementation plan and affected files identified" : state.composerMode === "Research" ? "Research brief prepared from project context" : state.composerMode === "Create" ? "First project artifact drafted" : "Context-aware response prepared";
-      const summary = `${state.depth} pass on “${task}”. Used scoped project guidance and the current repository state; next actions are ready in the session.`;
-      state.lastResult = { mode: state.composerMode, title, summary, sources: item.sources.slice(0, 3) };
-      item.sessions.unshift({ title: task, time: "Just now", status: "Ready", detail: title });
-      item.activityFeed.unshift({ type: state.composerMode, title, detail: "New session output is ready with attributed context sources.", time: "Just now" });
-      item.updated = "Just now";
-      item.activity = Math.min(100, item.activity + 4);
-      state.busy = false;
-      render();
-    }, 850);
-  }
-
-  app.addEventListener("click", (event) => {
-    const target = event.target.closest("[data-action]");
-    if (!target) return;
-    const { action, project: projectId, tab, mode, kind } = target.dataset;
-    if (action === "go-projects") { state.view = "projects"; state.modal = null; }
-    if (action === "open-project") openProject(projectId);
-    if (action === "open-new-project") state.modal = "new-project";
-    if (action === "open-context") { if (projectId) state.activeProjectId = projectId; state.modal = "context"; }
-    if (action === "close-modal") state.modal = null;
-    if (action === "open-mobile-nav") state.modal = "mobile-nav";
-    if (action === "switch-tab") state.activeTab = tab;
-    if (action === "set-mode") state.composerMode = mode;
-    if (action === "attachment-menu") state.attachmentMenu = !state.attachmentMenu;
-    if (action === "attach") { state.attachmentMenu = false; state.lastResult = { mode: "Context", title: `${kind} added to this task`, summary: `${kind} is scoped to the next run and can be saved into the project context afterward.`, sources: [kind] }; }
-    if (action === "send") sendTask();
-    if (action === "project-menu") { if (projectId) state.activeProjectId = projectId; state.modal = "project-menu"; }
-    if (action === "archive-project") { const item = project(); item.status = "Archived"; state.modal = null; }
-    if (action === "duplicate-project") { const item = project(); const copy = { ...item, id: `project-${Date.now()}`, name: `${item.name} copy`, status: "Planning", updated: "Just now", sessions: [], activityFeed: [{ type: "Project", title: "Project duplicated", detail: "Context copied; sessions remain separate.", time: "Just now" }], artifacts: [...item.artifacts] }; state.projects.unshift(copy); openProject(copy.id); }
-    if (["new-session", "sessions", "artifacts", "global-search", "automations", "integrations", "show-notifications", "account", "change-branch", "open-artifact"].includes(action)) { state.lastResult = { mode: "Notice", title: "Prototype interaction", summary: `${target.textContent.trim() || action} is represented in this prototype’s interaction model.`, sources: ["ARCEL Codeworks prototype"] }; if (state.view === "projects") openProject(state.activeProjectId); }
-    render();
+  app.addEventListener('click',event=>{const target=event.target.closest('[data-action]');if(!target)return;const {action,project:pid,tab,mode,kind,sort}=target.dataset;
+    if(action==='go-projects'){state.view='projects';state.modal=null} if(action==='open-project')openProject(pid); if(action==='open-new-project')state.modal='new-project'; if(action==='open-context'){if(pid)state.activeProjectId=pid;state.modal='context'} if(action==='close-modal')state.modal=null; if(action==='open-mobile-nav')state.modal='mobile-nav'; if(action==='global-search')state.modal='search'; if(action==='toggle-rail')state.railOpen=!state.railOpen; if(action==='switch-tab')state.activeTab=tab; if(action==='set-mode')state.composerMode=mode; if(action==='set-sort')state.sort=sort; if(action==='attachment-menu')state.attachmentMenu=!state.attachmentMenu; if(action==='attach'){state.attachmentMenu=false;notify(`${kind} connected to this task`);return} if(action==='send')sendTask(); if(action==='stop-run'){stopRun();return} if(action==='project-menu'){if(pid)state.activeProjectId=pid;state.modal='project-menu'} if(action==='archive-project'){project().status='Archived';state.modal=null;notify('Project archived');return} if(action==='duplicate-project'){const p=project(),copy={...p,id:`project-${Date.now()}`,name:`${p.name} copy`,status:'Planning',updated:'Just now',sessions:[],activityFeed:[],artifacts:[...p.artifacts]};state.projects.unshift(copy);openProject(copy.id);notify('Project duplicated');return} if(['new-session','sessions','artifacts','automations','integrations','show-notifications','account','open-artifact'].includes(action)){if(state.view==='projects')openProject(state.activeProjectId);notify('Interaction ready for backend wiring');return} render();
   });
-
-  app.addEventListener("input", (event) => {
-    if (event.target.dataset.input === "search") { state.search = event.target.value; render(); document.querySelector('[data-input="search"]')?.focus(); }
-  });
-
-  app.addEventListener("change", (event) => {
-    if (event.target.dataset.input === "sort") { state.sort = event.target.value; render(); }
-    if (event.target.dataset.input === "depth") state.depth = event.target.value;
-  });
-
-  app.addEventListener("submit", (event) => {
-    event.preventDefault();
-    if (event.target.dataset.form === "new-project") addNewProject(event.target);
-    if (event.target.dataset.form === "context") { const data = new FormData(event.target); const item = project(); item.repository = data.get("repository"); item.branch = data.get("branch"); item.instructions = data.get("instructions"); item.sources = data.getAll("source"); item.activityFeed.unshift({ type: "Context", title: "Project context updated", detail: "Repository guidance and selected sources will shape future sessions.", time: "Just now" }); state.modal = null; }
-    render();
-  });
-
+  app.addEventListener('input',event=>{if(event.target.dataset.input==='search'){state.search=event.target.value;render();document.querySelector('[data-input="search"]')?.focus()}});
+  app.addEventListener('change',event=>{if(event.target.dataset.input==='depth')state.depth=event.target.value});
+  app.addEventListener('submit',event=>{event.preventDefault();if(event.target.dataset.form==='new-project')addNewProject(event.target);if(event.target.dataset.form==='context'){const data=new FormData(event.target),p=project();p.repository=data.get('repository');p.branch=data.get('branch');p.instructions=data.get('instructions');p.sources=data.getAll('source');state.modal=null;notify('Project context saved');return}render()});
+  window.addEventListener('keydown',event=>{if(event.key==='Escape'&&state.modal){state.modal=null;render()}if((event.metaKey||event.ctrlKey)&&event.key.toLowerCase()==='k'){event.preventDefault();state.modal='search';render()}if((event.metaKey||event.ctrlKey)&&event.key==='Enter'&&state.view==='detail')sendTask();if(event.key==='/'&&!['INPUT','TEXTAREA'].includes(document.activeElement.tagName)){event.preventDefault();state.modal='search';render()}});
+  document.addEventListener('pointermove',event=>{document.documentElement.style.setProperty('--px',`${event.clientX}px`);document.documentElement.style.setProperty('--py',`${event.clientY}px`);const card=event.target.closest('.project-card');document.querySelectorAll('.project-card.tilting').forEach(x=>x!==card&&x.classList.remove('tilting'));if(card&&matchMedia('(pointer:fine)').matches&&!matchMedia('(prefers-reduced-motion: reduce)').matches){const r=card.getBoundingClientRect(),x=(event.clientX-r.left)/r.width-.5,y=(event.clientY-r.top)/r.height-.5;card.style.setProperty('--rx',`${-y*3}deg`);card.style.setProperty('--ry',`${x*4}deg`);card.style.setProperty('--mx',`${(x+.5)*100}%`);card.style.setProperty('--my',`${(y+.5)*100}%`);card.classList.add('tilting')}});
+  document.addEventListener('pointerout',event=>{const card=event.target.closest('.project-card');if(card&&!card.contains(event.relatedTarget)){card.classList.remove('tilting');card.style.removeProperty('--rx');card.style.removeProperty('--ry')}});
   render();
 })();
