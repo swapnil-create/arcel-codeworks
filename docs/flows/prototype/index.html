@@ -236,6 +236,28 @@
     .diff > div { border: 1px solid var(--line); border-radius: 10px; padding: 10px; background: var(--elev); font-size: 12px; }
     .diff b { color: #cfd0ff; }
 
+    [data-state]:not(#screenRoot) { position: relative; }
+    .state-tag, [data-state]:not(#screenRoot)::after {
+      content: attr(data-state);
+      display: inline-block; margin-left: 8px; padding: 1px 6px; border-radius: 99px;
+      border: 1px solid #3a3c4a; background: #12131a; color: #b8bce8;
+      font: 650 9px/1.4 Inter, sans-serif; letter-spacing: .02em; vertical-align: middle;
+    }
+    .file[data-state]::after, .banner[data-state]::after, .thread[data-state]::after, .home[data-state]::after, .card[data-state]::after {
+      position: absolute; top: 8px; right: 8px; margin: 0;
+    }
+    .acc-legend {
+      padding: 10px 16px 14px; background: #07080c; border-top: 1px solid #1c1d24;
+      color: #8d93a3; font-size: 11px;
+    }
+    .acc-legend strong { color: #c5c8d4; font-weight: 650; }
+    .acc-legend .jumps { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+    .acc-legend button {
+      height: 22px; padding: 0 7px; border: 1px solid #2a2c36; border-radius: 6px;
+      color: #b8bce8; font-size: 10px;
+    }
+    .acc-legend button:hover { border-color: #6d6fff; color: #fff; }
+
     @keyframes pulse { 0%, 60%, 100% { transform: translateY(0); opacity: .45; } 30% { transform: translateY(-4px); opacity: 1; } }
     @media (max-width: 860px) {
       .app { grid-template-columns: 1fr; }
@@ -303,6 +325,22 @@
   </div>
   <div class="backdrop" id="backdrop" hidden></div>
   <div id="float"></div>
+  <footer class="acc-legend" id="acc-legend">
+    <strong>§5.4 states tagged for ACC-03</strong>
+    — labeled for later keyboard/screen-reader audit, not a WCAG pass (WP-11). Query <code>[data-state][data-screen]</code>.
+    <div class="jumps" role="navigation" aria-label="§5.4 state demos">
+      <button type="button" data-demo="A1" data-demo-state="">empty · A1</button>
+      <button type="button" data-demo="A2" data-demo-state="">loading · A2</button>
+      <button type="button" data-demo="D1" data-demo-state="working">working · D1</button>
+      <button type="button" data-demo="A3" data-demo-state="">completed · A3</button>
+      <button type="button" data-demo="A2" data-demo-state="partial">partial · A2 Stop</button>
+      <button type="button" data-demo="C2" data-demo-state="">failed · C2 Failed</button>
+      <button type="button" data-demo="A2" data-demo-state="cancelled">cancelled · A2</button>
+      <button type="button" data-demo="F1" data-demo-state="permission-denied">permission-denied · F1</button>
+      <button type="button" data-demo="G1" data-demo-state="quota-exhausted">quota-exhausted · G1</button>
+      <button type="button" data-demo="G1" data-demo-state="permission-denied">permission-denied · G1</button>
+    </div>
+  </footer>
 
   <script>
     const FLOWS = [
@@ -396,6 +434,24 @@
       render();
     }
     function shift(d) { go(ORDER[Math.max(0, Math.min(ORDER.length - 1, ORDER.indexOf(state.screen) + d))]); }
+    function applyDemo(screen, st) {
+      if (!ORDER.includes(screen)) return;
+      state.ia = null;
+      state.a2Outcome = screen === "A2" && (st === "partial" || st === "cancelled") ? st : null;
+      state.d1Phase = screen === "D1" && st === "working" ? "running" : screen === "D1" && st === "cancelled" ? "cancelled" : "plan";
+      state.micDenied = screen === "F1" && st === "permission-denied";
+      state.recording = screen === "F1" && st === "working";
+      state.highlightFailed = screen === "C2" && st === "failed";
+      state.errorKind = screen === "G1" && st === "quota-exhausted" ? "quota"
+        : screen === "G1" && st === "permission-denied" ? "denied"
+        : screen === "G1" && st === "failed" ? "network"
+        : "ready";
+      if (screen === "B1" && state.screen !== "B1") state.priorState = computeStateFor(state.screen);
+      state.screen = screen;
+      state.menu = null;
+      closeFloat();
+      render();
+    }
 
     function composer({ streaming = false, placeholder = "Message Codeworks…" } = {}) {
       const intel = state.locked
@@ -463,7 +519,7 @@
     }
 
     function screenA1() {
-      shell(`<main class="home"><div class="welcome">
+      shell(`<main class="home" data-state="empty"><div class="welcome">
         <h1>What are we working on?</h1>
         <p>Ask, research, create and get work done. No project or model required.</p>
         ${composer({ placeholder: "Ask anything — or pick an example" })}
@@ -479,21 +535,22 @@
       const stopped = state.a2Outcome === "partial";
       const cancelled = state.a2Outcome === "cancelled";
       const body = cancelled
-        ? `<div class="banner muted"><strong>Cancelled</strong>Run stopped before a complete answer. Unused reservation released.</div>`
+        ? `<div class="banner muted" data-state="cancelled"><strong>Cancelled</strong>Run stopped before a complete answer. Unused reservation released.</div>`
         : stopped
-          ? `<div class="banner muted"><strong>Partial</strong>You pressed Stop. A retry is a new attempt — nothing is spliced.</div>
+          ? `<div class="banner muted" data-state="partial"><strong>Partial</strong>You pressed Stop. A retry is a new attempt — nothing is spliced.</div>
              <p>A transformer is a pattern for turning a sequence into another sequence. It does not…</p>`
           : `<p>A transformer is a pattern for turning a sequence (words, tokens) into another sequence. Attention looks at the whole context at once.</p>
              <div class="thinking" aria-label="Working"><i></i><i></i><i></i></div>
              <p style="color:var(--muted);font-size:12px">Loading · Auto chose Helix Balanced · no private chain-of-thought</p>
              <div class="actions"><button type="button" data-action="cancel-run">Cancel run</button></div>`;
-      shell(`<div class="thread-wrap"><div class="thread" id="messages">
+      const threadState = cancelled ? "cancelled" : stopped ? "partial" : "loading";
+      shell(`<div class="thread-wrap"><div class="thread" id="messages" data-state="${threadState}">
         <article class="msg-user"><div>${esc(state.prompt || "Explain transformers like I am new to machine learning.")}</div></article>
         ${ai(body)}
       </div></div>`, { streaming: !stopped && !cancelled });
     }
     function screenA3() {
-      shell(`<div class="thread-wrap"><div class="thread" id="messages">
+      shell(`<div class="thread-wrap"><div class="thread" id="messages" data-state="completed">
         <article class="msg-user"><div>${esc(state.prompt || "Explain transformers like I am new to machine learning.")}</div></article>
         ${ai(`<p>A transformer turns a sequence into another sequence. Attention lets each token see the rest of the context, which is why long instructions and files stay usable in one conversation.</p>
           <p>Say if you want a more formal tone — same thread, no new chat.</p>${actionBar()}`)}
@@ -528,7 +585,7 @@
       </div>`);
     }
     function screenC1() {
-      shell(`<div class="thread-wrap"><div class="card-list"><div class="card">
+      shell(`<div class="thread-wrap"><div class="card-list"><div class="card" data-state="loading">
         <h2>Uploading · 2 files</h2>
         <p style="color:var(--muted)">Extraction must finish before the model can use a file. Limits shown are test targets.</p>
         <div class="file" data-state="loading"><div><strong>acme-security.pdf</strong><br><small>1.8 MiB · PDF · indexing pages…</small><div class="bar"><span style="width:72%"></span></div></div><span class="pill load">Uploading</span></div>
@@ -545,7 +602,7 @@
           <p style="color:var(--muted);font-size:12px">Original revisions · locators preserved</p>
         </div></div>
       </aside>`;
-      shell(`<div class="thread-wrap"><div class="thread" id="messages">
+      shell(`<div class="thread-wrap"><div class="thread" id="messages" data-state="${state.highlightFailed ? "failed" : "working"}">
         <article class="msg-user"><div>Diff these two PDFs on retention and give me a workbook of the totals.</div></article>
         ${ai(`<p>Page-level diff below. Helix pages 4–5 were unreadable — disclosed, not invented.</p>
           <div class="file" data-state="ready"><div><strong>acme-security.pdf</strong><br><small>Ready · cited p.12</small></div><span class="pill ready">Ready</span></div>
@@ -562,19 +619,20 @@
       const running = state.d1Phase === "running";
       const cancelled = state.d1Phase === "cancelled";
       const inner = cancelled
-        ? `<div class="banner muted"><strong>Cancelled</strong>Research did not complete. Unused reservation released.</div>
+        ? `<div class="banner muted" data-state="cancelled"><strong>Cancelled</strong>Research did not complete. Unused reservation released.</div>
            <div class="actions"><button type="button" class="primary" data-action="reset-research">Restart plan</button></div>`
         : running
-          ? `<p>Running asynchronously — you can close this tab.</p><div class="bar"><span style="width:62%"></span></div>
+          ? `<div data-state="working"><p>Running asynchronously — you can close this tab.</p><div class="bar"><span style="width:62%"></span></div>
              <p style="color:var(--muted);font-size:12px">Working · 5/12 reads · heartbeat 4s ago</p>
              <div class="actions"><button type="button" class="primary" data-go="D2">Open report</button>
-             <button type="button" data-action="cancel-research">Cancel</button></div>`
+             <button type="button" data-action="cancel-research">Cancel</button></div></div>`
           : `<p>Scope: <strong>Web</strong> (files off · connectors off).</p>
              <ol><li>Collect current public pricing and capability pages.</li><li>Reconcile contradictions; prefer primary sources.</li><li>Write a cited comparison with limitations.</li></ol>
-             <div class="banner warn"><strong>Estimate — confirm</strong>About 6 minutes · ~12 search reads · above Quick, inside Standard Deep allowance. High-cost work waits for confirm.</div>
+             <div class="banner warn" data-state="empty"><strong>Estimate — confirm</strong>About 6 minutes · ~12 search reads · above Quick, inside Standard Deep allowance. High-cost work waits for confirm.</div>
              <div class="actions"><button type="button" class="primary" data-action="start-research">Confirm and start</button>
              <button type="button" data-action="cancel-research">Cancel</button></div>`;
-      shell(`<div class="thread-wrap"><div class="card-list"><div class="card">
+      const d1State = cancelled ? "cancelled" : running ? "working" : "empty";
+      shell(`<div class="thread-wrap"><div class="card-list"><div class="card" data-state="${d1State}">
         <h2>${cancelled ? "Research cancelled" : running ? "Research running" : "Deep research plan"}</h2>${inner}
       </div></div></div>`);
     }
@@ -585,7 +643,7 @@
           <button type="button">2 · docs.vendor.com/models · 2 Sep 2026</button>
           <button type="button">3 · support.vendor.com/research</button>
         </div></div></aside>`;
-      shell(`<div class="thread-wrap"><div class="thread">
+      shell(`<div class="thread-wrap"><div class="thread" id="messages" data-state="completed">
         <article class="msg-user"><div>Compare three general-purpose AI clients on search, files and artifacts.</div></article>
         ${ai(`<div class="doc"><h3>Comparison report</h3>
           <p><strong>Methodology.</strong> Web-only retrieval. Primary vendor docs preferred.</p>
@@ -612,7 +670,7 @@
           <button type="button" class="${v === "v2" ? "active" : ""}" data-ver="v2">v2 · formal tone</button>
           <button type="button" data-action="restore">Restore v2 as new version</button>
         </div></div></aside>`;
-      shell(`<div class="thread-wrap"><div class="thread">
+      shell(`<div class="thread-wrap"><div class="thread" id="messages" data-state="completed">
         <article class="msg-user"><div>Draft a one-page brief I can edit.</div></article>
         ${ai(`<p>Select-revise keeps history. Restore writes a <strong>new</strong> version; it does not destroy ${v}.</p>${actionBar()}`)}
       </div></div>`, { split: true, panel });
@@ -620,10 +678,11 @@
     function screenF1() {
       const denied = state.micDenied;
       const rec = state.recording && !denied;
-      shell(`<div class="thread-wrap"><div class="thread" id="messages">
-        ${denied ? `<div class="banner muted"><strong>Permission denied</strong>Microphone access was blocked. Dictation did not start.</div>
+      const fState = denied ? "permission-denied" : rec ? "working" : state.transcript ? "completed" : "empty";
+      shell(`<div class="thread-wrap"><div class="thread" id="messages" data-state="${fState}">
+        ${denied ? `<div class="banner muted" data-state="permission-denied"><strong>Permission denied</strong>Microphone access was blocked. Dictation did not start.</div>
           <div class="actions"><button type="button" data-action="mic-reset">Try mic again</button></div>` : ""}
-        ${rec ? `<div class="banner danger rec"><span class="dot"></span><div><strong>Recording</strong>Visible indicator. Cancel discards capture. Transcript is editable in the composer before send.</div></div>
+        ${rec ? `<div class="banner danger rec" data-state="working"><span class="dot"></span><div><strong>Recording</strong>Visible indicator. Cancel discards capture. Transcript is editable in the composer before send.</div></div>
           <div class="actions"><button type="button" data-action="cancel-voice">Cancel capture</button>
           <button type="button" data-action="insert-voice">Insert transcript</button></div>` : ""}
         ${!denied && state.transcript ? `<article class="msg-user"><div>${esc(state.transcript)}</div></article>
@@ -638,17 +697,17 @@
         ["quota","Quota"],["rate","Rate limited"],["highcost","High-cost"],["denied","Permission"]
       ];
       const bodies = {
-        ready: `<div class="banner ok"><strong>Usage remaining: 82% · renews 1 Oct 2026</strong>Trial · no unlimited copy. A long or multi-model task costs more than a short answer. Screen root <code>empty</code>.</div>`,
-        network: `<div class="banner muted"><strong>Network error</strong>Request id req_8f21. Nothing stored as an assistant message. Safe to retry.</div>`,
-        refusal: `<div class="banner danger"><strong>Refusal</strong>The model declined this request. A refusal is not a trigger to try another model to evade policy.</div>`,
-        quota: `<div class="banner quota"><strong>Quota exhausted · remaining 0</strong>Deep research and named premium models are paused. Existing work stays viewable. There is <strong>no automatic overage</strong>.</div>
+        ready: `<div class="banner ok" data-state="empty"><strong>Usage remaining: 82% · renews 1 Oct 2026</strong>Trial · no unlimited copy. A long or multi-model task costs more than a short answer. Screen root <code>empty</code>.</div>`,
+        network: `<div class="banner muted" data-state="failed"><strong>Network error</strong>Request id req_8f21. Nothing stored as an assistant message. Safe to retry.</div>`,
+        refusal: `<div class="banner danger" data-state="failed"><strong>Refusal</strong>The model declined this request. A refusal is not a trigger to try another model to evade policy.</div>`,
+        quota: `<div class="banner quota" data-state="quota-exhausted"><strong>Quota exhausted · remaining 0</strong>Deep research and named premium models are paused. Existing work stays viewable. There is <strong>no automatic overage</strong>.</div>
           <div class="actions"><button type="button" class="primary" data-action="cheaper">Use cheaper route · Auto · Quick</button>
           <button type="button" data-ia="usage">View usage</button>
           <button type="button" class="ghost" title="Requires separate opt-in and cap">Explicit top-up…</button></div>`,
-        rate: `<div class="banner warn"><strong>Rate limited</strong>Too many concurrent runs. Wait or cancel an in-flight job. This is not quota exhaustion.</div>`,
-        highcost: `<div class="banner warn"><strong>High-cost confirmation</strong>Deep research + image generation is outside your pre-approved allowance. Confirm to reserve budget, or pick a cheaper route. No silent spend.</div>
+        rate: `<div class="banner warn" data-state="failed"><strong>Rate limited</strong>Too many concurrent runs. Wait or cancel an in-flight job. This is not quota exhaustion.</div>`,
+        highcost: `<div class="banner warn" data-state="failed"><strong>High-cost confirmation</strong>Deep research + image generation is outside your pre-approved allowance. Confirm to reserve budget, or pick a cheaper route. No silent spend.</div>
           <div class="actions"><button type="button" class="primary">Confirm estimate</button><button type="button" data-action="cheaper">Cheaper route</button></div>`,
-        denied: `<div class="banner muted"><strong>Permission denied</strong>Drive search is not connected. General file upload still works.</div>`
+        denied: `<div class="banner muted" data-state="permission-denied"><strong>Permission denied</strong>Drive search is not connected. General file upload still works.</div>`
       };
       shell(`<div class="thread-wrap"><div class="card-list"><div class="card">
         <h2>Usage and distinct errors</h2>
@@ -752,6 +811,11 @@
     $("flow-tabs").addEventListener("click", e => {
       const b = e.target.closest("[data-flow]"); if (!b) return;
       persistPrompt(); state.ia = null; go(FLOWS.find(f => f.id === b.dataset.flow).screens[0]);
+    });
+    $("acc-legend").addEventListener("click", e => {
+      const b = e.target.closest("[data-demo]"); if (!b) return;
+      persistPrompt();
+      applyDemo(b.dataset.demo, b.dataset.demoState || "");
     });
     $("prev").addEventListener("click", () => { persistPrompt(); state.ia = null; shift(-1); });
     $("next").addEventListener("click", () => { persistPrompt(); state.ia = null; shift(1); });

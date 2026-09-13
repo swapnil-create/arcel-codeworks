@@ -78,7 +78,7 @@ Expertise is a fourth, optional context choice — **not** a model and **not** i
 
 ## 4. Flows A–G
 
-Click targets in **bold**. Prototype screen ids match this map. Every view stamps `#screenRoot` with `data-screen` and one canonical `data-state` (see §7).
+Click targets in **bold**. Prototype screen ids match this map. Every view stamps `#screenRoot` with `data-screen` and one canonical `data-state` (see **ACC-03 / §5.4 state coverage**).
 
 ### Flow A — First chat
 
@@ -182,7 +182,9 @@ Update `DELIVERY-TRACKER.md` and the Notion Codeworks Tasks board:
 
 ---
 
-## 7. ACC-03 — machine-readable state
+## 7. ACC-03 / §5.4 state coverage
+
+PRD §5.4 required states are **clickable and tagged** in the prototype so ACC-03 can query them later. These labels are for a future keyboard / screen-reader audit — **not a full WCAG pass**. Full a11y audit remains **WP-11 / ACC-03 gate**. D03 is UX flows only; do not mark WP-01 done.
 
 Do **not** scrape visible copy. Query:
 
@@ -190,11 +192,26 @@ Do **not** scrape visible copy. Query:
 [data-state][data-screen]
 ```
 
-Hook: `#screenRoot`. Canonical `data-state` values are exactly:
+Canonical `data-state` values (exactly):
 
 `empty` | `loading` | `working` | `completed` | `partial` | `failed` | `cancelled` | `permission-denied` | `quota-exhausted`
 
-`data-screen` is `A1`…`G1`. One value per view; update on navigation and in-screen transitions.
+| §5.4 state | Clickable prototype location | How to open |
+|---|---|---|
+| **empty** | **A1** home / composer (no messages). Also **D1** plan (before confirm), **F1** idle, **G1** Default / usage. | Tab **A First chat** · A1. `?screen=A1` |
+| **loading** | **A2** streaming thread (before Stop). **C1** uploading file cards. | Send from A1, or `?screen=A2` · `?screen=C1` |
+| **working** | **D1** after **Confirm and start** (research running). **F1** while Mic is recording. **C2** root while mixed files are in use. | D1 → Confirm and start. `?screen=D1&state=working` |
+| **completed** | **A3** response actions. **B2** details. **D2** report. **E1** artifact (editing is still a completed artifact). | Tab A → A3. `?screen=A3` |
+| **partial** | **A2 Stop** — Send is replaced by Stop; output marked partial. **C2** Partial file card (`notes-scan.pdf`). | A2 → **Stop**. `?screen=A2&state=partial` |
+| **failed** | **C2 Failed** file card (`helix-dpa.pdf`). **G1** Network / Refusal / Rate limited banners. | Tab **C Files** → C2. `?screen=C2` · `?screen=G1&state=failed` |
+| **cancelled** | **A2 Cancel run**. **D1 Cancel** (plan or running). | A2 → **Cancel run**. `?screen=A2&state=cancelled` |
+| **permission-denied** | **F1** **Simulate permission denied**. **G1** Permission banner. | F1 → Simulate permission denied. `?screen=F1&state=permission-denied` · `?screen=G1&state=permission-denied` |
+| **quota-exhausted** | **G1** Quota banner (remaining 0, cheaper route, no auto overage). | Tab **G Quota/Errors** → Quota. `?screen=G1&state=quota-exhausted` |
+
+Hooks:
+- `#screenRoot` always has `data-screen` + one canonical `data-state`.
+- The same nine values are repeated on the **visible** thread (`#messages`), banners, and file cards that demonstrate the state.
+- Prototype footer legend: “§5.4 states tagged for ACC-03” with jumps to each demo.
 
 ---
 
@@ -218,4 +235,4 @@ Hook: `#screenRoot`. Canonical `data-state` values are exactly:
 2. Walk tabs **A–G** and the §3 table. Confirm no AEC nav and no LED lockup.
 3. Composer on every conversation screen: Attach · Tools · Mic · Auto · Standard · Send/Stop · removable chips.
 4. **G1** shows usage plus distinct network / refusal / quota / rate / high-cost banners, and must not offer silent overage.
-5. ACC-03: every A–G view has `#screenRoot[data-state][data-screen]`.
+5. ACC-03 / §5.4: walk the footer legend. Every A–G view has `#screenRoot[data-state][data-screen]`. This is flow-level tagging, not a WCAG pass (WP-11).
