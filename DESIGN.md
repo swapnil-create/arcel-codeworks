@@ -1,26 +1,29 @@
-# ARCEL Codeworks — brand implementation
+# ARCEL Codeworks — product and interface direction
 
-## Source of truth
+## Product structure
 
-The implementation follows the ARCEL System frame at Figma node `293:2790`. The prior glass-dashboard direction was removed after comparison with the supplied brand system.
+The default experience is a chat composer, not a dashboard and not a project-management system.
 
-## Extracted rules
+- Chat: direct general assistance.
+- Research: answers with visible sources.
+- Code: implementation-oriented responses.
+- Projects: Claude-style folders for related chats and files.
+- Compare: Prompt Arena workflow for running one prompt across multiple models, choosing the best response, or combining outputs.
 
-- Canvas: white working field with a fixed black operating-system rail.
-- Hierarchy: large, tightly tracked Plus Jakarta Sans statements; Inter for product copy and UI metadata.
-- Palette: ARCEL Blue `#191BDF`, black, Dark Gray `#4E4E4E`, Neutral Gray `#6E6E73`, line gray `#CECECF`, pale blue `#F4F5FF`, and white.
-- Structure: editorial grids, wide negative space, exact alignment, thin rules, squared containers, compact labels, and numbered sections.
-- Brand asset: technical diagrams and geometric identities are primary visual language—not gradients, glow, glass, floating cards, or ornamental depth.
-- Motion: restrained and structural. Content reveals, line progress, and hover movement clarify state without changing the visual identity.
+## Reference translation
 
-## Codeworks translation
+- Claude: calm sidebar, conversation-first workspace, and Projects as one peer feature.
+- ChatGPT: blank composer-led home, recent chats, model selector, and restrained conversation layout.
+- Perplexity: explicit Research mode and inspectable sources.
+- Grok: fast switching between response intents and clear execution feedback.
+- Prompt Arena: selectable models, shared prompt, side-by-side responses, blind judging, Judge Best, and Combine All.
 
-- Projects remain the durable unit of work, following the earlier product analysis.
-- The projects home is organized as an ARCEL intelligence map: the master hexagon connects to project-domain nodes and the repository → context → sessions → artifacts lifecycle.
-- Project rows use the exact domain assets exported from the supplied Figma file.
-- The project workspace uses the same numbered, ruled, editorial grammar for Sessions, Activity, Artifacts, Context, and the agent composer.
-- `/` and `⌘K` open search; `⌘Enter` runs the project agent.
+## ARCEL identity
 
-## MVP boundary
+Figma is used for brand identity—not as the application layout template.
 
-This is a dependency-free front-end MVP. Authentication, persistence, repository APIs, streaming model output, and file transport remain the backend integration layer.
+- Official ARCEL SVG wordmark at its natural proportions.
+- ARCEL Blue `#191BDF` as the sole interaction accent.
+- Ink `#111827`, Muted `#5A6470`, Pale `#F1F2FF`, white, and restrained neutral interface grays.
+- Plus Jakarta Sans for headings; Inter for body and interface text.
+- No decorative brand-book diagrams, marketing statements, fake metrics, gradients, or ornamental color systems.

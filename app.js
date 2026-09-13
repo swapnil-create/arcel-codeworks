@@ -1,102 +1,300 @@
 (() => {
   "use strict";
 
-  const seededProjects = [
-    { id:"vault", name:"ARCEL Vault", monogram:"AV", summary:"Private, offline-first intelligence for high-stakes teams.", repository:"arcel/vault-ios", branch:"feature/project-intelligence", status:"Building", updated:"6 min ago", activity:84, tone:"blue", instructions:"Keep the experience calm and privacy-first. Prefer native SwiftUI patterns. Explain trade-offs before changing persistence or security boundaries.", sources:["AGENTS.md","Product brief","Privacy model","Design tokens"], sessions:[{title:"Design project intelligence home",time:"6 min ago",status:"Building",detail:"Exploring the workspace shell and context rail."},{title:"Audit sync conflict architecture",time:"Yesterday",status:"Ready",detail:"Decision log and implementation paths prepared."}], activityFeed:[{type:"Build",title:"Prepared workspace navigation",detail:"Updated project navigation proposal and identified three affected views.",time:"6 min ago"},{type:"Context",title:"Design tokens indexed",detail:"System colors, typography, and motion defaults are available to new sessions.",time:"42 min ago"}], artifacts:[{name:"project-intelligence-brief.md",kind:"Brief",updated:"6 min ago"},{name:"sync-conflict-audit.md",kind:"Research",updated:"Yesterday"},{name:"vault-design-system.fig",kind:"Design",updated:"2 days ago"}] },
-    { id:"launch", name:"ARCEL Launch System", monogram:"LS", summary:"A reusable launch narrative, site, and conversion toolkit.", repository:"arcel/launch-system", branch:"main", status:"Review", updated:"2 hr ago", activity:67, tone:"violet", instructions:"Use direct editorial language. Preserve the ARCEL voice: precise, composed, and unusually useful.", sources:["Brand narrative","Launch brief","Audience research"], sessions:[{title:"Refine platform positioning",time:"2 hr ago",status:"Review",detail:"Draft narrative is ready for a product decision."},{title:"Build customer proof section",time:"Friday",status:"Ready",detail:"Component variations and evidence hierarchy complete."}], activityFeed:[{type:"Research",title:"Competitive language mapped",detail:"Eight positioning territories synthesized into a concise narrative matrix.",time:"2 hr ago"}], artifacts:[{name:"positioning-matrix.md",kind:"Research",updated:"2 hr ago"},{name:"launch-page-outline.md",kind:"Outline",updated:"Friday"}] },
-    { id:"field", name:"Field Notes", monogram:"FN", summary:"An editorial system for product signals, evidence, and decisions.", repository:"Project-only", branch:"Private workspace", status:"Planning", updated:"3 days ago", activity:42, tone:"silver", instructions:"Turn raw observations into decisions, not generic summaries. Protect participant anonymity.", sources:["Interview notes","Decision log"], sessions:[{title:"Draft research cadence",time:"3 days ago",status:"Ready",detail:"Initial operating rhythm proposed."}], activityFeed:[{type:"Context",title:"Interview notes added",detail:"Twelve notes are available as project context.",time:"3 days ago"}], artifacts:[{name:"research-cadence.md",kind:"Plan",updated:"3 days ago"}] }
+  const projects = [
+    { id: "vault", name: "ARCEL Vault", detail: "Private intelligence workspace", chats: 8, updated: "Today" },
+    { id: "launch", name: "Launch System", detail: "Website, narrative, and releases", chats: 4, updated: "Yesterday" },
+    { id: "field", name: "Field Notes", detail: "Research and product signals", chats: 3, updated: "Friday" }
   ];
 
-  const state = { projects:seededProjects, view:"projects", activeProjectId:"vault", activeTab:"sessions", search:"", sort:"activity", modal:null, attachmentMenu:false, composerMode:"Build", depth:"Deep", busy:false, runStage:0, lastTask:"", lastResult:null, toast:null, railOpen:false };
-  const app = document.querySelector("#app");
-  const escapeHTML = value => String(value).replace(/[&<>'"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#039;",'"':"&quot;"})[c]);
-  const project = () => state.projects.find(item => item.id === state.activeProjectId);
-  const projectShape = item => ({vault:"./assets/arcel-intelligence-hexagon.svg",launch:"./assets/domain-development.svg",field:"./assets/domain-practice.svg"})[item.id] || "./assets/arcel-intelligence-hexagon.svg";
-  const paths = {
-    plus:'<path d="M12 5v14M5 12h14"/>', search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>', grid:'<rect x="4" y="4" width="6" height="6" rx="2"/><rect x="14" y="4" width="6" height="6" rx="2"/><rect x="4" y="14" width="6" height="6" rx="2"/><rect x="14" y="14" width="6" height="6" rx="2"/>', spark:'<path d="m12 3 1.4 4.1L17 9l-3.6 1.9L12 15l-1.4-4.1L7 9l3.6-1.9L12 3Z"/><path d="m5 15 .8 2.2L8 18l-2.2.8L5 21l-.8-2.2L2 18l2.2-.8L5 15Z"/>', file:'<path d="M6 3h8l4 4v14H6z"/><path d="M14 3v5h5M9 13h6M9 17h5"/>', clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>', link:'<path d="M10 13a5 5 0 0 0 7.1.1l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1"/><path d="M14 11a5 5 0 0 0-7.1-.1l-2 2A5 5 0 0 0 12 20l1.1-1.1"/>', settings:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.2h-4V21a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14H2.8v-4H3a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.6v-.2h4V3a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v4H21a1.7 1.7 0 0 0-1.6 1Z"/>', arrow:'<path d="M5 12h14M14 7l5 5-5 5"/>', back:'<path d="m15 18-6-6 6-6"/>', paperclip:'<path d="m20.5 11.5-8.8 8.8a6 6 0 0 1-8.5-8.5l9.5-9.5a4 4 0 0 1 5.7 5.7l-9.5 9.5a2 2 0 1 1-2.8-2.8l8.8-8.8"/>', branch:'<circle cx="6" cy="5" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="6" cy="19" r="2"/><path d="M6 7v10M8 7c6 0 4-1 8-1"/>', close:'<path d="m6 6 12 12M18 6 6 18"/>', more:'<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>', layers:'<path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5M3 16l9 5 9-5"/>', check:'<path d="m5 12 4 4L19 6"/>'
-  };
-  const icon = (name, cls="") => `<svg class="icon ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[name]}</svg>`;
+  const recentChats = [
+    "Refine project onboarding",
+    "Review sync architecture",
+    "Compare launch narratives",
+    "Prepare release notes"
+  ];
 
-  function navigation(){
-    const nav=[['grid','Projects','go-projects'],['clock','Sessions','sessions'],['file','Artifacts','artifacts'],['spark','Automations','automations'],['link','Integrations','integrations']];
-    return `<aside class="sidebar" aria-label="Codeworks navigation">
-      <div class="brand-lockup"><img src="./assets/arcel-wordmark.svg" alt="ARCEL"><span><strong>CODEWORKS</strong><small>AEC Operating System</small></span></div>
-      <button class="new-session" data-action="new-session"><span>New session</span><b>${icon('plus')}</b></button>
-      <nav><p class="eyebrow">Workspace</p><ul class="nav-list">${nav.map(([i,l,a])=>`<li><button class="${(a==='go-projects'&&state.view==='projects')?'active':''}" data-action="${a}">${icon(i)}<span>${l}</span>${l==='Automations'?'<i class="nav-badge">3</i>':''}</button></li>`).join('')}</ul></nav>
-      <section class="recent"><div class="section-label"><p class="eyebrow">Projects</p><button aria-label="Add session" data-action="new-session">${icon('plus')}</button></div>${state.projects.map((p,i)=>`<button class="recent-row" data-action="open-project" data-project="${p.id}"><span>${String(i+1).padStart(2,'0')}</span><span><strong>${escapeHTML(p.name)}</strong><small>${escapeHTML(p.status)}</small></span></button>`).join('')}</section>
-      <div class="sidebar-footer"><span>© ARCEL 2026</span><span>SYS 3.0</span></div>
+  const models = [
+    { id: "arcel", name: "ARCEL 1", maker: "ARCEL", selected: true },
+    { id: "claude", name: "Claude Sonnet", maker: "Anthropic", selected: true },
+    { id: "gpt", name: "GPT", maker: "OpenAI", selected: true },
+    { id: "gemini", name: "Gemini", maker: "Google", selected: false }
+  ];
+
+  const state = {
+    view: "home",
+    mode: "Chat",
+    currentModel: "ARCEL 1",
+    activeProject: null,
+    messages: [],
+    busy: false,
+    menu: null,
+    selectedModels: new Set(models.filter(model => model.selected).map(model => model.id)),
+    arenaResults: [],
+    arenaBusy: false,
+    arenaReveal: false
+  };
+
+  const app = document.querySelector("#app");
+  const escapeHTML = value => String(value).replace(/[&<>'"]/g, character => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#039;", '"': "&quot;"
+  })[character]);
+
+  const paths = {
+    plus: '<path d="M12 5v14M5 12h14"/>',
+    search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>',
+    chat: '<path d="M5 18.5A8 8 0 1 1 8.5 21L4 22l1-3.5Z"/>',
+    folder: '<path d="M3 6h7l2 2h9v11H3z"/>',
+    compare: '<rect x="3" y="5" width="7" height="14" rx="1"/><rect x="14" y="5" width="7" height="14" rx="1"/>',
+    grid: '<rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/>',
+    paperclip: '<path d="m20 11-8.7 8.7a6 6 0 0 1-8.5-8.5l9.5-9.5A4 4 0 0 1 18 7.4l-9.2 9.2a2 2 0 1 1-2.8-2.8l8.5-8.5"/>',
+    arrow: '<path d="M5 12h14M14 7l5 5-5 5"/>',
+    chevron: '<path d="m8 10 4 4 4-4"/>',
+    more: '<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>',
+    check: '<path d="m5 12 4 4L19 6"/>',
+    copy: '<rect x="8" y="8" width="11" height="11" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/>',
+    refresh: '<path d="M20 7v5h-5M4 17v-5h5"/><path d="M6.1 8A7 7 0 0 1 18 6l2 6M18 16a7 7 0 0 1-12 2l-2-6"/>',
+    vote: '<path d="M7 10v11H3V10h4Zm0 9h10a2 2 0 0 0 2-1.6l1-5A2 2 0 0 0 18 10h-5l1-4a2 2 0 0 0-2-2l-5 6"/>',
+    close: '<path d="m6 6 12 12M18 6 6 18"/>'
+  };
+  const icon = name => `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[name]}</svg>`;
+
+  function sidebar() {
+    return `<aside class="sidebar" aria-label="Navigation">
+      <div class="brand"><img src="./assets/arcel-wordmark.svg" alt="ARCEL"><span>Codeworks</span></div>
+      <button class="new-chat" data-action="new-chat">${icon("plus")}<span>New chat</span><kbd>⌘ K</kbd></button>
+      <nav class="primary-nav">
+        <button data-action="search">${icon("search")}<span>Search</span></button>
+        <button class="${state.view === "projects" ? "active" : ""}" data-action="projects">${icon("folder")}<span>Projects</span></button>
+        <button class="${state.view === "arena" ? "active" : ""}" data-action="arena">${icon("compare")}<span>Compare</span><b>Beta</b></button>
+      </nav>
+      <section class="sidebar-section">
+        <p>Recent</p>
+        ${recentChats.map(title => `<button data-action="open-chat" data-title="${escapeHTML(title)}"><span>${escapeHTML(title)}</span><i>${icon("more")}</i></button>`).join("")}
+      </section>
+      <section class="sidebar-section projects-shortcut">
+        <p>Projects</p>
+        ${projects.slice(0, 2).map(project => `<button data-action="open-project" data-project="${project.id}">${icon("folder")}<span>${escapeHTML(project.name)}</span></button>`).join("")}
+      </section>
+      <div class="account"><span>SM</span><div><strong>Swapnil</strong><small>ARCEL</small></div><button data-action="account">${icon("more")}</button></div>
     </aside>`;
   }
 
-  function topbar(){ const p=project(); return `<header class="topbar">
-    <div class="crumb"><button class="mobile-menu" data-action="open-mobile-nav">${icon('grid')}</button><span>ARCEL</span><i>/</i><span>Codeworks</span><i>/</i><strong>${state.view==='projects'?'Projects':escapeHTML(p.name)}</strong></div>
-    <button class="command-search" data-action="global-search">${icon('search')}<span>Search</span><kbd>⌘ K</kbd></button>
-    <div class="top-actions"><button data-action="show-notifications">03</button><span>2026</span><button data-action="account">SM</button></div>
-  </header>`; }
+  function header() {
+    const title = state.view === "arena" ? "Compare" : state.view === "projects" ? "Projects" : state.activeProject ? projects.find(project => project.id === state.activeProject)?.name : state.currentModel;
+    return `<header class="topbar">
+      <button class="mobile-menu" data-action="mobile-menu">${icon("grid")}</button>
+      <button class="model-button" data-action="model-menu"><span>${escapeHTML(title)}</span>${state.view === "home" || state.view === "chat" ? icon("chevron") : ""}</button>
+      <div class="top-actions"><button data-action="share">Share</button><button class="user-button" data-action="account">SM</button></div>
+    </header>`;
+  }
 
-  function projectsIndex(){
-    const displayed=[...state.projects].filter(p=>`${p.name} ${p.summary} ${p.repository}`.toLowerCase().includes(state.search.toLowerCase())).sort((a,b)=>state.sort==='name'?a.name.localeCompare(b.name):state.sort==='status'?a.status.localeCompare(b.status):b.activity-a.activity);
-    return `<section class="page-main index-view" aria-labelledby="projects-title">
-      <div class="hero reveal"><div><span class="hero-kicker">01 — Projects</span><h1 id="projects-title">Context is the system.<br>Code is the work.</h1></div><p>ARCEL Codeworks connects repositories, instructions, decisions, and agent sessions into one continuous intelligence layer.</p><button class="hero-action" data-action="open-new-project"><strong>New project</strong>${icon('arrow')}</button></div>
-      <div class="system-map reveal" aria-label="ARCEL project intelligence map"><div class="map-label"><span>Continuous &amp; structured</span><strong>Project Intelligence System</strong></div><div class="map-axis x"></div><div class="map-axis y"></div><div class="map-core"><i></i><img src="./assets/arcel-intelligence-hexagon.svg" alt=""><strong>ARCEL</strong><small>CODEWORKS</small></div>${displayed.slice(0,3).map((p,i)=>`<button class="map-project map-project-${i+1}" data-action="open-project" data-project="${p.id}"><span class="map-corners"></span><img src="${projectShape(p)}" alt=""><b>0${i+1}</b><strong>${escapeHTML(p.name)}</strong><small>${escapeHTML(p.status)}</small></button>`).join('')}<div class="map-note">Repositories → Context → Sessions → Artifacts</div></div>
-      <div class="metrics reveal"><div><span>Projects</span><strong>03</strong></div><div><span>Context sources</span><strong>09</strong></div><div><span>Agent runs / week</span><strong>24</strong></div><div><span>System status</span><strong>Operational</strong></div></div>
-      <div class="project-controls reveal"><label class="search-field">${icon('search')}<input type="search" data-input="search" value="${escapeHTML(state.search)}" placeholder="Find a project, repository, or source…"><kbd>/</kbd></label><div class="segmented" role="group" aria-label="Sort projects">${[['activity','Active'],['name','Name'],['status','Status']].map(([v,l])=>`<button class="${state.sort===v?'selected':''}" data-action="set-sort" data-sort="${v}">${l}</button>`).join('')}</div></div>
-      <div class="project-grid">${displayed.map((p,i)=>projectCard(p,i)).join('')||`<div class="empty glass"><h2>No projects found</h2><p>Try a different name or source.</p></div>`}<button class="add-project-card reveal" data-action="open-new-project">${icon('plus')}<span><strong>Start something new</strong><small>Create a project in seconds</small></span></button></div>
+  function modeSelector() {
+    return `<div class="mode-selector" role="group" aria-label="Response mode">
+      ${["Chat", "Research", "Code"].map(mode => `<button class="${state.mode === mode ? "active" : ""}" data-action="mode" data-mode="${mode}">${mode}</button>`).join("")}
+    </div>`;
+  }
+
+  function composer({ compact = false, id = "main-prompt" } = {}) {
+    return `<section class="composer ${compact ? "compact" : ""}">
+      <textarea id="${id}" placeholder="Message ARCEL…" aria-label="Message ARCEL" ${state.busy ? "disabled" : ""}></textarea>
+      <div class="composer-bar">
+        <div><button class="icon-button" data-action="attach" aria-label="Attach files">${icon("paperclip")}</button>${modeSelector()}</div>
+        <button class="send" data-action="send" data-input="${id}" aria-label="Send message" ${state.busy ? "disabled" : ""}>${state.busy ? '<span class="stop-square"></span>' : icon("arrow")}</button>
+      </div>
     </section>`;
   }
 
-  function projectCard(p,i){ return `<article class="project-card reveal" style="--i:${i}">
-    <span class="project-number">0${i+1}</span><img class="project-symbol" src="${projectShape(p)}" alt=""><div class="project-copy"><div class="status-line"><span class="status-dot"></span>${escapeHTML(p.status)} · ${escapeHTML(p.updated)}</div><h2><button data-action="open-project" data-project="${p.id}">${escapeHTML(p.name)}</button></h2><p>${escapeHTML(p.summary)}</p></div><div class="repo-pill"><span>${escapeHTML(p.repository)}</span><small>${escapeHTML(p.branch)}</small></div><div class="card-bottom"><span><strong>${p.sessions.length}</strong><small>Sessions</small></span><span><strong>${p.sources.length}</strong><small>Sources</small></span><button class="resume" data-action="open-project" data-project="${p.id}">${icon('arrow')}</button></div><button class="icon-btn card-menu" aria-label="Project menu" data-action="project-menu" data-project="${p.id}">${icon('more')}</button>
-  </article>`; }
-
-  function projectDetail(){ const p=project(); const tabs=['sessions','activity','artifacts']; return `<section class="page-main detail-view">
-    <button class="back-link" data-action="go-projects">${icon('back')} All projects</button>
-    <div class="project-hero reveal"><div class="project-identity"><span class="status-line"><i class="status-dot"></i>${escapeHTML(p.status)} · ${escapeHTML(p.updated)}</span><h1>${escapeHTML(p.name)}</h1><p>${escapeHTML(p.summary)}</p><div class="hero-tags"><span>${escapeHTML(p.repository)}</span><span>${escapeHTML(p.branch)}</span></div></div><img class="detail-symbol" src="${projectShape(p)}" alt=""><div class="hero-score"><strong>${p.activity}</strong><small>Project intelligence</small></div><button class="icon-btn" data-action="project-menu">${icon('more')}</button></div>
-    <div class="workspace-tabs" role="tablist">${tabs.map(t=>`<button role="tab" aria-selected="${state.activeTab===t}" data-action="switch-tab" data-tab="${t}">${t[0].toUpperCase()+t.slice(1)}${t==='sessions'?` <i>${p.sessions.length}</i>`:''}</button>`).join('')}</div>
-    ${workspacePanel(p)}${composer(p)}
-  </section>`; }
-
-  function workspacePanel(p){
-    if(state.activeTab==='sessions') return `<section class="panel reveal"><div class="panel-heading"><div><p class="eyebrow">Live work</p><h2>Sessions</h2></div><button class="soft-button tactile" data-action="new-session">${icon('plus')} Start session</button></div><div class="session-list">${state.busy?runProgress():''}${state.lastResult?resultCard():''}${p.sessions.map((s,i)=>`<article class="session-row glass" style="--i:${i}"><span class="session-icon">${icon(s.status==='Building'?'spark':'check')}</span><div><h3>${escapeHTML(s.title)}</h3><p>${escapeHTML(s.detail)}</p></div><span class="session-meta"><i class="status-dot"></i>${escapeHTML(s.status)}<small>${escapeHTML(s.time)}</small></span><button class="icon-btn" data-action="open-artifact">${icon('arrow')}</button></article>`).join('')}</div></section>`;
-    if(state.activeTab==='activity') return `<section class="panel reveal"><div class="panel-heading"><div><p class="eyebrow">Traceable by design</p><h2>Activity</h2></div></div><div class="timeline">${p.activityFeed.map((x,i)=>`<article class="timeline-row"><span>${icon(i?'file':'spark')}</span><div><small>${escapeHTML(x.type)} · ${escapeHTML(x.time)}</small><h3>${escapeHTML(x.title)}</h3><p>${escapeHTML(x.detail)}</p></div></article>`).join('')}</div></section>`;
-    return `<section class="panel reveal"><div class="panel-heading"><div><p class="eyebrow">Reusable outcomes</p><h2>Artifacts</h2></div><button class="soft-button tactile" data-action="attachment-menu">${icon('plus')} Add source</button></div><div class="artifact-grid">${p.artifacts.map(a=>`<button class="artifact glass" data-action="open-artifact"><span>${icon('file')}</span><strong>${escapeHTML(a.name)}</strong><small>${escapeHTML(a.kind)} · ${escapeHTML(a.updated)}</small></button>`).join('')}</div></section>`;
+  function homeView() {
+    return `<main class="home-view">
+      <div class="welcome">
+        <img src="./assets/arcel-wordmark.svg" alt="ARCEL" class="welcome-logo">
+        <h1>What are we working on?</h1>
+        <p>Build, research, review, or compare—start with a prompt.</p>
+        ${composer()}
+        <div class="suggestions">
+          <button data-action="suggest" data-prompt="Build a clean onboarding flow for this product">Build a feature</button>
+          <button data-action="suggest" data-prompt="Research the strongest options and cite the evidence">Research a decision</button>
+          <button data-action="suggest" data-prompt="Review this code and identify the highest-risk issues">Review code</button>
+          <button data-action="arena">Compare models</button>
+        </div>
+      </div>
+    </main>`;
   }
 
-  function runProgress(){ const stages=['Understanding the brief','Inspecting project context','Shaping the solution','Preparing the output']; return `<article class="run-card glass" aria-live="polite"><div class="agent-core"><span></span><span></span><b>${icon('spark')}</b></div><div class="run-copy"><small>ARCEL agent · ${escapeHTML(state.depth)} reasoning</small><h3>${escapeHTML(stages[state.runStage])}</h3><div class="run-track"><i style="width:${(state.runStage+1)*25}%"></i></div><p>${escapeHTML(state.lastTask)}</p></div><button class="soft-button" data-action="stop-run">Stop</button></article>`; }
-
-  function resultCard(){ const r=state.lastResult; return `<article class="result-card glass"><span class="result-icon">${icon('check')}</span><div><small>${escapeHTML(r.mode)} complete · just now</small><h3>${escapeHTML(r.title)}</h3><p>${escapeHTML(r.summary)}</p><div class="source-row">${r.sources.map(s=>`<span>${escapeHTML(s)}</span>`).join('')}</div></div><button class="icon-btn" data-action="open-artifact">${icon('arrow')}</button></article>`; }
-
-  function composer(p){ const modes=['Ask','Research','Build','Create']; return `<section class="composer-wrap"><div class="composer glass ${state.busy?'is-busy':''}"><div class="composer-head"><span class="agent-mark">${icon('spark')}</span><label for="composer-input">Work in <strong>${escapeHTML(p.name)}</strong></label><span><i class="live-orb"></i>${p.sources.length} sources connected</span></div><textarea id="composer-input" placeholder="Describe what you want ARCEL to build…" ${state.busy?'disabled':''}>${state.busy?escapeHTML(state.lastTask):''}</textarea><div class="composer-actions"><div class="mode-switch">${modes.map(m=>`<button class="${state.composerMode===m?'active':''}" data-action="set-mode" data-mode="${m}">${m}</button>`).join('')}</div><div class="compose-tools"><button class="tool-button" data-action="attachment-menu" aria-label="Attach context">${icon('paperclip')}</button><select data-input="depth" aria-label="Reasoning depth"><option ${state.depth==='Fast'?'selected':''}>Fast</option><option ${state.depth==='Deep'?'selected':''}>Deep</option><option ${state.depth==='Expert'?'selected':''}>Expert</option></select><button class="send-button tactile" data-action="send" ${state.busy?'disabled':''}><span>${state.busy?'Working':'Run agent'}</span>${icon('arrow')}</button></div></div>${state.attachmentMenu?attachmentMenu():''}</div><p class="composer-hint"><kbd>⌘ ↵</kbd> to run · project instructions and selected sources are applied automatically</p></section>`; }
-
-  function attachmentMenu(){ return `<div class="attachment-popover glass"><small>ADD CONTEXT</small>${[['file','Upload files'],['branch','Reference repository'],['link','Import GitHub issue'],['layers','Add screenshot']].map(([i,l])=>`<button data-action="attach" data-kind="${l}">${icon(i)}<span>${l}</span>${icon('arrow')}</button>`).join('')}</div>`; }
-
-  function contextRail(){ const p=project(); if(state.view==='projects') return `<aside class="context-rail ${state.railOpen?'open':''}"><div class="guide-card"><span class="guide-orbit"><img src="./assets/arcel-intelligence-hexagon.svg" alt=""></span><p class="eyebrow">Project intelligence</p><h2>Context that compounds.</h2><p>Each project remembers its code, decisions, sources, and instructions—so every session starts informed.</p><ol><li><b>01</b><span><strong>Connect</strong><small>repos & sources</small></span></li><li><b>02</b><span><strong>Direct</strong><small>with instructions</small></span></li><li><b>03</b><span><strong>Build</strong><small>without starting over</small></span></li></ol><button class="soft-button" data-action="open-new-project">Create a project ${icon('arrow')}</button></div></aside>`;
-    return `<aside class="context-rail ${state.railOpen?'open':''}"><div class="rail-heading"><span><i class="live-orb"></i>Project context</span><button class="icon-btn" data-action="open-context">${icon('settings')}</button></div><section class="context-module glass"><small>REPOSITORY</small><strong>${escapeHTML(p.repository)}</strong><span>${icon('branch')}${escapeHTML(p.branch)}</span></section><section class="context-module glass"><div><small>INSTRUCTIONS</small><button data-action="open-context">Edit</button></div><p>${escapeHTML(p.instructions)}</p></section><section class="context-module glass"><div><small>ACTIVE SOURCES</small><button data-action="attachment-menu">${icon('plus')}</button></div><div class="source-stack">${p.sources.map((s,i)=>`<span><i>${i+1}</i>${escapeHTML(s)}${icon('check')}</span>`).join('')}</div></section><section class="context-module agent-module"><div class="agent-mini">${icon('spark')}</div><span><small>ARCEL AGENT</small><strong>${state.depth} · ${state.composerMode}</strong></span><i class="live-orb"></i></section></aside>`;
+  function chatView() {
+    return `<main class="chat-view">
+      <div class="thread">
+        ${state.messages.map((message, index) => message.role === "user" ? userMessage(message) : assistantMessage(message, index)).join("")}
+        ${state.busy ? thinkingMessage() : ""}
+      </div>
+      <div class="chat-composer">${composer({ compact: true, id: "chat-prompt" })}<p>ARCEL can make mistakes. Review important work.</p></div>
+    </main>`;
   }
 
-  function modal(){ if(!state.modal)return''; const close=`<button class="icon-btn close" data-action="close-modal">${icon('close')}</button>`; if(state.modal==='new-project') return `<div class="modal-backdrop"><section class="modal glass" role="dialog" aria-modal="true"><div class="modal-orb">${icon('plus')}</div>${close}<p class="eyebrow">New project</p><h2>Give your work a home.</h2><p class="modal-intro">Create durable context now. Connect more sources whenever you need them.</p><form data-form="new-project"><label>Project name<input required name="name" placeholder="e.g. ARCEL Intelligence"></label><label>What are you building?<textarea required name="summary" placeholder="A concise outcome, audience, and definition of done…"></textarea></label><label>Workspace<select name="repository"><option value="Project-only">Project-only</option><option value="arcel/new-project">arcel/new-project</option><option value="Connect later">Connect later</option></select></label><button class="send-button" type="submit"><span>Create project</span>${icon('arrow')}</button></form></section></div>`;
-    if(state.modal==='context'){const p=project();return `<div class="modal-backdrop"><section class="modal glass" role="dialog" aria-modal="true">${close}<p class="eyebrow">Project context</p><h2>${escapeHTML(p.name)}</h2><form data-form="context"><label>Repository<input name="repository" value="${escapeHTML(p.repository)}"></label><label>Branch<input name="branch" value="${escapeHTML(p.branch)}"></label><label>Instructions<textarea name="instructions">${escapeHTML(p.instructions)}</textarea></label><fieldset><legend>Active sources</legend>${p.sources.map(s=>`<label class="check-row"><input type="checkbox" checked name="source" value="${escapeHTML(s)}"><span>${escapeHTML(s)}</span></label>`).join('')}</fieldset><button class="send-button" type="submit"><span>Save context</span>${icon('check')}</button></form></section></div>`}
-    if(state.modal==='search') return `<div class="modal-backdrop command-backdrop"><section class="command-modal glass"><div>${icon('search')}<input autofocus data-command-search placeholder="Search projects and actions…"><kbd>esc</kbd></div><p>QUICK ACTIONS</p>${state.projects.map(p=>`<button data-action="open-project" data-project="${p.id}"><span class="mini-orb tone-${p.tone}">${p.monogram}</span><span><strong>${escapeHTML(p.name)}</strong><small>${escapeHTML(p.repository)}</small></span><kbd>↵</kbd></button>`).join('')}<button data-action="open-new-project">${icon('plus')}<span><strong>Create new project</strong><small>Start with durable context</small></span></button></section></div>`;
-    if(state.modal==='mobile-nav') return `<div class="modal-backdrop mobile-drawer">${navigation()}<button class="drawer-close" data-action="close-modal">${icon('close')}</button></div>`;
-    return `<div class="modal-backdrop"><section class="modal glass" role="dialog">${close}<p class="eyebrow">Project actions</p><h2>${escapeHTML(project().name)}</h2><div class="action-list"><button data-action="open-context">${icon('settings')} Edit details & context</button><button data-action="duplicate-project">${icon('layers')} Duplicate project</button><button data-action="archive-project">${icon('file')} Archive project</button></div></section></div>`;
+  function userMessage(message) {
+    return `<article class="message user-message"><div>${escapeHTML(message.content)}</div></article>`;
   }
 
-  function render(){ app.innerHTML=`<div class="app-shell">${navigation()}<section class="workspace">${topbar()}<div class="workspace-grid">${state.view==='projects'?projectsIndex():projectDetail()}${contextRail()}</div></section></div>${modal()}${state.toast?`<div class="toast">${icon('check')}<span>${escapeHTML(state.toast)}</span></div>`:''}`; requestAnimationFrame(()=>document.body.classList.add('ready')); }
-  function openProject(id){state.activeProjectId=id||state.activeProjectId;state.view='detail';state.activeTab='sessions';state.modal=null;state.railOpen=false;window.scrollTo({top:0,behavior:'smooth'});}
-  function notify(message){state.toast=message;render();clearTimeout(notify.timer);notify.timer=setTimeout(()=>{state.toast=null;render();},2200);}
-  function addNewProject(form){const data=new FormData(form),id=`project-${Date.now()}`;state.projects.unshift({id,name:data.get('name'),monogram:String(data.get('name')).split(/\s+/).map(x=>x[0]).join('').slice(0,2).toUpperCase(),summary:data.get('summary'),repository:data.get('repository'),branch:'main',status:'Planning',updated:'Just now',activity:12,tone:'blue',instructions:'Add instructions to shape every ARCEL agent session.',sources:['Project brief'],sessions:[],activityFeed:[{type:'Project',title:'Project created',detail:'Ready for context and a focused session.',time:'Just now'}],artifacts:[]});openProject(id);}
-  let runTimers=[];
-  function stopRun(){runTimers.forEach(clearTimeout);runTimers=[];state.busy=false;state.runStage=0;notify('Agent run stopped');}
-  function sendTask(){const input=document.querySelector('#composer-input'),task=input?.value.trim();if(!task){input?.focus();input?.classList.add('shake');setTimeout(()=>input?.classList.remove('shake'),450);return}state.busy=true;state.lastTask=task;state.runStage=0;state.lastResult=null;render();[650,1350,2200].forEach((ms,i)=>runTimers.push(setTimeout(()=>{state.runStage=i+1;render()},ms)));runTimers.push(setTimeout(()=>{const p=project();const title=state.composerMode==='Build'?'Build direction and affected surfaces prepared':state.composerMode==='Research'?'Evidence-backed research brief prepared':state.composerMode==='Create'?'First project artifact created':'Context-aware answer prepared';state.lastResult={mode:state.composerMode,title,summary:`A ${state.depth.toLowerCase()} pass on “${task}” is ready, grounded in this project’s current sources and repository state.`,sources:p.sources.slice(0,3)};p.sessions.unshift({title:task,time:'Just now',status:'Ready',detail:title});p.activityFeed.unshift({type:state.composerMode,title,detail:'New session output ready with attributed context.',time:'Just now'});p.updated='Just now';p.activity=Math.min(100,p.activity+4);state.busy=false;state.runStage=0;render();},3050));}
+  function assistantMessage(message) {
+    const sources = message.sources ? `<div class="source-list">${message.sources.map((source, index) => `<button><b>${index + 1}</b><span>${escapeHTML(source)}</span></button>`).join("")}</div>` : "";
+    return `<article class="message assistant-message">
+      <div class="assistant-mark"><img src="./assets/arcel-intelligence-hexagon.svg" alt=""></div>
+      <div class="message-body"><p>${message.content}</p>${sources}<div class="message-actions"><button aria-label="Copy">${icon("copy")}</button><button aria-label="Try again">${icon("refresh")}</button></div></div>
+    </article>`;
+  }
 
-  app.addEventListener('click',event=>{const target=event.target.closest('[data-action]');if(!target)return;const {action,project:pid,tab,mode,kind,sort}=target.dataset;
-    if(action==='go-projects'){state.view='projects';state.modal=null} if(action==='open-project')openProject(pid); if(action==='open-new-project')state.modal='new-project'; if(action==='open-context'){if(pid)state.activeProjectId=pid;state.modal='context'} if(action==='close-modal')state.modal=null; if(action==='open-mobile-nav')state.modal='mobile-nav'; if(action==='global-search')state.modal='search'; if(action==='toggle-rail')state.railOpen=!state.railOpen; if(action==='switch-tab')state.activeTab=tab; if(action==='set-mode')state.composerMode=mode; if(action==='set-sort')state.sort=sort; if(action==='attachment-menu')state.attachmentMenu=!state.attachmentMenu; if(action==='attach'){state.attachmentMenu=false;notify(`${kind} connected to this task`);return} if(action==='send')sendTask(); if(action==='stop-run'){stopRun();return} if(action==='project-menu'){if(pid)state.activeProjectId=pid;state.modal='project-menu'} if(action==='archive-project'){project().status='Archived';state.modal=null;notify('Project archived');return} if(action==='duplicate-project'){const p=project(),copy={...p,id:`project-${Date.now()}`,name:`${p.name} copy`,status:'Planning',updated:'Just now',sessions:[],activityFeed:[],artifacts:[...p.artifacts]};state.projects.unshift(copy);openProject(copy.id);notify('Project duplicated');return} if(['new-session','sessions','artifacts','automations','integrations','show-notifications','account','open-artifact'].includes(action)){if(state.view==='projects')openProject(state.activeProjectId);notify('Interaction ready for backend wiring');return} render();
+  function thinkingMessage() {
+    return `<article class="message assistant-message thinking"><div class="assistant-mark"><img src="./assets/arcel-intelligence-hexagon.svg" alt=""></div><div><span></span><span></span><span></span></div></article>`;
+  }
+
+  function projectsView() {
+    return `<main class="library-view">
+      <div class="library-head"><div><h1>Projects</h1><p>Keep related chats and files together.</p></div><button class="primary-button" data-action="new-project">${icon("plus")} New project</button></div>
+      <label class="library-search">${icon("search")}<input data-project-search placeholder="Search projects"></label>
+      <div class="project-list">
+        ${projects.map(project => `<button class="project-card" data-action="open-project" data-project="${project.id}"><span class="folder-mark">${icon("folder")}</span><span><strong>${escapeHTML(project.name)}</strong><small>${escapeHTML(project.detail)}</small></span><span class="project-meta"><b>${project.chats} chats</b><small>${project.updated}</small></span>${icon("arrow")}</button>`).join("")}
+      </div>
+    </main>`;
+  }
+
+  function projectView() {
+    const project = projects.find(item => item.id === state.activeProject);
+    return `<main class="project-view">
+      <div class="project-heading"><button data-action="projects">Projects</button><span>/</span><strong>${escapeHTML(project.name)}</strong></div>
+      <section class="project-welcome"><span class="folder-mark large">${icon("folder")}</span><h1>${escapeHTML(project.name)}</h1><p>${escapeHTML(project.detail)}</p></section>
+      <div class="project-recents"><p>Recent chats</p>${recentChats.slice(0, 3).map(title => `<button data-action="open-chat" data-title="${escapeHTML(title)}"><span>${icon("chat")}${escapeHTML(title)}</span><small>Updated recently</small></button>`).join("")}</div>
+      <div class="project-composer">${composer({ id: "project-prompt" })}</div>
+    </main>`;
+  }
+
+  function arenaView() {
+    const selected = models.filter(model => state.selectedModels.has(model.id));
+    return `<main class="arena-view">
+      <div class="arena-heading"><div><span>Compare</span><h1>One prompt. Multiple perspectives.</h1><p>Run the same task across selected models, judge the strongest answer, or combine them.</p></div><button class="models-button" data-action="models">Models <b>${selected.length}</b>${icon("chevron")}</button></div>
+      <section class="arena-prompt">
+        <label for="arena-input">Your prompt</label>
+        <textarea id="arena-input" placeholder="Ask every selected model the same question…"></textarea>
+        <div><button data-action="judge" ${state.arenaResults.length ? "" : "disabled"}>${icon("vote")} Judge best</button><button data-action="combine" ${state.arenaResults.length ? "" : "disabled"}>${icon("compare")} Combine all</button><button class="primary-button" data-action="run-arena" ${state.arenaBusy ? "disabled" : ""}>${state.arenaBusy ? "Comparing…" : "Compare models"}${icon("arrow")}</button></div>
+      </section>
+      ${state.menu === "models" ? modelMenu() : ""}
+      <section class="arena-grid">
+        ${state.arenaResults.length ? state.arenaResults.map((result, index) => arenaCard(result, index)).join("") : emptyArena(selected)}
+      </section>
+    </main>`;
+  }
+
+  function emptyArena(selected) {
+    return selected.map((model, index) => `<div class="arena-empty"><span>${String.fromCharCode(65 + index)}</span><p>${state.arenaReveal ? escapeHTML(model.name) : "Model hidden"}</p><small>Response will appear here</small></div>`).join("");
+  }
+
+  function arenaCard(result, index) {
+    return `<article class="arena-card ${result.winner ? "winner" : ""}"><header><span>Response ${String.fromCharCode(65 + index)}</span><strong>${state.arenaReveal ? escapeHTML(result.model) : "Model hidden"}</strong>${result.winner ? "<b>Best answer</b>" : ""}</header><div><p>${escapeHTML(result.content)}</p></div><footer><span>${result.time}s</span><button data-action="vote-result" data-index="${index}">${icon("vote")} Choose</button></footer></article>`;
+  }
+
+  function modelMenu() {
+    return `<div class="model-menu"><div><strong>Select models</strong><button data-action="close-menu">${icon("close")}</button></div>${models.map(model => `<button class="${state.selectedModels.has(model.id) ? "selected" : ""}" data-action="toggle-model" data-model="${model.id}"><span>${state.selectedModels.has(model.id) ? icon("check") : ""}</span><div><strong>${escapeHTML(model.name)}</strong><small>${escapeHTML(model.maker)}</small></div></button>`).join("")}</div>`;
+  }
+
+  function overlays() {
+    if (state.menu !== "search" && state.menu !== "mobile") return "";
+    if (state.menu === "mobile") return `<div class="mobile-overlay">${sidebar()}<button data-action="close-menu">${icon("close")}</button></div>`;
+    return `<div class="search-overlay" data-action="close-menu"><section onclick="event.stopPropagation()"><label>${icon("search")}<input autofocus placeholder="Search chats and projects…"><kbd>Esc</kbd></label><p>Recent</p>${recentChats.map(title => `<button data-action="open-chat" data-title="${escapeHTML(title)}">${icon("chat")}<span>${escapeHTML(title)}</span></button>`).join("")}</section></div>`;
+  }
+
+  function modelSwitcher() {
+    if (state.menu !== "model-switcher") return "";
+    return `<div class="model-switcher">
+      <p>Choose model</p>
+      ${["ARCEL 1", "ARCEL 1 Fast", "ARCEL 1 Deep"].map(model => `<button class="${state.currentModel === model ? "active" : ""}" data-action="select-primary-model" data-model="${model}"><span><strong>${model}</strong><small>${model.endsWith("Fast") ? "Quick answers" : model.endsWith("Deep") ? "Complex work" : "Balanced"}</small></span>${state.currentModel === model ? icon("check") : ""}</button>`).join("")}
+    </div>`;
+  }
+
+  function render() {
+    let content = homeView();
+    if (state.view === "chat") content = chatView();
+    if (state.view === "projects") content = projectsView();
+    if (state.view === "project") content = projectView();
+    if (state.view === "arena") content = arenaView();
+    app.innerHTML = `<div class="app-shell">${sidebar()}<section class="workspace">${header()}${content}${modelSwitcher()}</section></div>${overlays()}`;
+  }
+
+  function startChat(prompt) {
+    const value = prompt.trim();
+    if (!value) return;
+    state.view = "chat";
+    state.messages.push({ role: "user", content: value });
+    state.busy = true;
+    render();
+    window.setTimeout(() => {
+      const responses = {
+        Chat: "I’ll help you work through this directly. I’ve separated the goal from the implementation details and identified the clearest next step.",
+        Research: "I reviewed the available evidence and compared the strongest options. The leading direction is the one that best balances speed, reliability, and maintainability.",
+        Code: "I’ve mapped the requested change to the smallest safe implementation. The affected surface is isolated, the interaction states are defined, and the result is ready to verify."
+      };
+      state.messages.push({ role: "assistant", content: responses[state.mode], sources: state.mode === "Research" ? ["Primary documentation", "Product reference", "Project materials"] : null });
+      state.busy = false;
+      render();
+      window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+    }, 950);
+  }
+
+  function runArena() {
+    const input = document.querySelector("#arena-input");
+    const prompt = input?.value.trim();
+    if (!prompt || !state.selectedModels.size) return;
+    state.arenaBusy = true;
+    state.arenaResults = [];
+    state.arenaReveal = false;
+    render();
+    window.setTimeout(() => {
+      const selected = models.filter(model => state.selectedModels.has(model.id));
+      const approaches = [
+        "The strongest approach is to simplify the problem first, establish the core user outcome, and ship the smallest complete path before adding secondary controls.",
+        "I would begin with the interaction contract: define the default state, the decisive action, clear feedback, and the recovery path. That creates an MVP users can trust.",
+        "Treat this as a system-design problem. Separate presentation, state, and external services so the first release stays fast while remaining easy to extend.",
+        "Start from user intent, test the riskiest assumption immediately, and preserve only the components that materially improve completion time."
+      ];
+      state.arenaResults = selected.map((model, index) => ({ model: model.name, content: `${approaches[index % approaches.length]} Prompt considered: “${prompt}”`, time: (1.1 + index * 0.35).toFixed(1), winner: false }));
+      state.arenaBusy = false;
+      render();
+    }, 1100);
+  }
+
+  app.addEventListener("click", event => {
+    const target = event.target.closest("[data-action]");
+    if (!target) return;
+    const { action } = target.dataset;
+    if (action === "new-chat") { state.view = "home"; state.activeProject = null; state.messages = []; }
+    if (action === "projects") state.view = "projects";
+    if (action === "arena") { state.view = "arena"; state.menu = null; }
+    if (action === "open-project") { state.activeProject = target.dataset.project; state.view = "project"; }
+    if (action === "open-chat") { state.messages = [{ role: "user", content: target.dataset.title }, { role: "assistant", content: "This conversation is ready to continue." }]; state.view = "chat"; }
+    if (action === "mode") state.mode = target.dataset.mode;
+    if (action === "suggest") { startChat(target.dataset.prompt); return; }
+    if (action === "send") { const input = document.querySelector(`#${target.dataset.input}`); startChat(input?.value || ""); return; }
+    if (action === "search") state.menu = "search";
+    if (action === "model-menu") state.menu = state.menu === "model-switcher" ? null : "model-switcher";
+    if (action === "select-primary-model") { state.currentModel = target.dataset.model; state.menu = null; }
+    if (action === "mobile-menu") state.menu = "mobile";
+    if (action === "models") state.menu = state.menu === "models" ? null : "models";
+    if (action === "close-menu") state.menu = null;
+    if (action === "toggle-model") state.selectedModels.has(target.dataset.model) ? state.selectedModels.delete(target.dataset.model) : state.selectedModels.add(target.dataset.model);
+    if (action === "run-arena") { runArena(); return; }
+    if (action === "judge" && state.arenaResults.length) { const best = state.arenaResults.reduce((winner, result, index, all) => result.content.length > all[winner].content.length ? index : winner, 0); state.arenaResults.forEach((result, index) => result.winner = index === best); state.arenaReveal = true; }
+    if (action === "combine" && state.arenaResults.length) { const combined = state.arenaResults.map(result => result.content.split(". ")[0]).join(". "); state.messages = [{ role: "user", content: "Combine the strongest model responses" }, { role: "assistant", content: combined }]; state.view = "chat"; state.arenaReveal = true; }
+    if (action === "vote-result") { state.arenaResults.forEach((result, index) => result.winner = index === Number(target.dataset.index)); state.arenaReveal = true; }
+    render();
   });
-  app.addEventListener('input',event=>{if(event.target.dataset.input==='search'){state.search=event.target.value;render();document.querySelector('[data-input="search"]')?.focus()}});
-  app.addEventListener('change',event=>{if(event.target.dataset.input==='depth')state.depth=event.target.value});
-  app.addEventListener('submit',event=>{event.preventDefault();if(event.target.dataset.form==='new-project')addNewProject(event.target);if(event.target.dataset.form==='context'){const data=new FormData(event.target),p=project();p.repository=data.get('repository');p.branch=data.get('branch');p.instructions=data.get('instructions');p.sources=data.getAll('source');state.modal=null;notify('Project context saved');return}render()});
-  window.addEventListener('keydown',event=>{if(event.key==='Escape'&&state.modal){state.modal=null;render()}if((event.metaKey||event.ctrlKey)&&event.key.toLowerCase()==='k'){event.preventDefault();state.modal='search';render()}if((event.metaKey||event.ctrlKey)&&event.key==='Enter'&&state.view==='detail')sendTask();if(event.key==='/'&&!['INPUT','TEXTAREA'].includes(document.activeElement.tagName)){event.preventDefault();state.modal='search';render()}});
-  document.addEventListener('pointermove',event=>{document.documentElement.style.setProperty('--px',`${event.clientX}px`);document.documentElement.style.setProperty('--py',`${event.clientY}px`);const card=event.target.closest('.project-card');document.querySelectorAll('.project-card.tilting').forEach(x=>x!==card&&x.classList.remove('tilting'));if(card&&matchMedia('(pointer:fine)').matches&&!matchMedia('(prefers-reduced-motion: reduce)').matches){const r=card.getBoundingClientRect(),x=(event.clientX-r.left)/r.width-.5,y=(event.clientY-r.top)/r.height-.5;card.style.setProperty('--rx',`${-y*3}deg`);card.style.setProperty('--ry',`${x*4}deg`);card.style.setProperty('--mx',`${(x+.5)*100}%`);card.style.setProperty('--my',`${(y+.5)*100}%`);card.classList.add('tilting')}});
-  document.addEventListener('pointerout',event=>{const card=event.target.closest('.project-card');if(card&&!card.contains(event.relatedTarget)){card.classList.remove('tilting');card.style.removeProperty('--rx');card.style.removeProperty('--ry')}});
+
+  window.addEventListener("keydown", event => {
+    if (event.key === "Escape" && state.menu) { state.menu = null; render(); }
+    if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") { event.preventDefault(); state.view = "home"; state.messages = []; render(); }
+    if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
+      const input = document.activeElement;
+      if (input?.tagName === "TEXTAREA") input.id === "arena-input" ? runArena() : startChat(input.value);
+    }
+  });
+
   render();
 })();

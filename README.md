@@ -1,6 +1,6 @@
 # ARCEL Codeworks
 
-ARCEL Codeworks is a dependency-free front-end MVP for a project-based agent workspace. Its visual system is translated directly from the supplied ARCEL Figma brand system: black operating rail, white editorial canvas, strict rules, cobalt emphasis, and technical intelligence geometry.
+ARCEL Codeworks is a clean, composer-first AI workspace combining chat, research, coding, projects, and multi-model comparison.
 
 ## Run locally
 
@@ -11,15 +11,14 @@ python3 -m http.server 4173
 
 Open [http://localhost:4173](http://localhost:4173).
 
-## Implemented
+## MVP capabilities
 
-- Project intelligence map using exported ARCEL Figma geometry
-- Durable Projects with repository, branch, sources, sessions, activity, and artifacts
-- Context-aware composer with Ask, Research, Build, and Create modes
-- Staged agent progress and result states
-- Project creation, editing, duplication, archival, filtering, and sorting
-- Command search with `/` or `⌘K`
-- Responsive navigation and project context drawer
-- Reduced-motion support
+- ChatGPT/Claude-style conversation shell and history
+- Claude-style Projects as a supporting workspace feature
+- Perplexity-style Research mode with visible sources
+- Chat, Research, and Code response modes
+- Prompt Arena comparison with model selection, blind responses, voting, Judge Best, and Combine All
+- Responsive sidebar, search overlay, keyboard shortcuts, and loading states
+- Official ARCEL wordmark, ARCEL Blue, Plus Jakarta Sans headings, and Inter interface typography
 
-See `DESIGN.md` for the Figma-derived implementation rules and `DESIGN-AUDIT.md` for the earlier Claude, Perplexity, and Grok product-flow analysis.
+The prototype is dependency-free. Model APIs, persistence, authentication, repository operations, and uploads are represented by complete front-end interaction states and can be connected next.
