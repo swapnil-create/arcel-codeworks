@@ -202,9 +202,9 @@ Secondary high-priority gaps (not all named R0 blockers above, but tied to hones
 | Field | Content |
 |---|---|
 | **Requirement summary** | WCAG 2.2 AA target; usable from mobile 360 px width upward. |
-| **Acceptance criteria** | Keyboard / screen-reader / manual audits plus automated checks; layouts verified at 360 px+. |
+| **Acceptance criteria** | Keyboard / screen-reader / manual audits plus automated checks; layouts verified at 360 px+. When [PR #2](https://github.com/swapnil-create/arcel-codeworks/pull/2) lands with `data-state` / `data-screen` hooks on A–G screen roots, those hooks become the ACC-03 audit path (queryable DOM hooks; **no copy scraping**). |
 | **Current prototype status** | **Fail** |
-| **Evidence** | No accessibility audit artifacts, no automated a11y CI, no documented screen-reader pass. Responsive CSS may exist visually but is not acceptance evidence. PRD §5.5 / §20. |
+| **Evidence** | No accessibility audit artifacts, no automated a11y CI, no documented screen-reader pass. Responsive CSS may exist visually but is not acceptance evidence. PRD §5.5 / §20. **Forward path:** [PR #2](https://github.com/swapnil-create/arcel-codeworks/pull/2) (D03 clickable flows) will expose `data-state` / `data-screen` on A–G screen roots — use those as the ACC-03 audit surface once merged (queryable hooks, not scraped copy). Status stays **Fail** until that audit path exists and passes. |
 | **R0 blocker** | No for Wave-1 R0 blocker set; required before V1 claim. |
 
 ---
