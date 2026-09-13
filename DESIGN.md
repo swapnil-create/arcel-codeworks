@@ -1,37 +1,26 @@
-# ARCEL Codeworks — design direction
+# ARCEL Codeworks — brand implementation
 
-## Product thesis
+## Source of truth
 
-ARCEL Codeworks is a spatial project workspace, not a generic chat client. A Project is the durable home for repository state, instructions, approved sources, sessions, activity, and artifacts. The composer is the action surface; the project is the memory.
+The implementation follows the ARCEL System frame at Figma node `293:2790`. The prior glass-dashboard direction was removed after comparison with the supplied brand system.
 
-## Open-source reference audit
+## Extracted rules
 
-This implementation was informed by direct inspection of the following public repositories on 13 September 2026:
+- Canvas: white working field with a fixed black operating-system rail.
+- Hierarchy: large, tightly tracked Plus Jakarta Sans statements; Inter for product copy and UI metadata.
+- Palette: ARCEL Blue `#191BDF`, black, Dark Gray `#4E4E4E`, Neutral Gray `#6E6E73`, line gray `#CECECF`, pale blue `#F4F5FF`, and white.
+- Structure: editorial grids, wide negative space, exact alignment, thin rules, squared containers, compact labels, and numbered sections.
+- Brand asset: technical diagrams and geometric identities are primary visual language—not gradients, glow, glass, floating cards, or ornamental depth.
+- Motion: restrained and structural. Content reveals, line progress, and hover movement clarify state without changing the visual identity.
 
-- [assistant-ui](https://github.com/assistant-ui/assistant-ui): composer, thread, message, attachment, action-bar, keyboard, and accessibility primitives. Applied here as a persistent, context-aware composer with shortcuts, attachment controls, and visible agent states.
-- [Glass](https://github.com/Glass-HQ/Glass): browser, editor, and terminal unified into one native-feeling environment. Applied here as a coherent workspace shell rather than disconnected tool pages.
-- [ThanasOS](https://github.com/Thanas-R/thanas-os): interactive desktop behaviors, custom widgets, focus states, and a mix of CSS and motion primitives. Applied here as tactile controls, live workspace indicators, a command palette, and layered panels.
-- [liquid-glass](https://github.com/rizzytoday/liquid-glass): optical edge treatment, saturation, and browser fallbacks. Applied here with dependency-free CSS translucency, specular highlights, blur fallbacks, and `prefers-reduced-transparency` support rather than a Chromium-only filter.
-- [bolt.diy](https://github.com/stackblitz-labs/bolt.diy): project restoration, repository operations, diffs, attachments, and agent-driven building. Applied here as repository-aware projects, session history, contextual sources, and staged run feedback.
-- [LobeHub](https://github.com/lobehub/lobehub): projects and agents as durable units of work. Applied here as explicit project context, source visibility, and mode/depth controls.
+## Codeworks translation
 
-## Visual system
-
-- Brand anchor: ARCEL Blue `#191BDF`, Ink `#111827`, Muted `#5A6470`, Pale `#F1F2FF`, White.
-- Typography: Plus Jakarta Sans for display and interface hierarchy; Inter for body and dense UI.
-- Material: translucent white surfaces over a pale spatial field, high-contrast hairlines, inset highlights, optical bloom, and restrained shadows.
-- Skeuomorphism: pressed controls, lens-like project orbs, inset wells, progress dials, and physical layering. No imitation of proprietary Apple icons or product chrome.
-- Motion: spring-like entry, hover lift, pointer-responsive specular light, subtle project-card tilt, pulsing live status, and explicit four-stage agent progress.
-
-## Interaction model
-
-- `/` or `⌘K` opens the command palette.
-- Project cards respond to pointer position and expose status, repository state, session count, context count, and project pulse.
-- Project tabs preserve a single workspace hierarchy: Sessions, Activity, Artifacts.
-- Agent runs advance through understanding, context inspection, solution shaping, and output preparation before creating a result.
-- New Project, project context editing, project duplication/archive, filters, attachments, and responsive context rail are functional in the prototype.
-- `prefers-reduced-motion` and `prefers-reduced-transparency` are respected.
+- Projects remain the durable unit of work, following the earlier product analysis.
+- The projects home is organized as an ARCEL intelligence map: the master hexagon connects to project-domain nodes and the repository → context → sessions → artifacts lifecycle.
+- Project rows use the exact domain assets exported from the supplied Figma file.
+- The project workspace uses the same numbered, ruled, editorial grammar for Sessions, Activity, Artifacts, Context, and the agent composer.
+- `/` and `⌘K` open search; `⌘Enter` runs the project agent.
 
 ## MVP boundary
 
-The prototype is intentionally dependency-free so it can ship immediately. Repository APIs, persistence, authentication, streaming model output, and file upload transport are represented by complete interaction surfaces and are the next backend integration layer.
+This is a dependency-free front-end MVP. Authentication, persistence, repository APIs, streaming model output, and file transport remain the backend integration layer.
