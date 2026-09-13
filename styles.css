@@ -30,8 +30,10 @@ button:focus-visible, textarea:focus-visible, input:focus-visible { outline: 2px
 
 .sidebar { position: fixed; inset: 0 auto 0 0; width: 254px; z-index: 20; display: flex; flex-direction: column; padding: 17px 12px 12px; background: var(--sidebar); border-right: 1px solid #ededee; }
 .brand { height: 38px; padding: 3px 9px; display: flex; align-items: center; gap: 9px; }
-.brand img { display: block; width: 65px; height: 28px; object-fit: contain; }
-.brand span { color: var(--muted); font-size: 12px; border-left: 1px solid #d7d8dc; padding-left: 9px; }
+.brand-logo { display: block; width: 68px; height: auto; }
+.brand-divider { width: 1px; height: 16px; background: #d7d8dc; }
+.brand-codeworks { display: flex; align-items: center; gap: 1px; height: 15px; }
+.brand-codeworks img { display: block; width: 11px; height: 15px; object-fit: fill; }
 .new-chat { margin: 13px 3px 10px; height: 40px; border: 1px solid #d9dade; border-radius: 10px; background: var(--white); display: flex; align-items: center; gap: 10px; padding: 0 11px; text-align: left; transition: border-color .2s, background .2s; }
 .new-chat:hover { border-color: #b8bac2; }
 .new-chat span { flex: 1; font-weight: 550; }

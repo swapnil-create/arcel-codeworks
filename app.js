@@ -61,7 +61,13 @@
 
   function sidebar() {
     return `<aside class="sidebar" aria-label="Navigation">
-      <div class="brand"><img src="./assets/arcel-wordmark.svg" alt="ARCEL"><span>Codeworks</span></div>
+      <div class="brand">
+        <img class="brand-logo" src="./assets/arcel-logo-figma.svg" alt="ARCEL">
+        <span class="brand-divider" aria-hidden="true"></span>
+        <span class="brand-codeworks" role="img" aria-label="Codeworks">
+          ${["c", "o", "d", "e", "w", "o", "r", "k", "s"].map(letter => `<img src="./assets/codeworks-${letter}.svg" alt="" aria-hidden="true">`).join("")}
+        </span>
+      </div>
       <button class="new-chat" data-action="new-chat">${icon("plus")}<span>New chat</span><kbd>⌘ K</kbd></button>
       <nav class="primary-nav">
         <button data-action="search">${icon("search")}<span>Search</span></button>
@@ -108,7 +114,7 @@
   function homeView() {
     return `<main class="home-view">
       <div class="welcome">
-        <img src="./assets/arcel-wordmark.svg" alt="ARCEL" class="welcome-logo">
+        <img src="./assets/arcel-logo-figma.svg" alt="ARCEL" class="welcome-logo">
         <h1>What are we working on?</h1>
         <p>Build, research, review, or compare—start with a prompt.</p>
         ${composer()}
