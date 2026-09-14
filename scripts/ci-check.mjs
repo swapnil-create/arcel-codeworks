@@ -244,6 +244,10 @@ async function main() {
     execFileSync("node", [join(ROOT, "scripts/test-chat-gate.mjs")], { cwd: ROOT, stdio: "pipe" });
   });
 
+  check("api/chat: no-network validation + provider-error contract", () => {
+    execFileSync("node", [join(ROOT, "scripts/test-chat-contract.mjs")], { cwd: ROOT, stdio: "pipe" });
+  });
+
   check("api/auth: session cookie fail-closed", () => {
     execFileSync("node", [join(ROOT, "scripts/test-auth-gate.mjs")], { cwd: ROOT, stdio: "pipe" });
   });
