@@ -102,18 +102,18 @@ function printMatrix() {
   console.log(
     [
       "id".padEnd(12),
-      "requirements".padEnd(28),
+      "requirements".padEnd(36),
       "live behaviour"
     ].join(" ")
   );
-  console.log("-".repeat(78));
+  console.log("-".repeat(96));
   for (const spike of Object.values(SPIKES)) {
     const live =
       spike.live === "openrouter-stream"
         ? "OpenRouter stream if live+key; else no-op / missing-key error"
         : "unsupported_capability stub if live+key; else no-op / missing-key error";
     console.log(
-      [spike.id.padEnd(12), spike.requirementIds.join(", ").padEnd(28), live].join(" ")
+      [spike.id.padEnd(12), spike.requirementIds.join(", ").padEnd(36), live].join(" ")
     );
     console.log(`  what:  ${spike.what}`);
     console.log(`  pass:  ${spike.pass}`);
