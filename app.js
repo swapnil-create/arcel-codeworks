@@ -57,13 +57,29 @@
     close: '<path d="m6 6 12 12M18 6 6 18"/>'
   };
   const icon = name => `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[name]}</svg>`;
+  const ledGlyphs = {
+    " ": ["00000", "00000", "00000", "00000", "00000", "00000", "00000"],
+    C: ["01110", "10000", "10000", "10000", "10000", "10000", "01110"],
+    O: ["01110", "10001", "10001", "10001", "10001", "10001", "01110"],
+    D: ["11110", "10001", "10001", "10001", "10001", "10001", "11110"],
+    E: ["11111", "10000", "10000", "11110", "10000", "10000", "11111"],
+    W: ["10001", "10001", "10001", "10101", "10101", "11011", "10001"],
+    R: ["11110", "10001", "10001", "11110", "10100", "10010", "10001"],
+    K: ["10001", "10010", "10100", "11000", "10100", "10010", "10001"],
+    S: ["01111", "10000", "10000", "01110", "00001", "00001", "11110"]
+  };
+
+  function ledBoard() {
+    const characters = " CODEWORKS";
+    return `<span class="led-board" role="img" aria-label="Codeworks LED board">${[...characters].map(character => `<span class="led-glyph">${ledGlyphs[character].join("").split("").map(value => value === "1" ? '<img src="./assets/arcel-led-dot-green.svg" alt="">' : '<i></i>').join("")}</span>`).join("")}</span>`;
+  }
 
   function sidebar() {
     return `<aside class="sidebar" aria-label="Navigation">
       <div class="brand">
         <img class="brand-logo" src="./assets/arcel-logo-figma.svg" alt="ARCEL">
         <span class="brand-divider" aria-hidden="true"></span>
-        <span class="brand-product">Codeworks</span>
+        ${ledBoard()}
       </div>
       <button class="new-chat" data-action="new-chat">${icon("plus")}<span>New chat</span><kbd>⌘ K</kbd></button>
       <nav class="primary-nav">

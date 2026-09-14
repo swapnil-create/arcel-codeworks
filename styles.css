@@ -32,7 +32,10 @@ button:focus-visible, textarea:focus-visible, input:focus-visible { outline: 2px
 .brand { height: 38px; padding: 3px 9px; display: flex; align-items: center; gap: 9px; }
 .brand-logo { display: block; width: 68px; height: auto; }
 .brand-divider { width: 1px; height: 16px; background: #d7d8dc; }
-.brand-product { color: #343943; font: 650 12px/1 Jakarta, Inter, sans-serif; letter-spacing: -.02em; }
+.led-board { width: 133px; height: 20px; padding: 2px; display: grid; grid-template-columns: repeat(10, 1fr); gap: 2px; background: #191bdf; overflow: hidden; }
+.led-glyph { min-width: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); grid-template-rows: repeat(7, minmax(0, 1fr)); gap: .65px; }
+.led-glyph i { display: block; min-width: 0; min-height: 0; background: #0e10c7; }
+.led-glyph img { display: block; width: 100%; height: 100%; min-width: 0; min-height: 0; object-fit: fill; }
 .new-chat { margin: 13px 3px 10px; height: 40px; border: 1px solid #d9dade; border-radius: 10px; background: var(--white); display: flex; align-items: center; gap: 10px; padding: 0 11px; text-align: left; transition: border-color .2s, background .2s; }
 .new-chat:hover { border-color: #b8bac2; }
 .new-chat span { flex: 1; font-weight: 550; }
