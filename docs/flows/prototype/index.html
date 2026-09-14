@@ -1,0 +1,896 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="dark" />
+  <title>ARCEL Codeworks — D03 clickable flows</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@560;650;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0b0c10;
+      --sidebar: #0e0f14;
+      --surface: #15161d;
+      --elev: #1b1c25;
+      --line: #2a2c36;
+      --ink: #eceef3;
+      --muted: #8d93a3;
+      --blue: #6d6fff;
+      --blue-deep: #191bdf;
+      --pale: #1c1d4a;
+      --warn: #f0c36a;
+      --warn-bg: #2a2110;
+      --danger: #f0a0a0;
+      --danger-bg: #2a1518;
+      --ok: #8ee0b0;
+      --ok-bg: #12301f;
+      --radius: 14px;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: var(--bg); color: var(--ink); font: 14px/1.5 Inter, system-ui, sans-serif; }
+    button, textarea, input { color: inherit; font: inherit; }
+    button { border: 0; background: none; cursor: pointer; }
+    button:focus-visible, textarea:focus-visible, input:focus-visible { outline: 2px solid rgba(109, 111, 255, .7); outline-offset: 2px; }
+    [hidden] { display: none !important; }
+    code { font-size: 11px; color: #b8bce8; }
+
+    .proto {
+      position: sticky; top: 0; z-index: 40;
+      display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center;
+      padding: 10px 16px; background: #07080c; border-bottom: 1px solid #1c1d24;
+    }
+    .proto b { font: 650 12px "Plus Jakarta Sans", sans-serif; letter-spacing: .04em; }
+    .proto span { color: var(--muted); font-size: 11px; margin-left: 10px; }
+    .flows { display: flex; flex-wrap: wrap; gap: 4px; }
+    .flows button { height: 28px; padding: 0 9px; border-radius: 7px; color: #b4b8c6; font-size: 11px; font-weight: 600; }
+    .flows button:hover { background: #1c1d27; color: #fff; }
+    .flows button.active { background: var(--blue-deep); color: #fff; }
+    .screen-row {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+      padding: 8px 16px; background: #101117; border-bottom: 1px solid var(--line);
+    }
+    .chips button {
+      height: 26px; padding: 0 8px; border: 1px solid var(--line); border-radius: 7px;
+      font-size: 11px; color: var(--muted);
+    }
+    .chips button.active { border-color: var(--blue); background: var(--pale); color: #dfe0ff; font-weight: 650; }
+    .screen-meta { flex: 1; color: var(--muted); font-size: 12px; }
+    .screen-meta strong { color: var(--ink); }
+    .ghost, .primary, .nav-btns button {
+      height: 30px; padding: 0 11px; border-radius: 8px; font-size: 12px; font-weight: 600;
+    }
+    .ghost, .nav-btns button { border: 1px solid var(--line); background: var(--elev); color: var(--ink); }
+    .ghost:hover, .nav-btns button:hover { border-color: #45475a; }
+    .primary { background: var(--blue); color: #fff; }
+    .primary:hover { background: #5a5cf0; }
+    .nav-btns { display: flex; gap: 6px; }
+
+    .app { min-height: calc(100vh - 88px); display: grid; grid-template-columns: 254px minmax(0, 1fr); }
+    .sidebar {
+      display: flex; flex-direction: column; padding: 16px 12px 12px;
+      background: var(--sidebar); border-right: 1px solid #1c1d24;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; padding: 2px 8px 14px; }
+    .brand-mark {
+      width: 24px; height: 24px; border-radius: 7px; background: var(--pale); color: #c9caff;
+      display: grid; place-items: center; font: 700 12px "Plus Jakarta Sans", sans-serif;
+    }
+    .brand strong { display: block; font: 700 13px "Plus Jakarta Sans", sans-serif; letter-spacing: -.02em; }
+    .brand small { color: var(--muted); font-size: 10px; }
+    .new-chat {
+      margin: 0 0 10px; height: 40px; border: 1px solid #2c2e3a; border-radius: 10px;
+      background: var(--elev); display: flex; align-items: center; gap: 10px; padding: 0 11px;
+      text-align: left; font-weight: 560;
+    }
+    .new-chat:hover { border-color: #45475a; }
+    .new-chat kbd { margin-left: auto; color: #6d7280; font-size: 10px; }
+    .nav { display: grid; gap: 2px; }
+    .nav button, .recent button {
+      width: 100%; height: 38px; border-radius: 9px; display: flex; align-items: center; gap: 10px;
+      padding: 0 10px; color: #b7bcc8; text-align: left;
+    }
+    .nav button:hover, .nav button.active, .recent button:hover { background: #1a1b24; color: #fff; }
+    .nav button.active { font-weight: 650; }
+    .section { margin-top: 18px; }
+    .section > p { margin: 0 0 6px; padding: 0 10px; color: #6f7482; font-size: 11px; }
+    .account {
+      margin-top: auto; padding-top: 12px; border-top: 1px solid #22232c;
+      display: grid; grid-template-columns: 31px 1fr auto; gap: 8px; align-items: center;
+    }
+    .avatar { width: 31px; height: 31px; border-radius: 50%; display: grid; place-items: center; background: #dfe1ea; color: #111; font-size: 10px; font-weight: 700; }
+    .account strong { display: block; font-size: 12px; }
+    .account small { color: #7c8190; font-size: 10px; }
+    .acct-pop {
+      position: absolute; left: 0; bottom: 36px; width: 210px; padding: 6px;
+      border: 1px solid var(--line); border-radius: 12px; background: var(--elev);
+      box-shadow: 0 18px 40px rgba(0,0,0,.45); z-index: 20;
+    }
+    .acct-menu { position: relative; }
+    .acct-pop button { width: 100%; height: 36px; border-radius: 8px; padding: 0 10px; text-align: left; }
+    .acct-pop button:hover { background: #242533; }
+
+    .workspace { min-width: 0; display: grid; grid-template-rows: auto 1fr auto; background: var(--bg); }
+    .workspace.split { grid-template-columns: minmax(0, 1fr) minmax(280px, 40%); }
+    .workspace.split .thread-wrap, .workspace.split .composer-dock { grid-column: 1; }
+    .workspace.split .panel { grid-column: 2; grid-row: 1 / span 3; }
+    .topbar {
+      height: 52px; display: flex; align-items: center; justify-content: space-between;
+      padding: 0 20px; border-bottom: 1px solid #1c1d24;
+    }
+    .intel { height: 34px; padding: 0 10px; border-radius: 8px; font: 650 13px "Plus Jakarta Sans", sans-serif; }
+    .intel:hover { background: #1a1b24; }
+    .stage { min-height: 0; overflow: auto; }
+    #screenRoot { min-height: 100%; display: block; }
+
+    .home { min-height: 100%; display: grid; place-items: center; padding: 36px 24px; }
+    .welcome { width: min(740px, 100%); text-align: center; }
+    .welcome h1 { margin: 0; font: 650 clamp(28px, 4vw, 38px)/1.12 "Plus Jakarta Sans", sans-serif; letter-spacing: -.035em; }
+    .welcome > p { margin: 10px 0 26px; color: var(--muted); }
+    .suggestions { margin-top: 16px; display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; }
+    .suggestions button {
+      height: 32px; padding: 0 12px; border: 1px solid #2d2f3a; border-radius: 99px;
+      color: #c5c8d4; background: var(--surface); font-size: 12px;
+    }
+    .suggestions button:hover { border-color: #4a4d5c; color: #fff; }
+
+    .thread-wrap { padding: 24px 24px 12px; }
+    .thread { width: min(760px, 100%); margin: 0 auto; display: grid; gap: 22px; }
+    .msg-user { display: flex; justify-content: flex-end; }
+    .msg-user > div { max-width: 78%; padding: 11px 15px; border-radius: 18px 18px 4px 18px; background: #232430; }
+    .msg-ai { display: grid; grid-template-columns: 29px 1fr; gap: 12px; }
+    .mark {
+      width: 29px; height: 29px; border-radius: 8px; display: grid; place-items: center;
+      background: var(--pale); color: #cfd0ff; font: 700 11px "Plus Jakarta Sans", sans-serif;
+    }
+    .actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+    .actions button { height: 28px; padding: 0 8px; border-radius: 7px; color: #a7adbb; font-size: 11px; }
+    .actions button:hover { background: #22232d; color: #fff; }
+    .sources { display: flex; gap: 7px; margin-top: 12px; flex-wrap: wrap; }
+    .sources button {
+      max-width: 230px; height: 34px; border: 1px solid var(--line); border-radius: 9px;
+      display: flex; align-items: center; gap: 7px; padding: 0 9px; font-size: 11px; background: var(--elev);
+    }
+    .sources b { width: 17px; height: 17px; border-radius: 5px; display: grid; place-items: center; background: var(--pale); color: #cfd0ff; font-size: 9px; }
+    .thinking { display: flex; gap: 5px; align-items: center; height: 28px; }
+    .thinking i { width: 5px; height: 5px; border-radius: 50%; background: #8b90a0; animation: pulse 1.2s infinite; }
+    .thinking i:nth-child(2) { animation-delay: .15s; }
+
+    .composer-dock { padding: 8px 24px 18px; }
+    .composer {
+      width: min(760px, 100%); margin: 0 auto; border: 1px solid #2c2e3a; border-radius: 20px;
+      padding: 12px; background: var(--surface); box-shadow: 0 12px 40px rgba(0,0,0,.28);
+    }
+    .composer textarea { width: 100%; min-height: 56px; resize: none; border: 0; outline: 0; background: transparent; padding: 4px; font-size: 15px; }
+    .composer textarea::placeholder { color: #6d7280; }
+    .composer-bar { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    .composer-bar > div { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .icon-btn { width: 32px; height: 32px; border-radius: 9px; display: grid; place-items: center; color: #9aa0ae; }
+    .icon-btn:hover, .icon-btn.on { background: #22232d; color: #fff; }
+    .icon-btn.on { color: #cfd0ff; background: var(--pale); }
+    .tool-chip { height: 26px; padding: 0 8px; border-radius: 99px; background: var(--pale); color: #d0d1ff; font-size: 11px; font-weight: 650; }
+    .send { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: var(--blue); color: #fff; }
+    .hint { margin: 6px 0 0; text-align: center; color: #6a6f7d; font-size: 11px; }
+
+    .panel { border-left: 1px solid #1c1d24; background: #101117; display: flex; flex-direction: column; min-height: 100%; }
+    .panel header { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; border-bottom: 1px solid #1c1d24; }
+    .panel header strong { font: 650 13px "Plus Jakarta Sans", sans-serif; }
+    .panel .content { padding: 16px; overflow: auto; }
+    .doc { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; min-height: 220px; }
+    .doc h3 { margin: 0 0 8px; font: 650 16px "Plus Jakarta Sans", sans-serif; }
+    .doc p.sel { background: var(--pale); outline: 1px solid rgba(109,111,255,.35); border-radius: 6px; padding: 6px; cursor: pointer; }
+    .versions { display: grid; gap: 6px; margin-top: 12px; }
+    .versions button { text-align: left; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--elev); font-size: 12px; }
+    .versions button.active { border-color: var(--blue); background: var(--pale); }
+
+    .banner { width: min(760px, 100%); margin: 0 auto 12px; padding: 12px 14px; border-radius: 12px; }
+    .banner.quota, .banner.warn { background: var(--warn-bg); color: var(--warn); }
+    .banner.danger { background: var(--danger-bg); color: var(--danger); }
+    .banner.ok { background: var(--ok-bg); color: var(--ok); }
+    .banner.muted { background: #1a1b22; color: #c5c8d2; }
+    .banner strong { display: block; margin-bottom: 4px; }
+
+    .card-list { width: min(720px, 100%); margin: 24px auto; display: grid; gap: 10px; }
+    .card { border: 1px solid var(--line); border-radius: 12px; padding: 14px; background: var(--surface); text-align: left; }
+    .card h2 { margin: 0 0 6px; font: 650 16px "Plus Jakarta Sans", sans-serif; }
+    .file { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; padding: 10px 0; border-bottom: 1px solid #242530; }
+    .file:last-child { border-bottom: 0; }
+    .pill { padding: 2px 7px; border-radius: 99px; font-size: 10px; font-weight: 650; }
+    .pill.ready { background: var(--ok-bg); color: var(--ok); }
+    .pill.partial { background: var(--warn-bg); color: var(--warn); }
+    .pill.failed { background: var(--danger-bg); color: var(--danger); }
+    .pill.load { background: var(--pale); color: #cfd0ff; }
+    .bar { height: 6px; border-radius: 99px; background: #2a2c36; overflow: hidden; margin-top: 6px; }
+    .bar > span { display: block; height: 100%; background: var(--blue); }
+
+    .picker {
+      position: fixed; z-index: 30; width: min(440px, calc(100vw - 24px)); padding: 8px;
+      border: 1px solid var(--line); border-radius: 14px; background: var(--elev);
+      box-shadow: 0 20px 50px rgba(0,0,0,.5);
+    }
+    .picker p { margin: 6px 10px 8px; color: #8b90a0; font-size: 10px; text-transform: uppercase; letter-spacing: .06em; }
+    .picker button.row {
+      width: 100%; min-height: 52px; border-radius: 8px; padding: 8px 10px;
+      display: grid; grid-template-columns: 1fr auto; gap: 8px; text-align: left;
+    }
+    .picker button.row:hover, .picker button.row.active { background: #242533; }
+    .picker small { color: #8b90a0; font-size: 11px; }
+    .effort { display: flex; gap: 4px; padding: 4px 10px 10px; }
+    .effort button { height: 28px; padding: 0 10px; border-radius: 7px; background: #242533; font-size: 11px; }
+    .effort button.active { background: var(--pale); color: #dfe0ff; font-weight: 650; }
+    .backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 25; }
+    .sheet {
+      position: fixed; left: 50%; top: 10vh; transform: translateX(-50%); width: min(560px, calc(100% - 32px));
+      z-index: 30; background: var(--elev); border: 1px solid var(--line); border-radius: 16px; padding: 18px;
+      box-shadow: 0 24px 70px rgba(0,0,0,.55);
+    }
+    .sheet h2 { margin: 0 0 8px; font: 650 20px "Plus Jakarta Sans", sans-serif; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: #e11; box-shadow: 0 0 0 4px rgba(225,17,17,.18); }
+    .rec { display: flex; align-items: center; gap: 10px; }
+    .lib { width: min(880px, calc(100% - 40px)); margin: 28px auto 60px; }
+    .lib h1 { margin: 0; font: 650 28px "Plus Jakarta Sans", sans-serif; }
+    .lib > p { color: var(--muted); }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; margin-top: 16px; }
+    .diff { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+    .diff > div { border: 1px solid var(--line); border-radius: 10px; padding: 10px; background: var(--elev); font-size: 12px; }
+    .diff b { color: #cfd0ff; }
+
+    [data-state]:not(#screenRoot) { position: relative; }
+    .state-tag, [data-state]:not(#screenRoot)::after {
+      content: attr(data-state);
+      display: inline-block; margin-left: 8px; padding: 1px 6px; border-radius: 99px;
+      border: 1px solid #3a3c4a; background: #12131a; color: #b8bce8;
+      font: 650 9px/1.4 Inter, sans-serif; letter-spacing: .02em; vertical-align: middle;
+    }
+    .file[data-state]::after, .banner[data-state]::after, .thread[data-state]::after, .home[data-state]::after, .card[data-state]::after {
+      position: absolute; top: 8px; right: 8px; margin: 0;
+    }
+    .acc-legend {
+      padding: 10px 16px 14px; background: #07080c; border-top: 1px solid #1c1d24;
+      color: #8d93a3; font-size: 11px;
+    }
+    .acc-legend strong { color: #c5c8d4; font-weight: 650; }
+    .acc-legend .jumps { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+    .acc-legend button {
+      height: 22px; padding: 0 7px; border: 1px solid #2a2c36; border-radius: 6px;
+      color: #b8bce8; font-size: 10px;
+    }
+    .acc-legend button:hover { border-color: #6d6fff; color: #fff; }
+
+    @keyframes pulse { 0%, 60%, 100% { transform: translateY(0); opacity: .45; } 30% { transform: translateY(-4px); opacity: 1; } }
+    @media (max-width: 860px) {
+      .app { grid-template-columns: 1fr; }
+      .sidebar { display: none; }
+      .workspace.split { grid-template-columns: 1fr; }
+      .workspace.split .panel { grid-column: 1; grid-row: auto; border-left: 0; border-top: 1px solid var(--line); min-height: 260px; }
+      .diff { grid-template-columns: 1fr; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="proto">
+    <div><b>D03 · Clickable flows</b><span>General-purpose only · FLOW-MAP is authoritative · R0 · not production</span></div>
+    <nav class="flows" id="flow-tabs" aria-label="Flows"></nav>
+  </div>
+  <div class="screen-row">
+    <div class="chips" id="screen-chips"></div>
+    <div class="screen-meta" id="screen-meta"></div>
+    <div class="nav-btns">
+      <button type="button" id="prev">← Prev</button>
+      <button type="button" id="next">Next →</button>
+    </div>
+  </div>
+
+  <div class="app">
+    <aside class="sidebar" aria-label="Navigation">
+      <div class="brand">
+        <span class="brand-mark">A</span>
+        <div><strong>ARCEL</strong><small>Codeworks · Your AI workspace</small></div>
+      </div>
+      <button class="new-chat" data-go="A1">＋ New chat <kbd>⌘K</kbd></button>
+      <nav class="nav">
+        <button type="button" data-ia="search">⌕ Search history</button>
+        <button type="button" data-ia="projects">Projects</button>
+        <button type="button" data-ia="library">Library</button>
+        <button type="button" data-ia="tasks">Tasks</button>
+      </nav>
+      <section class="section">
+        <p>Recent</p>
+        <div class="recent">
+          <button type="button" data-go="A3">Explain transformers simply</button>
+          <button type="button" data-go="C2">Diff two vendor PDFs</button>
+          <button type="button" data-go="D2">Cited product comparison</button>
+        </div>
+      </section>
+      <div class="account">
+        <span class="avatar">SM</span>
+        <div><strong>Swapnil</strong><small>Personal · Trial</small></div>
+        <div class="acct-menu">
+          <button type="button" id="acct-toggle" aria-expanded="false">···</button>
+          <div class="acct-pop" id="acct-pop" hidden>
+            <button type="button" data-ia="models">Models</button>
+            <button type="button" data-ia="connections">Connections</button>
+            <button type="button" data-ia="usage">Usage</button>
+            <button type="button" data-ia="privacy">Privacy</button>
+            <button type="button" data-ia="settings">Settings</button>
+          </div>
+        </div>
+      </div>
+    </aside>
+    <div class="workspace" id="workspace"></div>
+  </div>
+  <div class="backdrop" id="backdrop" hidden></div>
+  <div id="float"></div>
+  <footer class="acc-legend" id="acc-legend">
+    <strong>§5.4 states tagged for ACC-03</strong>
+    — labeled for later keyboard/screen-reader audit, not a WCAG pass (WP-11). Query <code>[data-state][data-screen]</code>.
+    <div class="jumps" role="navigation" aria-label="§5.4 state demos">
+      <button type="button" data-demo="A1" data-demo-state="">empty · A1</button>
+      <button type="button" data-demo="A2" data-demo-state="">loading · A2</button>
+      <button type="button" data-demo="D1" data-demo-state="working">working · D1</button>
+      <button type="button" data-demo="A3" data-demo-state="">completed · A3</button>
+      <button type="button" data-demo="A2" data-demo-state="partial">partial · A2 Stop</button>
+      <button type="button" data-demo="C2" data-demo-state="">failed · C2 Failed</button>
+      <button type="button" data-demo="A2" data-demo-state="cancelled">cancelled · A2</button>
+      <button type="button" data-demo="F1" data-demo-state="permission-denied">permission-denied · F1</button>
+      <button type="button" data-demo="G1" data-demo-state="quota-exhausted">quota-exhausted · G1</button>
+      <button type="button" data-demo="G1" data-demo-state="permission-denied">permission-denied · G1</button>
+    </div>
+  </footer>
+
+  <script>
+    const FLOWS = [
+      { id: "A", name: "First chat", screens: ["A1", "A2", "A3"] },
+      { id: "B", name: "Model", screens: ["B1", "B2"] },
+      { id: "C", name: "Files", screens: ["C1", "C2"] },
+      { id: "D", name: "Research", screens: ["D1", "D2"] },
+      { id: "E", name: "Artifact", screens: ["E1"] },
+      { id: "F", name: "Voice", screens: ["F1"] },
+      { id: "G", name: "Quota/Errors", screens: ["G1"] }
+    ];
+    const ORDER = FLOWS.flatMap(f => f.screens);
+    const META = {
+      A1: "Empty home + examples — no AEC / project / model required",
+      A2: "Streaming — Stop → partial · Cancel run → cancelled",
+      A3: "Response actions — copy, save, artifact, retry, Details",
+      B1: "Model modal — Auto + curated named models",
+      B2: "Response details + effort Quick / Standard / Deep",
+      C1: "Uploading — extraction in progress",
+      C2: "Ready / Partial / Failed + PDF diff + spreadsheet download",
+      D1: "Research plan + estimate confirm",
+      D2: "Report + source panel",
+      E1: "Select-revise + restore as new version",
+      F1: "Mic transcript editable · permission denied",
+      G1: "Usage + network / refusal / quota / rate / high-cost — no auto overage"
+    };
+    const MODELS = [
+      { id: "auto", name: "Auto", pub: "ARCEL routing", meta: "Selects third-party models in policy. Not an ARCEL-trained foundation model.", cost: "—" },
+      { id: "fast", name: "Atlas Fast", pub: "OpenAI", meta: "Everyday Q&A and short rewrites · text · low latency", cost: "$" },
+      { id: "balanced", name: "Helix Balanced", pub: "Anthropic", meta: "Default writing, files, tools · text + image in", cost: "$$" },
+      { id: "deep", name: "Keystone Reason", pub: "xAI", meta: "Hard analysis and planning · tools · slower", cost: "$$$" },
+      { id: "code", name: "Rivets Code", pub: "Anthropic", meta: "Generation and repair · sandbox tools", cost: "$$" },
+      { id: "long", name: "Wide Context", pub: "Google", meta: "Long docs and visual inputs", cost: "$$" },
+      { id: "alt", name: "Second Opinion", pub: "OpenAI", meta: "Independent family for a second pass", cost: "$$" }
+    ];
+    const CANONICAL = ["empty","loading","working","completed","partial","failed","cancelled","permission-denied","quota-exhausted"];
+    const state = {
+      screen: "A1", prompt: "", effort: "Standard", model: "auto", locked: false,
+      tools: [], menu: null, ia: null, recording: false, transcript: "",
+      selectedPara: false, version: "v3", fileRetry: false, errorKind: "ready",
+      priorState: "empty", a2Outcome: null, d1Phase: "plan", micDenied: false, highlightFailed: false
+    };
+
+    function computeStateFor(screen) {
+      switch (screen) {
+        case "A1": return "empty";
+        case "A2":
+          if (state.a2Outcome === "partial") return "partial";
+          if (state.a2Outcome === "cancelled") return "cancelled";
+          return "loading";
+        case "A3": return "completed";
+        case "B1": return CANONICAL.includes(state.priorState) ? state.priorState : "empty";
+        case "B2": return "completed";
+        case "C1": return "loading";
+        case "C2": return state.highlightFailed ? "failed" : "working";
+        case "D1":
+          if (state.d1Phase === "cancelled") return "cancelled";
+          if (state.d1Phase === "running") return "working";
+          return "empty";
+        case "D2": return "completed";
+        case "E1": return "completed";
+        case "F1":
+          if (state.micDenied) return "permission-denied";
+          if (state.recording) return "working";
+          if (state.transcript) return "completed";
+          return "empty";
+        case "G1":
+          if (state.errorKind === "quota") return "quota-exhausted";
+          if (state.errorKind === "denied") return "permission-denied";
+          if (["network","refusal","rate","highcost"].includes(state.errorKind)) return "failed";
+          return "empty";
+        default: return "empty";
+      }
+    }
+
+    const $ = id => document.getElementById(id);
+    const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[c]));
+    const flowOf = id => FLOWS.find(f => f.screens.includes(id));
+
+    function go(id) {
+      if (!ORDER.includes(id)) return;
+      if (id === "B1" && state.screen !== "B1") state.priorState = computeStateFor(state.screen);
+      if (id === "A2" && state.screen !== "A2") state.a2Outcome = null;
+      if (id === "D1" && state.screen !== "D1") state.d1Phase = "plan";
+      if (id === "C2" && state.screen !== "C2") state.highlightFailed = false;
+      if (id === "F1" && state.screen !== "F1") { state.recording = false; state.micDenied = false; }
+      else if (id !== "F1") state.recording = false;
+      state.screen = id;
+      state.menu = null;
+      closeFloat();
+      render();
+    }
+    function shift(d) { go(ORDER[Math.max(0, Math.min(ORDER.length - 1, ORDER.indexOf(state.screen) + d))]); }
+    function applyDemo(screen, st) {
+      if (!ORDER.includes(screen)) return;
+      state.ia = null;
+      state.a2Outcome = screen === "A2" && (st === "partial" || st === "cancelled") ? st : null;
+      state.d1Phase = screen === "D1" && st === "working" ? "running" : screen === "D1" && st === "cancelled" ? "cancelled" : "plan";
+      state.micDenied = screen === "F1" && st === "permission-denied";
+      state.recording = screen === "F1" && st === "working";
+      state.highlightFailed = screen === "C2" && st === "failed";
+      state.errorKind = screen === "G1" && st === "quota-exhausted" ? "quota"
+        : screen === "G1" && st === "permission-denied" ? "denied"
+        : screen === "G1" && st === "failed" ? "network"
+        : "ready";
+      if (screen === "B1" && state.screen !== "B1") state.priorState = computeStateFor(state.screen);
+      state.screen = screen;
+      state.menu = null;
+      closeFloat();
+      render();
+    }
+
+    function composer({ streaming = false, placeholder = "Message Codeworks…" } = {}) {
+      const intel = state.locked
+        ? `${MODELS.find(m => m.id === state.model)?.name || "Named"} · ${state.effort}`
+        : `Auto · ${state.effort}`;
+      const chips = state.tools.map(t => `<button type="button" class="tool-chip" data-action="remove-tool" data-tool="${esc(t)}">${esc(t)} ×</button>`).join("");
+      return `<section class="composer">
+        <textarea id="prompt" placeholder="${esc(placeholder)}" aria-label="Message Codeworks">${esc(state.prompt)}</textarea>
+        <div class="composer-bar">
+          <div>
+            <button type="button" class="icon-btn" data-action="attach" aria-label="Attach" title="Attach">📎</button>
+            <button type="button" class="icon-btn ${state.menu === "tools" ? "on" : ""}" data-action="tools" aria-label="Tools">⚒</button>
+            <button type="button" class="icon-btn ${state.recording ? "on" : ""}" data-action="mic" aria-label="Mic">🎙</button>
+            ${chips}
+            <button type="button" class="ghost" data-action="intel">${esc(intel)}</button>
+          </div>
+          <button type="button" class="send" data-action="${streaming ? "stop" : "send"}" aria-label="${streaming ? "Stop" : "Send"}">${streaming ? "■" : "↑"}</button>
+        </div>
+      </section>
+      <p class="hint">Codeworks can be wrong. This prototype does not call models. No automatic overage.</p>`;
+    }
+    function ai(html) { return `<article class="msg-ai"><div class="mark">A</div><div>${html}</div></article>`; }
+    function actionBar(extra = "") {
+      return `<div class="actions">
+        <button type="button" data-action="copy">Copy</button>
+        <button type="button" data-action="save">Save to project</button>
+        <button type="button" data-go="E1">Open artifact</button>
+        <button type="button" data-go="B1">Retry with another model</button>
+        <button type="button" data-go="B2">Details</button>
+        <button type="button">Feedback</button>${extra}
+      </div>`;
+    }
+
+    function shell(main, { split = false, panel = "", streaming = false, dock = true } = {}) {
+      const ws = $("workspace");
+      ws.className = "workspace" + (split ? " split" : "");
+      ws.innerHTML = `
+        <header class="topbar">
+          <button type="button" class="intel" data-action="intel">${state.locked ? esc(MODELS.find(m => m.id === state.model).name) : "Auto"} · ${esc(state.effort)}</button>
+          <span style="color:var(--muted);font-size:12px">Private · Trial</span>
+        </header>
+        <div class="stage"><div id="screenRoot" data-screen="${state.screen}" data-state="${computeStateFor(state.screen)}">${main}</div></div>
+        ${dock ? `<div class="composer-dock">${composer({ streaming })}</div>` : ""}
+        ${panel}`;
+    }
+
+    function iaView() {
+      const titles = {
+        projects: ["Projects", "Optional. New project is empty — no sample client data."],
+        library: ["Library", "Original uploads stay distinct from generated artifacts."],
+        tasks: ["Tasks", "Pause a recurring briefing without deleting its history."]
+      };
+      if (!titles[state.ia]) return false;
+      const [h, p] = titles[state.ia];
+      const cards = state.ia === "projects"
+        ? `<button class="card" type="button" data-go="A1"><h2>Untitled project</h2><small>0 chats · create is optional</small></button>
+           <button class="card" type="button" data-go="C2"><h2>Vendor comparison</h2><small>2 files · move confirmation shown</small></button>`
+        : state.ia === "library"
+          ? `<button class="card" type="button" data-go="C1"><h2>acme-security.pdf</h2><small>Original · uploading</small></button>
+             <button class="card" type="button" data-go="E1"><h2>Comparison draft.md</h2><small>Generated · v3</small></button>`
+          : `<button class="card" type="button" data-go="D2"><h2>Monday briefing</h2><small>Weekly · Pause keeps history</small></button>
+             <button class="card" type="button"><h2>Paused: launch digest</h2><small>No future runs</small></button>`;
+      shell(`<div class="lib"><h1>${h}</h1><p>${p}</p><div class="grid">${cards}</div></div>`, { dock: false });
+      return true;
+    }
+
+    function screenA1() {
+      shell(`<main class="home" data-state="empty"><div class="welcome">
+        <h1>What are we working on?</h1>
+        <p>Ask, research, create and get work done. No project or model required.</p>
+        ${composer({ placeholder: "Ask anything — or pick an example" })}
+        <div class="suggestions">
+          <button type="button" data-suggest="Explain transformers like I am new to machine learning, then keep this thread so I can switch tone.">Explain a concept</button>
+          <button type="button" data-go="D1">Compare products with sources</button>
+          <button type="button" data-go="C1">Upload two PDFs and diff them</button>
+          <button type="button" data-suggest="Draft a one-page brief I can edit in the artifact panel.">Draft a document</button>
+        </div>
+      </div></main>`, { dock: false });
+    }
+    function screenA2() {
+      const stopped = state.a2Outcome === "partial";
+      const cancelled = state.a2Outcome === "cancelled";
+      const body = cancelled
+        ? `<div class="banner muted" data-state="cancelled"><strong>Cancelled</strong>Run stopped before a complete answer. Unused reservation released.</div>`
+        : stopped
+          ? `<div class="banner muted" data-state="partial"><strong>Partial</strong>You pressed Stop. A retry is a new attempt — nothing is spliced.</div>
+             <p>A transformer is a pattern for turning a sequence into another sequence. It does not…</p>`
+          : `<p>A transformer is a pattern for turning a sequence (words, tokens) into another sequence. Attention looks at the whole context at once.</p>
+             <div class="thinking" aria-label="Working"><i></i><i></i><i></i></div>
+             <p style="color:var(--muted);font-size:12px">Loading · Auto chose Helix Balanced · no private chain-of-thought</p>
+             <div class="actions"><button type="button" data-action="cancel-run">Cancel run</button></div>`;
+      const threadState = cancelled ? "cancelled" : stopped ? "partial" : "loading";
+      shell(`<div class="thread-wrap"><div class="thread" id="messages" data-state="${threadState}">
+        <article class="msg-user"><div>${esc(state.prompt || "Explain transformers like I am new to machine learning.")}</div></article>
+        ${ai(body)}
+      </div></div>`, { streaming: !stopped && !cancelled });
+    }
+    function screenA3() {
+      shell(`<div class="thread-wrap"><div class="thread" id="messages" data-state="completed">
+        <article class="msg-user"><div>${esc(state.prompt || "Explain transformers like I am new to machine learning.")}</div></article>
+        ${ai(`<p>A transformer turns a sequence into another sequence. Attention lets each token see the rest of the context, which is why long instructions and files stay usable in one conversation.</p>
+          <p>Say if you want a more formal tone — same thread, no new chat.</p>${actionBar()}`)}
+      </div></div>`);
+    }
+    function screenB1() {
+      state.menu = "models";
+      shell(`<div class="thread-wrap"><div class="thread">
+        ${ai(`<p>Choose <strong>Auto</strong> or lock a curated named model. Task tools stay in the composer. Effort stays on <strong>B2</strong>.</p>`)}
+      </div></div>`);
+    }
+    function screenB2() {
+      const m = MODELS.find(x => x.id === (state.locked ? state.model : "balanced"));
+      shell(`<div class="thread-wrap">
+        <div class="card-list">
+          <div class="card">
+            <h2>Response details</h2>
+            <p>Model: <strong>${esc(state.locked ? m.name : "Helix Balanced (Auto)")}</strong><br>
+            Publisher: ${esc(state.locked ? m.pub : "Anthropic")} · Effort: ${esc(state.effort)} → mapped tokens<br>
+            Tools: ${state.tools.join(", ") || "none"} · Duration 3.1s · 1.2k in / 420 out</p>
+            <p style="color:var(--muted);font-size:13px">A locked named model is used or explained — never a silent publisher switch.</p>
+            <p class="k" style="color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.06em">Effort</p>
+            <div class="effort">
+              ${["Quick","Standard","Deep"].map(e => `<button type="button" class="${state.effort === e ? "active" : ""}" data-effort="${e}">${e}</button>`).join("")}
+            </div>
+            <div class="actions">
+              <button type="button" class="primary" data-go="B1">Choose model</button>
+              <button type="button" data-action="use-auto">Use Auto</button>
+            </div>
+          </div>
+        </div>
+      </div>`);
+    }
+    function screenC1() {
+      shell(`<div class="thread-wrap"><div class="card-list"><div class="card" data-state="loading">
+        <h2>Uploading · 2 files</h2>
+        <p style="color:var(--muted)">Extraction must finish before the model can use a file. Limits shown are test targets.</p>
+        <div class="file" data-state="loading"><div><strong>acme-security.pdf</strong><br><small>1.8 MiB · PDF · indexing pages…</small><div class="bar"><span style="width:72%"></span></div></div><span class="pill load">Uploading</span></div>
+        <div class="file" data-state="loading"><div><strong>q2-usage.xlsx</strong><br><small>640 KiB · XLSX · scanning sheets…</small><div class="bar"><span style="width:38%"></span></div></div><span class="pill load">Uploading</span></div>
+        <div class="actions"><button type="button" class="primary" data-go="C2">Extraction finished</button></div>
+      </div></div></div>`);
+    }
+    function screenC2() {
+      const panel = `<aside class="panel" aria-label="Source panel">
+        <header><strong>PDF diff · p.12 vs p.7</strong><button type="button" class="ghost" data-go="C1">Return</button></header>
+        <div class="content"><div class="doc">
+          <h3>Retention</h3>
+          <p>Acme p.12: 30-day active default. Helix p.7: points to a URL, no in-PDF list.</p>
+          <p style="color:var(--muted);font-size:12px">Original revisions · locators preserved</p>
+        </div></div>
+      </aside>`;
+      shell(`<div class="thread-wrap"><div class="thread" id="messages" data-state="${state.highlightFailed ? "failed" : "working"}">
+        <article class="msg-user"><div>Diff these two PDFs on retention and give me a workbook of the totals.</div></article>
+        ${ai(`<p>Page-level diff below. Helix pages 4–5 were unreadable — disclosed, not invented.</p>
+          <div class="file" data-state="ready"><div><strong>acme-security.pdf</strong><br><small>Ready · cited p.12</small></div><span class="pill ready">Ready</span></div>
+          <div class="file" data-state="partial"><div><strong>notes-scan.pdf</strong><br><small>Partial · OCR warning</small></div><span class="pill partial">Partial</span></div>
+          <div class="file" data-state="failed" data-action="highlight-failed" role="button" tabindex="0"><div><strong>helix-dpa.pdf</strong><br><small>Failed pages 4–5 · click to highlight</small></div><span class="pill failed">Failed</span></div>
+          <div class="diff">
+            <div><b>acme-security.pdf p.12</b><p>30-day active retention. Subprocessors listed.</p></div>
+            <div><b>helix-dpa.pdf p.7</b><p>Retention via URL. No in-document subprocessor table.</p></div>
+          </div>
+          ${actionBar(`<button type="button" class="primary">Download comparison.xlsx</button>`)}`)}
+      </div></div>`, { split: true, panel });
+    }
+    function screenD1() {
+      const running = state.d1Phase === "running";
+      const cancelled = state.d1Phase === "cancelled";
+      const inner = cancelled
+        ? `<div class="banner muted" data-state="cancelled"><strong>Cancelled</strong>Research did not complete. Unused reservation released.</div>
+           <div class="actions"><button type="button" class="primary" data-action="reset-research">Restart plan</button></div>`
+        : running
+          ? `<div data-state="working"><p>Running asynchronously — you can close this tab.</p><div class="bar"><span style="width:62%"></span></div>
+             <p style="color:var(--muted);font-size:12px">Working · 5/12 reads · heartbeat 4s ago</p>
+             <div class="actions"><button type="button" class="primary" data-go="D2">Open report</button>
+             <button type="button" data-action="cancel-research">Cancel</button></div></div>`
+          : `<p>Scope: <strong>Web</strong> (files off · connectors off).</p>
+             <ol><li>Collect current public pricing and capability pages.</li><li>Reconcile contradictions; prefer primary sources.</li><li>Write a cited comparison with limitations.</li></ol>
+             <div class="banner warn" data-state="empty"><strong>Estimate — confirm</strong>About 6 minutes · ~12 search reads · above Quick, inside Standard Deep allowance. High-cost work waits for confirm.</div>
+             <div class="actions"><button type="button" class="primary" data-action="start-research">Confirm and start</button>
+             <button type="button" data-action="cancel-research">Cancel</button></div>`;
+      const d1State = cancelled ? "cancelled" : running ? "working" : "empty";
+      shell(`<div class="thread-wrap"><div class="card-list"><div class="card" data-state="${d1State}">
+        <h2>${cancelled ? "Research cancelled" : running ? "Research running" : "Deep research plan"}</h2>${inner}
+      </div></div></div>`);
+    }
+    function screenD2() {
+      const panel = `<aside class="panel"><header><strong>Sources · 8 retrieved</strong><button type="button" class="ghost" data-go="A3">Return to chat</button></header>
+        <div class="content"><div class="versions">
+          <button type="button">1 · vendor.com/pricing · today</button>
+          <button type="button">2 · docs.vendor.com/models · 2 Sep 2026</button>
+          <button type="button">3 · support.vendor.com/research</button>
+        </div></div></aside>`;
+      shell(`<div class="thread-wrap"><div class="thread" id="messages" data-state="completed">
+        <article class="msg-user"><div>Compare three general-purpose AI clients on search, files and artifacts.</div></article>
+        ${ai(`<div class="doc"><h3>Comparison report</h3>
+          <p><strong>Methodology.</strong> Web-only retrieval. Primary vendor docs preferred.</p>
+          <p><strong>Limitations.</strong> Plan entitlements change; prices need a dated page.</p>
+          <p><strong>Unresolved.</strong> Whether each consumer search API matches the product UI.</p></div>
+          <div class="actions"><button type="button" data-action="cancel-research">Cancel job</button>
+          <button type="button" class="primary" data-go="E1">Save report as artifact</button>
+          <button type="button" data-go="B2">Details</button></div>`)}
+      </div></div>`, { split: true, panel });
+    }
+    function screenE1() {
+      const v = state.version;
+      const panel = `<aside class="panel"><header><strong>Brief.md · ${v} · autosaved</strong>
+        <button type="button" class="ghost" data-go="A3">Return to chat</button></header>
+        <div class="content"><div class="doc">
+          <h3>One-page brief</h3>
+          <p class="sel" data-action="select-para">Codeworks is a general-purpose AI workspace for ask, research, create and finish work — with portable context and visible spend.</p>
+          <p>Projects are optional. AEC is an installable pack later, not this home screen.</p>
+        </div>
+        ${state.selectedPara ? `<div class="actions"><button type="button" class="primary" data-action="revise">Revise selection</button></div>` : `<p style="color:var(--muted);font-size:12px">Select the highlighted paragraph to revise only that scope.</p>`}
+        <p style="margin:14px 0 6px;color:var(--muted);font-size:11px">VERSION HISTORY</p>
+        <div class="versions">
+          <button type="button" class="${v === "v3" ? "active" : ""}" data-ver="v3">v3 · current</button>
+          <button type="button" class="${v === "v2" ? "active" : ""}" data-ver="v2">v2 · formal tone</button>
+          <button type="button" data-action="restore">Restore v2 as new version</button>
+        </div></div></aside>`;
+      shell(`<div class="thread-wrap"><div class="thread" id="messages" data-state="completed">
+        <article class="msg-user"><div>Draft a one-page brief I can edit.</div></article>
+        ${ai(`<p>Select-revise keeps history. Restore writes a <strong>new</strong> version; it does not destroy ${v}.</p>${actionBar()}`)}
+      </div></div>`, { split: true, panel });
+    }
+    function screenF1() {
+      const denied = state.micDenied;
+      const rec = state.recording && !denied;
+      const fState = denied ? "permission-denied" : rec ? "working" : state.transcript ? "completed" : "empty";
+      shell(`<div class="thread-wrap"><div class="thread" id="messages" data-state="${fState}">
+        ${denied ? `<div class="banner muted" data-state="permission-denied"><strong>Permission denied</strong>Microphone access was blocked. Dictation did not start.</div>
+          <div class="actions"><button type="button" data-action="mic-reset">Try mic again</button></div>` : ""}
+        ${rec ? `<div class="banner danger rec" data-state="working"><span class="dot"></span><div><strong>Recording</strong>Visible indicator. Cancel discards capture. Transcript is editable in the composer before send.</div></div>
+          <div class="actions"><button type="button" data-action="cancel-voice">Cancel capture</button>
+          <button type="button" data-action="insert-voice">Insert transcript</button></div>` : ""}
+        ${!denied && state.transcript ? `<article class="msg-user"><div>${esc(state.transcript)}</div></article>
+          ${ai(`<p>Same conversation. Microphone released when you continue in text.</p>${actionBar()}`)}` : ""}
+        ${!denied && !state.transcript ? ai(`<p>Use <strong>Mic</strong>. Edit the transcript in the composer, then Send. Denied permission is explicit.</p>
+          <div class="actions"><button type="button" data-action="mic-denied">Simulate permission denied</button></div>`) : ""}
+      </div></div>`);
+    }
+    function screenG1() {
+      const kinds = [
+        ["ready","Default / usage"],["network","Network"],["refusal","Refusal"],
+        ["quota","Quota"],["rate","Rate limited"],["highcost","High-cost"],["denied","Permission"]
+      ];
+      const bodies = {
+        ready: `<div class="banner ok" data-state="empty"><strong>Usage remaining: 82% · renews 1 Oct 2026</strong>Trial · no unlimited copy. A long or multi-model task costs more than a short answer. Screen root <code>empty</code>.</div>`,
+        network: `<div class="banner muted" data-state="failed"><strong>Network error</strong>Request id req_8f21. Nothing stored as an assistant message. Safe to retry.</div>`,
+        refusal: `<div class="banner danger" data-state="failed"><strong>Refusal</strong>The model declined this request. A refusal is not a trigger to try another model to evade policy.</div>`,
+        quota: `<div class="banner quota" data-state="quota-exhausted"><strong>Quota exhausted · remaining 0</strong>Deep research and named premium models are paused. Existing work stays viewable. There is <strong>no automatic overage</strong>.</div>
+          <div class="actions"><button type="button" class="primary" data-action="cheaper">Use cheaper route · Auto · Quick</button>
+          <button type="button" data-ia="usage">View usage</button>
+          <button type="button" class="ghost" title="Requires separate opt-in and cap">Explicit top-up…</button></div>`,
+        rate: `<div class="banner warn" data-state="failed"><strong>Rate limited</strong>Too many concurrent runs. Wait or cancel an in-flight job. This is not quota exhaustion.</div>`,
+        highcost: `<div class="banner warn" data-state="failed"><strong>High-cost confirmation</strong>Deep research + image generation is outside your pre-approved allowance. Confirm to reserve budget, or pick a cheaper route. No silent spend.</div>
+          <div class="actions"><button type="button" class="primary">Confirm estimate</button><button type="button" data-action="cheaper">Cheaper route</button></div>`,
+        denied: `<div class="banner muted" data-state="permission-denied"><strong>Permission denied</strong>Drive search is not connected. General file upload still works.</div>`
+      };
+      shell(`<div class="thread-wrap"><div class="card-list"><div class="card">
+        <h2>Usage and distinct errors</h2>
+        <p style="color:var(--muted)">CHAT-07 / §8.2 — never generic success, never silent overage, never stored as ordinary assistant context.</p>
+        <div class="actions">${kinds.map(([id,l]) => `<button type="button" class="${state.errorKind===id?"primary":"ghost"}" data-error="${id}">${l}</button>`).join("")}</div>
+        <div style="margin-top:14px">${bodies[state.errorKind]}</div>
+      </div></div></div>`);
+    }
+
+    const SCREENS = { A1:screenA1,A2:screenA2,A3:screenA3,B1:screenB1,B2:screenB2,C1:screenC1,C2:screenC2,D1:screenD1,D2:screenD2,E1:screenE1,F1:screenF1,G1:screenG1 };
+
+    function closeFloat() {
+      $("backdrop").hidden = true;
+      $("float").innerHTML = "";
+      $("acct-pop").hidden = true;
+      $("acct-toggle").setAttribute("aria-expanded", "false");
+    }
+    function placePicker(html, anchor) {
+      $("backdrop").hidden = false;
+      $("float").innerHTML = html;
+      const box = $("float").firstElementChild;
+      if (!box || !anchor) return;
+      const r = anchor.getBoundingClientRect();
+      box.classList.add("picker");
+      box.style.top = `${Math.min(r.bottom + 8, innerHeight - 24)}px`;
+      box.style.left = `${Math.max(12, Math.min(r.left, innerWidth - 460))}px`;
+    }
+    function openTools(a) {
+      const items = ["Search web","Deep research","Analyze data","Create image","Create document","Code","Tasks"];
+      placePicker(`<div><p>Tools · task layer</p>${items.map(t => `<button type="button" class="row" data-tool-add="${t}"><span><strong>${t}</strong><br><small>Removable chip when selected</small></span></button>`).join("")}</div>`, a);
+    }
+    function openIntel(a) {
+      placePicker(`<div>
+        <p>Intelligence</p>
+        <button type="button" class="row" data-action="use-auto"><span><strong>Auto</strong><br><small>Selects third-party models. Not ARCEL-trained.</small></span></button>
+        <button type="button" class="row" data-go="B1"><span><strong>Choose model</strong><br><small>Open the curated modal</small></span></button>
+        <p>Effort</p>
+        <div class="effort">${["Quick","Standard","Deep"].map(e => `<button type="button" class="${state.effort===e?"active":""}" data-effort="${e}">${e}</button>`).join("")}</div>
+      </div>`, a);
+    }
+    function openModels(a) {
+      placePicker(`<div>
+        <p>Model modal · Auto + curated named · no raw IDs</p>
+        ${MODELS.map(m => `<button type="button" class="row ${state.model===m.id?"active":""}" data-${m.id==="auto"?"action":"lock"}="${m.id==="auto"?"use-auto":m.id}">
+          <span><strong>${esc(m.name)}</strong><br><small>${esc(m.pub)} · ${esc(m.meta)}</small></span><span>${esc(m.cost)}</span>
+        </button>`).join("")}
+      </div>`, a || document.querySelector("[data-action='intel']"));
+    }
+    function openSheet(kind) {
+      const copy = {
+        search: ["Search history", `<label style="display:flex;gap:8px;border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin:8px 0"><span>⌕</span><input placeholder="Search authorized history" style="border:0;outline:0;width:100%;background:transparent"></label>
+          <button type="button" data-go="A3" style="width:100%;text-align:left;padding:10px 0">Explain transformers simply</button>`],
+        models: ["Models", `<p>Account catalog. Composer picker is the everyday control. Auto is routing — not a proprietary foundation model.</p><button type="button" class="primary" data-go="B1">Open model modal</button>`],
+        connections: ["Connections", `<p>None required to start. Revoke immediately blocks new retrieval.</p>`],
+        usage: ["Usage", `<p>Trial · 82% remaining · renews 1 Oct 2026. No unlimited copy. Default: no automatic overage.</p><button type="button" class="primary" data-go="G1">Open quota / errors</button>`],
+        privacy: ["Privacy", `<p>Private by default. Temporary chat excludes persistent memory with a stated retention window — not a false zero-retention promise.</p>`],
+        settings: ["Settings", `<p>Instructions, tone, language, timezone, theme, Enter-to-send. User instructions cannot override platform security.</p>`]
+      };
+      const [title, body] = copy[kind];
+      $("backdrop").hidden = false;
+      $("float").innerHTML = `<div class="sheet"><h2>${title}</h2>${body}<div class="actions"><button type="button" class="ghost" data-action="close">Close</button></div></div>`;
+    }
+    function persistPrompt() { const t = document.getElementById("prompt"); if (t) state.prompt = t.value; }
+
+    function renderChrome() {
+      $("flow-tabs").innerHTML = FLOWS.map(f => `<button type="button" class="${flowOf(state.screen).id===f.id?"active":""}" data-flow="${f.id}">${f.id} ${f.name}</button>`).join("");
+      const flow = flowOf(state.screen);
+      $("screen-chips").innerHTML = flow.screens.map(id => `<button type="button" class="${state.screen===id?"active":""}" data-go="${id}">${id}</button>`).join("");
+      $("screen-meta").innerHTML = `<strong>${state.screen}</strong> · <code>data-state="${computeStateFor(state.screen)}"</code> · ${META[state.screen]}`;
+      $("prev").disabled = state.screen === ORDER[0];
+      $("next").disabled = state.screen === ORDER[ORDER.length - 1];
+      document.querySelectorAll(".nav [data-ia]").forEach(btn => btn.classList.toggle("active", state.ia === btn.dataset.ia));
+    }
+    function maybeMenus() {
+      if (state.screen === "B1" && state.menu === "models") openModels(document.querySelector("[data-action='intel']"));
+    }
+    function bind() {
+      document.querySelectorAll("[data-go]").forEach(el => el.addEventListener("click", () => { persistPrompt(); state.ia = null; go(el.dataset.go); }));
+      document.querySelectorAll("[data-suggest]").forEach(el => el.addEventListener("click", () => { state.prompt = el.dataset.suggest; state.ia = null; go("A2"); }));
+      document.querySelectorAll("[data-effort]").forEach(el => el.addEventListener("click", () => { state.effort = el.dataset.effort; render(); }));
+      document.querySelectorAll("[data-lock]").forEach(el => el.addEventListener("click", () => { state.model = el.dataset.lock; state.locked = true; state.menu = null; go("B2"); }));
+      document.querySelectorAll("[data-tool-add]").forEach(el => el.addEventListener("click", () => {
+        const t = el.dataset.toolAdd;
+        if (!state.tools.includes(t)) state.tools.push(t);
+        state.menu = null;
+        if (t === "Deep research") go("D1");
+        else if (t === "Analyze data") go("C1");
+        else render();
+      }));
+      document.querySelectorAll("[data-error]").forEach(el => el.addEventListener("click", () => { state.errorKind = el.dataset.error; render(); }));
+      document.querySelectorAll("[data-ver]").forEach(el => el.addEventListener("click", () => { state.version = el.dataset.ver; render(); }));
+    }
+    function render() {
+      renderChrome();
+      if (state.ia && iaView()) { bind(); maybeMenus(); return; }
+      SCREENS[state.screen]();
+      bind();
+      maybeMenus();
+    }
+
+    $("flow-tabs").addEventListener("click", e => {
+      const b = e.target.closest("[data-flow]"); if (!b) return;
+      persistPrompt(); state.ia = null; go(FLOWS.find(f => f.id === b.dataset.flow).screens[0]);
+    });
+    $("acc-legend").addEventListener("click", e => {
+      const b = e.target.closest("[data-demo]"); if (!b) return;
+      persistPrompt();
+      applyDemo(b.dataset.demo, b.dataset.demoState || "");
+    });
+    $("prev").addEventListener("click", () => { persistPrompt(); state.ia = null; shift(-1); });
+    $("next").addEventListener("click", () => { persistPrompt(); state.ia = null; shift(1); });
+    $("acct-toggle").addEventListener("click", e => {
+      e.stopPropagation();
+      const open = $("acct-pop").hidden;
+      $("acct-pop").hidden = !open;
+      $("acct-toggle").setAttribute("aria-expanded", String(open));
+    });
+    document.querySelector(".sidebar").addEventListener("click", e => {
+      const ia = e.target.closest("[data-ia]"); if (!ia) return;
+      const kind = ia.dataset.ia;
+      if (["projects","library","tasks"].includes(kind)) {
+        state.ia = state.ia === kind ? null : kind; closeFloat(); render(); return;
+      }
+      $("acct-pop").hidden = true; openSheet(kind);
+    });
+    $("backdrop").addEventListener("click", () => { state.menu = null; closeFloat(); });
+
+    document.body.addEventListener("click", e => {
+      const t = e.target.closest("[data-action]"); if (!t) return;
+      const action = t.dataset.action;
+      persistPrompt();
+      if (action === "close") { state.menu = null; closeFloat(); return; }
+      if (action === "send") {
+        state.ia = null;
+        if (state.screen === "A1" || state.screen === "B1") go("A2");
+        else if (state.screen === "C1") go("C2");
+        else if (state.screen === "F1" && (state.transcript || state.prompt)) { state.transcript = state.prompt || state.transcript; render(); }
+        else go("A3");
+        return;
+      }
+      if (action === "stop") { state.a2Outcome = "partial"; render(); return; }
+      if (action === "cancel-run") { state.a2Outcome = "cancelled"; render(); return; }
+      if (action === "start-research") { state.d1Phase = "running"; state.ia = null; state.screen = "D1"; closeFloat(); render(); return; }
+      if (action === "reset-research") { state.d1Phase = "plan"; state.screen = "D1"; render(); return; }
+      if (action === "cancel-research") { state.d1Phase = "cancelled"; state.screen = "D1"; closeFloat(); render(); return; }
+      if (action === "highlight-failed") { state.highlightFailed = !state.highlightFailed; render(); return; }
+      if (action === "mic-denied") { state.micDenied = true; state.recording = false; render(); return; }
+      if (action === "mic-reset") { state.micDenied = false; state.recording = false; render(); return; }
+      if (action === "cancel-voice") { state.recording = false; state.transcript = ""; render(); return; }
+      if (action === "insert-voice") { state.recording = false; state.transcript = state.prompt || "Keep going in text from what I said about attention."; state.prompt = state.transcript; render(); return; }
+      if (action === "attach") { state.ia = null; go("C1"); return; }
+      if (action === "tools") { state.menu = "tools"; openTools(t); return; }
+      if (action === "intel") { state.menu = "intel"; if (state.screen === "B1") openModels(t); else openIntel(t); return; }
+      if (action === "mic") {
+        state.ia = null; go("F1");
+        state.recording = !state.recording;
+        if (!state.recording && !state.transcript) state.prompt = "Can you keep going in text from what I just said about transformer attention?";
+        if (state.recording) state.prompt = "";
+        render(); return;
+      }
+      if (action === "remove-tool") { state.tools = state.tools.filter(x => x !== t.dataset.tool); render(); return; }
+      if (action === "use-auto") { state.locked = false; state.model = "auto"; state.menu = null; closeFloat(); go("B2"); return; }
+      if (action === "copy" || action === "save") { t.textContent = action === "copy" ? "Copied" : "Saved to project"; return; }
+      if (action === "select-para") { state.selectedPara = true; render(); return; }
+      if (action === "revise") { state.version = "v4"; state.selectedPara = false; render(); return; }
+      if (action === "restore") { state.version = "v4"; render(); return; }
+      if (action === "cheaper") { state.effort = "Quick"; state.locked = false; state.model = "auto"; go("A1"); return; }
+    });
+
+    const boot = new URLSearchParams(location.search);
+    const screen = boot.get("screen") || location.hash.replace(/^#/, "");
+    const st = boot.get("state");
+    if (ORDER.includes(screen)) state.screen = screen;
+    if (screen === "A2" && st === "partial") state.a2Outcome = "partial";
+    if (screen === "A2" && st === "cancelled") state.a2Outcome = "cancelled";
+    if (screen === "D1" && st === "working") state.d1Phase = "running";
+    if (screen === "D1" && st === "cancelled") state.d1Phase = "cancelled";
+    if (screen === "F1" && st === "working") state.recording = true;
+    if (screen === "F1" && st === "permission-denied") state.micDenied = true;
+    if (screen === "G1" && st === "quota-exhausted") state.errorKind = "quota";
+    if (screen === "G1" && st === "failed") state.errorKind = "network";
+    if (screen === "G1" && st === "permission-denied") state.errorKind = "denied";
+    render();
+  </script>
+</body>
+</html>

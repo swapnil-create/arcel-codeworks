@@ -24,7 +24,7 @@ Last updated: 2026-09-14 · Zone: Asia/Dubai (GST)
 |---|---|---|---|---|
 | D01 | Approve product scope, naming, task/model/effort/expertise split | Swapnil (product) | in progress | Formal sign-off skipped 2026-09-14; proceeding on PRD §28 defaults until overridden. |
 | D02 | Traceable backlog from requirement IDs + WP-01…11 | Coder | done | Tracker commit `53b4a0f` + Notion board https://app.notion.com/p/ea26e00cc54643ab8d9849e89320c31e |
-| D03 | Clickable flows: first chat, model choice, files, research, artifacts, voice, quota/errors | UI UX Expert | not started | |
+| D03 | Clickable flows: first chat, model choice, files, research, artifacts, voice, quota/errors | UI UX Expert | done | R0 clickable (general-purpose only). Evidence: [FLOW-MAP.md](./docs/flows/FLOW-MAP.md) · [prototype](./docs/flows/prototype/index.html) · [Figma](https://www.figma.com/design/I7B2hqfQshLuqukyq73rNC). Coder: sync Notion D03 to done. |
 | D04 | Provider spikes: streaming/tools, search citations, image edit, voice; log gaps + cost | Coder | not started | Depends on D01 defaults OK |
 | D05 | Identity, storage permissions, canonical data model, ledger, preview deploy pipeline | Coder + Standards | not started | WP-01 core |
 | D06 | Vertical slice: sign-in → attach → model → stream cited answer → save → reopen → revoke/delete | Coder | not started | After D05 contracts |
@@ -55,7 +55,7 @@ Last updated: 2026-09-14 · Zone: Asia/Dubai (GST)
 | Agent | Assignment | Status |
 |---|---|---|
 | Coder | WP-01 audit → architecture notes PR open | in progress |
-| UI UX Expert | D03 clickable flows from PRD §5 + acceptance scenarios §3 | not started |
+| UI UX Expert | D03 clickable flows from PRD §5 + acceptance scenarios §3 | done |
 | Standards Expert | Security/authz/NFR checklist from PRD §20; review WP-01 contracts | in progress | [PR #3](https://github.com/swapnil-create/arcel-codeworks/pull/3) evidence checklist open; WP-01 not done. |
 | Chief of Staff | Ops cadence; keep Swapnil unblocked on D01 decisions | not started |
 
@@ -70,4 +70,7 @@ Last updated: 2026-09-14 · Zone: Asia/Dubai (GST)
 | 2026-09-14 02:39 | Notion Codeworks Tasks board seeded — https://app.notion.com/p/ea26e00cc54643ab8d9849e89320c31e |
 | 2026-09-14 02:40 | D01 formal sign-off skipped; proceeding on PRD §28 defaults (D01 → in progress, D02 → done) |
 | 2026-09-14 02:42 | WP-01 notes PR opened — https://github.com/swapnil-create/arcel-codeworks/pull/1 (architecture draft; WP-01 remains in progress) |
+| 2026-09-14 02:50 | D03 clickable flows (UI UX Expert): FLOW-MAP + HTML prototype + Figma I7B2hqfQshLuqukyq73rNC → done |
 | 2026-09-14 03:00 | WP-01 §20 security/NFR gate PR opened — https://github.com/swapnil-create/arcel-codeworks/pull/3 (Standards Expert; WP-01 remains in progress / not done) |
+| 2026-09-14 03:05 | D03 FLOW-MAP marked authoritative; dark-theme prototype rewritten to match screens A–G + ACC-03 stamps |
+| 2026-09-14 03:12 | D03 ACC-03 / §5.4 state coverage mapped and tagged (flow-level only; WP-11 still owns full a11y). WP-01 unchanged. |
