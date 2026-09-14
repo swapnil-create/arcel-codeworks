@@ -161,6 +161,12 @@ async function main() {
     if (/<strong>Swapnil<\/strong>/.test(app)) {
       throw new Error("app.js must not hardcode a signed-in identity");
     }
+    if (/user-button[^>]*>\$\{state.auth.user \? escapeHTML\(initials\(state.auth.user\)\) : "\?"\}/.test(app) || /: "\?"/.test(app)) {
+      throw new Error("unsigned account chip must say Sign in, not ?");
+    }
+    if (!/user-button\$\{state.auth.user \? "" : " unsigned"\}/.test(app) || !/: "Sign in"\}/.test(app)) {
+      throw new Error("unsigned account chip must render Sign in");
+    }
   });
 
   check("catalog: QUOTA_EXHAUSTED is reserved, not billed", () => {

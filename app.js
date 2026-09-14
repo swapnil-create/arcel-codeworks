@@ -188,13 +188,13 @@
         <p>Projects</p>
         ${projects.slice(0, 2).map(project => `<button data-action="open-project" data-project="${project.id}">${icon("folder")}<span>${escapeHTML(project.name)}</span></button>`).join("")}
       </section>
-      <div class="account" data-action="open-settings">
-        <span>${state.auth.user ? escapeHTML(initials(state.auth.user)) : "?"}</span>
+      <div class="account${state.auth.user ? "" : " unsigned"}" data-action="open-settings">
+        ${state.auth.user ? `<span>${escapeHTML(initials(state.auth.user))}</span>` : ""}
         <div>
           <strong>${state.auth.user ? escapeHTML(state.auth.user.name || state.auth.user.email || "Signed in") : "Sign in"}</strong>
           <small>${state.auth.user ? escapeHTML(providerLabel(state.auth.user.provider)) : (state.auth.configured ? "Required for generation" : "Not configured")}</small>
         </div>
-        <button type="button" data-action="open-settings" aria-label="Account">${icon("more")}</button>
+        <button type="button" data-action="open-settings" aria-label="${state.auth.user ? "Account" : "Sign in"}">${icon("more")}</button>
       </div>
     </aside>`;
   }
@@ -204,7 +204,7 @@
     return `<header class="topbar">
       <button class="mobile-menu" data-action="mobile-menu">${icon("grid")}</button>
       <button class="model-button" data-action="model-menu"><span>${escapeHTML(title)}</span>${state.view === "home" || state.view === "chat" ? icon("chevron") : ""}</button>
-      <div class="top-actions"><button data-action="share">Share</button><button class="user-button" data-action="open-settings" aria-label="Account">${state.auth.user ? escapeHTML(initials(state.auth.user)) : "?"}</button></div>
+      <div class="top-actions"><button data-action="share">Share</button><button class="user-button${state.auth.user ? "" : " unsigned"}" data-action="open-settings" aria-label="${state.auth.user ? "Account" : "Sign in"}">${state.auth.user ? escapeHTML(initials(state.auth.user)) : "Sign in"}</button></div>
     </header>`;
   }
 
