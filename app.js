@@ -15,8 +15,7 @@
   ];
 
   const models = [
-    { id: "arcel", name: "ARCEL 1", maker: "ARCEL", selected: true },
-    { id: "claude", name: "Claude Sonnet", maker: "Anthropic", selected: true },
+    { id: "claude", name: "Claude", maker: "Anthropic", selected: true },
     { id: "gpt", name: "GPT", maker: "OpenAI", selected: true },
     { id: "gemini", name: "Gemini", maker: "Google", selected: false }
   ];
@@ -24,7 +23,7 @@
   const state = {
     view: "home",
     mode: "Chat",
-    currentModel: "ARCEL 1",
+    currentModel: "Auto · Standard",
     activeProject: null,
     messages: [],
     busy: false,
@@ -97,7 +96,8 @@
 
   function modeSelector() {
     return `<div class="mode-selector" role="group" aria-label="Response mode">
-      ${["Chat", "Research", "Code"].map(mode => `<button class="${state.mode === mode ? "active" : ""}" data-action="mode" data-mode="${mode}">${mode}</button>`).join("")}
+      ${["Chat", "Code"].map(mode => `<button class="${state.mode === mode ? "active" : ""}" data-action="mode" data-mode="${mode}">${mode}</button>`).join("")}
+      <button disabled title="Real retrieval and citations are not connected yet">Research · soon</button>
     </div>`;
   }
 
@@ -120,7 +120,7 @@
         ${composer()}
         <div class="suggestions">
           <button data-action="suggest" data-prompt="Build a clean onboarding flow for this product">Build a feature</button>
-          <button data-action="suggest" data-prompt="Research the strongest options and cite the evidence">Research a decision</button>
+          <button disabled title="Real retrieval and citations are not connected yet">Research · soon</button>
           <button data-action="suggest" data-prompt="Review this code and identify the highest-risk issues">Review code</button>
           <button data-action="arena">Compare models</button>
         </div>
@@ -181,7 +181,8 @@
       <section class="arena-prompt">
         <label for="arena-input">Your prompt</label>
         <textarea id="arena-input" placeholder="Ask every selected model the same question…"></textarea>
-        <div><button data-action="judge" ${state.arenaResults.length ? "" : "disabled"}>${icon("vote")} Judge best</button><button data-action="combine" ${state.arenaResults.length ? "" : "disabled"}>${icon("compare")} Combine all</button><button class="primary-button" data-action="run-arena" ${state.arenaBusy ? "disabled" : ""}>${state.arenaBusy ? "Comparing…" : "Compare models"}${icon("arrow")}</button></div>
+        <div><button class="primary-button" data-action="run-arena" ${state.arenaBusy ? "disabled" : ""}>${state.arenaBusy ? "Comparing…" : "Compare models"}${icon("arrow")}</button></div>
+        <p class="feature-note">Choose a response manually. Evidence-based judging and synthesis are unavailable until runs, citations, and evaluation records are implemented.</p>
       </section>
       ${state.menu === "models" ? modelMenu() : ""}
       <section class="arena-grid">
@@ -212,7 +213,11 @@
     if (state.menu !== "model-switcher") return "";
     return `<div class="model-switcher">
       <p>Choose model</p>
-      ${["ARCEL 1", "ARCEL 1 Fast", "ARCEL 1 Deep"].map(model => `<button class="${state.currentModel === model ? "active" : ""}" data-action="select-primary-model" data-model="${model}"><span><strong>${model}</strong><small>${model.endsWith("Fast") ? "Quick answers" : model.endsWith("Deep") ? "Complex work" : "Balanced"}</small></span>${state.currentModel === model ? icon("check") : ""}</button>`).join("")}
+      ${[
+        { name: "Auto · Quick", tier: "fast", detail: "Prioritizes speed" },
+        { name: "Auto · Standard", tier: "balanced", detail: "Balanced for everyday work" },
+        { name: "Auto · Deep", tier: "deep", detail: "More time for complex work" }
+      ].map(model => `<button class="${state.currentModel === model.name ? "active" : ""}" data-action="select-primary-model" data-model="${model.name}" data-tier="${model.tier}"><span><strong>${model.name}</strong><small>${model.detail}</small></span>${state.currentModel === model.name ? icon("check") : ""}</button>`).join("")}
     </div>`;
   }
 
@@ -226,7 +231,7 @@
   }
 
   function tierForCurrentModel() {
-    if (state.currentModel.endsWith("Fast")) return "fast";
+    if (state.currentModel.endsWith("Quick")) return "fast";
     if (state.currentModel.endsWith("Deep")) return "deep";
     return "balanced";
   }
@@ -315,8 +320,6 @@
     if (action === "close-menu") state.menu = null;
     if (action === "toggle-model") state.selectedModels.has(target.dataset.model) ? state.selectedModels.delete(target.dataset.model) : state.selectedModels.add(target.dataset.model);
     if (action === "run-arena") { runArena(); return; }
-    if (action === "judge" && state.arenaResults.length) { const best = state.arenaResults.reduce((winner, result, index, all) => result.content.length > all[winner].content.length ? index : winner, 0); state.arenaResults.forEach((result, index) => result.winner = index === best); state.arenaReveal = true; }
-    if (action === "combine" && state.arenaResults.length) { const combined = state.arenaResults.map(result => result.content.split(". ")[0]).join(". "); state.messages = [{ role: "user", content: "Combine the strongest model responses" }, { role: "assistant", content: combined }]; state.view = "chat"; state.arenaReveal = true; }
     if (action === "vote-result") { state.arenaResults.forEach((result, index) => result.winner = index === Number(target.dataset.index)); state.arenaReveal = true; }
     render();
   });

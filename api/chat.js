@@ -21,12 +21,17 @@ const json = (res, status, body) => {
   res.status(status).json(body);
 };
 
-function cleanMessages(messages) {
-  if (!Array.isArray(messages)) return [];
-  return messages
-    .filter(message => message && ["user", "assistant"].includes(message.role) && typeof message.content === "string")
-    .slice(-24)
-    .map(message => ({ role: message.role, content: message.content.slice(0, 12000) }));
+function validateMessages(messages) {
+  if (!Array.isArray(messages) || !messages.length) return { error: "At least one message is required." };
+  if (messages.length > 24) return { error: "This conversation exceeds the current 24-message context limit. Context compaction is not available yet.", code: "CONTEXT_LIMIT" };
+
+  for (const message of messages) {
+    if (!message || !["user", "assistant"].includes(message.role) || typeof message.content !== "string") {
+      return { error: "Messages must contain a user or assistant role and text content." };
+    }
+    if (message.content.length > 12000) return { error: "A message exceeds the current 12,000-character input limit.", code: "CONTEXT_LIMIT" };
+  }
+  return { messages };
 }
 
 module.exports = async function handler(req, res) {
@@ -42,14 +47,26 @@ module.exports = async function handler(req, res) {
     });
   }
 
-  const messages = cleanMessages(req.body?.messages);
-  if (!messages.length || !messages.some(message => message.role === "user")) {
+  if (process.env.OPENROUTER_ALLOW_UNAUTHENTICATED_DEMO !== "true") {
+    return json(res, 403, {
+      error: "Generation is disabled until authenticated access is configured. Set OPENROUTER_ALLOW_UNAUTHENTICATED_DEMO=true only for a restricted internal demo.",
+      code: "AUTH_REQUIRED"
+    });
+  }
+
+  const messageResult = validateMessages(req.body?.messages);
+  if (messageResult.error) return json(res, messageResult.code === "CONTEXT_LIMIT" ? 413 : 400, messageResult);
+  const messages = messageResult.messages;
+  if (!messages.some(message => message.role === "user")) {
     return json(res, 400, { error: "A user message is required." });
   }
 
   const tier = ["fast", "balanced", "deep"].includes(req.body?.tier) ? req.body.tier : "balanced";
   const requestedModel = typeof req.body?.model === "string" ? req.body.model : "arcel";
-  const model = COMPARE_MODELS[requestedModel] || TIER_MODELS[tier];
+  if (requestedModel !== "arcel" && !Object.hasOwn(COMPARE_MODELS, requestedModel)) {
+    return json(res, 400, { error: "This model is not available in the current catalog.", code: "UNSUPPORTED_CAPABILITY" });
+  }
+  const model = requestedModel === "arcel" ? TIER_MODELS[tier] : COMPARE_MODELS[requestedModel];
   const mode = MODE_INSTRUCTIONS[req.body?.mode] ? req.body.mode : "Chat";
 
   try {
