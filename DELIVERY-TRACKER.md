@@ -2,7 +2,7 @@
 
 **Source of truth for done vs not-done.** Update this file (or Notion mirror) whenever a task finishes.  
 PRD: [ARCEL-Codeworks-PRD.md](./ARCEL-Codeworks-PRD.md) · Repo: `swapnil-create/arcel-codeworks`  
-Last updated: 2026-09-14 (PR #14 Research chip; D05 SEC-01 isolation tests; visual overhaul approved) · Zone: Asia/Dubai (GST)
+Last updated: 2026-09-14 (PR #16 isolation slice `4a7b587`; PR #14 Research chip `690a336`; visual overhaul approved) · Zone: Asia/Dubai (GST)
 
 ## How to update
 - Status values: `not started` | `in progress` | `blocked` | `done` | `needs review`
@@ -26,7 +26,7 @@ Last updated: 2026-09-14 (PR #14 Research chip; D05 SEC-01 isolation tests; visu
 | D02 | Traceable backlog from requirement IDs + WP-01…11 | Coder | done | Tracker commit `53b4a0f` + Notion board https://app.notion.com/p/ea26e00cc54643ab8d9849e89320c31e |
 | D03 | Clickable flows: first chat, model choice, files, research, artifacts, voice, quota/errors | UI UX Expert | done | R0 clickable (general-purpose only). Landed on main via merged [PR #2](https://github.com/swapnil-create/arcel-codeworks/pull/2) (`59cd67d`). Evidence: [FLOW-MAP.md](./docs/flows/FLOW-MAP.md) · [prototype](./docs/flows/prototype/index.html) · [Figma](https://www.figma.com/design/I7B2hqfQshLuqukyq73rNC). Coder: sync Notion D03 to done. |
 | D04 | Provider spikes: streaming/tools, search citations, image edit, voice; log gaps + cost | Coder | in progress | Private live streaming pass done; tools/search/image/voice remain `unsupported_capability`. Visual overhaul approved — resume remaining spikes after `AUTH_*` is live. **Not done.** |
-| D05 | Identity, storage permissions, canonical data model, ledger, preview deploy pipeline | Coder + Standards | in progress | Session/OAuth gate is on main ([PR #11](https://github.com/swapnil-create/arcel-codeworks/pull/11)); this slice adds session-gate + in-memory isolation tests. Next: production `AUTH_*` / IdP, Postgres cross-user tests, ledger, and protected preview. SEC-01 remains Fail. **Owner action:** set `AUTH_*` on Vercel ([AUTH.md](./docs/AUTH.md) checklist) before OpenRouter on production. |
+| D05 | Identity, storage permissions, canonical data model, ledger, preview deploy pipeline | Coder + Standards | in progress | Session/OAuth gate is on main ([PR #11](https://github.com/swapnil-create/arcel-codeworks/pull/11)). Isolation slice merged via [PR #16](https://github.com/swapnil-create/arcel-codeworks/pull/16) (`4a7b587`) — session-gate matrix + in-memory ACL fixtures. Next: production `AUTH_*` / IdP, Postgres cross-user tests, ledger, and protected preview. SEC-01 remains Fail. **Owner action:** set `AUTH_*` on Vercel ([AUTH.md](./docs/AUTH.md) checklist) before OpenRouter on production. **Not done.** |
 | D06 | Vertical slice: sign-in → attach → model → stream cited answer → save → reopen → revoke/delete | Coder | not started | After D05 contracts |
 | D07 | Review evidence, refine estimates, start R1 beta scope | All + Swapnil | not started | End of first 10 days |
 
@@ -36,7 +36,7 @@ Last updated: 2026-09-14 (PR #14 Research chip; D05 SEC-01 isolation tests; visu
 
 | Package | Scope | Depends | Status | Evidence |
 |---|---|---|---|---|
-| WP-01 | Architecture, schemas, env, auth, CI | R0 decisions | in progress | Architecture, security gate, session/OAuth gate, and in-memory isolation fixtures are merged. Still **not done** — SEC-01 remains Fail until production IdP (`AUTH_*` owner action) and Postgres cross-user tests; real DB, REL-03, OPS-01, and protected preview remain. |
+| WP-01 | Architecture, schemas, env, auth, CI | R0 decisions | in progress | Architecture, security gate, session/OAuth gate, and in-memory isolation fixtures merged via [PR #16](https://github.com/swapnil-create/arcel-codeworks/pull/16) (`4a7b587`). Still **not done** — SEC-01 remains Fail until production IdP (`AUTH_*` owner action) and Postgres cross-user tests; real DB, REL-03, OPS-01, and protected preview remain. |
 | WP-02 | Chat/history/settings (ACC, CHAT, PER) | WP-01 | not started | |
 | WP-03 | Model gateway/registry/metering (MOD, BIL) | WP-01 | not started | Informed by D04 spike matrix (streaming/tools/cost). |
 | WP-04 | Upload/library/retrieval (FIL, PRJ) | WP-01 | not started | |
@@ -85,3 +85,4 @@ Last updated: 2026-09-14 (PR #14 Research chip; D05 SEC-01 isolation tests; visu
 | 2026-09-14 17:18 | [PR #13](https://github.com/swapnil-create/arcel-codeworks/pull/13) merged — ARCEL visual overhaul: tokens, motion, composer, model/effort split, honesty banners, command palette, and mobile sheets. |
 | 2026-09-14 17:51 | [PR #14](https://github.com/swapnil-create/arcel-codeworks/pull/14) merged (`690a336`) — Research · Unavailable chip on all viewports (no D/WP status change). |
 | 2026-09-14 17:53 | Visual overhaul **approved**. D04/D05 backend resumed. D05 SEC-01 isolation tests (session matrix + in-memory ACL fixtures). **Owner action:** `AUTH_*` on Vercel before OpenRouter on production — [AUTH.md](./docs/AUTH.md) checklist. SEC-01 remains Fail. |
+| 2026-09-14 18:34 | [PR #16](https://github.com/swapnil-create/arcel-codeworks/pull/16) merged (`4a7b587`) — D05 SEC-01 isolation slice: session-gate matrix + in-memory ACL fixtures. SEC-01 remains **Fail**. D04/D05/WP-01 stay in progress / not done. |
