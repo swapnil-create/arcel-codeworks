@@ -8,9 +8,11 @@ const require = createRequire(import.meta.url);
 const login = require("../api/auth/login.js");
 const sessionHandler = require("../api/auth/session.js");
 const logout = require("../api/auth/logout.js");
-const { mintSession, SESSION_COOKIE } = require("../lib/session");
+const { mintSession, mintOAuthState, SESSION_COOKIE, STATE_COOKIE } = require("../lib/session");
 const { generationGate } = require("../lib/generation-errors");
 const { authConfigured } = require("../lib/auth-config");
+const { googleIdentityAllowed } = require("../lib/auth-oauth");
+const callback = require("../api/auth/callback.js");
 
 const TEST_SECRET = "ci-test-auth-secret-not-for-production-use!!";
 
@@ -105,6 +107,68 @@ assert(
     AUTH_GITHUB_SECRET: "client-secret"
   }),
   "github pair + secret is configured"
+);
+
+assert(
+  googleIdentityAllowed({ sub: "google-1", email: "person@arcelintelligence.com", email_verified: true }),
+  "verified ARCEL Google identity is allowed"
+);
+assert(
+  googleIdentityAllowed({ sub: "google-2", email: "PERSON@ARCELINTELLIGENCE.COM", email_verified: true }),
+  "verified ARCEL domain matching is case-insensitive"
+);
+assert(
+  !googleIdentityAllowed({ sub: "google-3", email: "person@arcelintelligence.com.evil", email_verified: true }),
+  "lookalike domain is rejected"
+);
+assert(
+  !googleIdentityAllowed({ sub: "google-4", email: "person@arcelintelligence.com", email_verified: false }),
+  "unverified Google email is rejected"
+);
+assert(
+  !googleIdentityAllowed({ sub: "google-5", email: "person@gmail.com", email_verified: true }),
+  "outside Google Workspace domain is rejected"
+);
+
+const previousFetch = globalThis.fetch;
+const previousAuthEnv = snapshotEnv();
+applyEnv({
+  AUTH_SECRET: TEST_SECRET,
+  AUTH_URL: "https://arcel-codeworks.example",
+  AUTH_GOOGLE_ID: "google-client-id",
+  AUTH_GOOGLE_SECRET: "google-client-secret"
+});
+const state = mintOAuthState("google", process.env);
+globalThis.fetch = async (url) => {
+  if (String(url).includes("oauth2.googleapis.com/token")) {
+    return { ok: true, status: 200, json: async () => ({ access_token: "test-access-token" }) };
+  }
+  return {
+    ok: true,
+    status: 200,
+    json: async () => ({ sub: "google-6", email: "person@outside.example", email_verified: true })
+  };
+};
+const restrictedCallback = await invoke(callback, {
+  env: {
+    AUTH_SECRET: TEST_SECRET,
+    AUTH_URL: "https://arcel-codeworks.example",
+    AUTH_GOOGLE_ID: "google-client-id",
+    AUTH_GOOGLE_SECRET: "google-client-secret"
+  },
+  headers: { cookie: `${STATE_COOKIE}=${state}` },
+  url: `/api/auth/callback?code=test-code&state=${encodeURIComponent(state)}`,
+  query: { code: "test-code", state }
+});
+globalThis.fetch = previousFetch;
+restore(previousAuthEnv);
+assert(
+  String(restrictedCallback.headers.location || "").includes("auth_error=domain_restricted"),
+  `outside Google Workspace callback must redirect with domain_restricted, got ${restrictedCallback.headers.location}`
+);
+assert(
+  !restrictedCallback.cookies.some(cookie => cookie.startsWith(`${SESSION_COOKIE}=`) && !cookie.includes("Max-Age=0")),
+  "domain-restricted callback must not mint a session cookie"
 );
 
 const unconfiguredLogin = await invoke(login, {
