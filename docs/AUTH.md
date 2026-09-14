@@ -1,6 +1,6 @@
 # Auth configuration (D05 / WP-01 P4)
 
-**Status:** Signed session cookie + OAuth scaffold. **SEC-01 stays Fail** until an IdP is configured in production and cross-user isolation tests exist.
+**Status:** Signed session cookie + OAuth scaffold. In-memory isolation fixtures exist. **SEC-01 stays Fail** until an IdP is configured in production and Postgres-backed cross-user tests exist.
 
 Do not commit secrets. Do not set `OPENROUTER_ALLOW_UNAUTHENTICATED_DEMO=true` on any shared URL. That flag is **not** a session and **cannot** authorize OpenRouter spend.
 
@@ -15,6 +15,7 @@ Vanilla HTML/JS + Vercel serverless (no Auth.js/NextAuth — too heavy for this 
 | Sign-out | `POST /api/auth/logout` clears cookies |
 | Who am I | `GET /api/auth/session` (no secrets) |
 | Spend gate | `POST /api/chat` requires a valid session **and** `OPENROUTER_API_KEY`. Missing session → `AUTH_REQUIRED`. No cookie / no `Authorization` header / client-asserted `user` names cannot bypass. |
+| Object ACL (fixture only) | `lib/object-access.js` + `docs/data-model/fixtures/sec01-isolation-slice.json` — guessed IDs, revoked memberships, and cross-user reads deny closed. **Not wired to a live store.** |
 
 Fail closed: if `AUTH_SECRET` is missing, shorter than 32 characters, or no OAuth client is set, login does not succeed and `/api/chat` stays `AUTH_REQUIRED`.
 
@@ -22,15 +23,20 @@ Identity is **server-derived** from the cookie. The client must not be trusted f
 
 This is **not** workspace membership, ACL, or ACC-01 session-list/remote-revoke. Those need a database (still stubbed).
 
-## Vercel (Swapnil)
+## Vercel owner checklist (before OpenRouter on production)
 
-1. Generate a secret: `openssl rand -base64 48`
-2. In the Vercel project → Settings → Environment Variables, set at least:
-   - `AUTH_SECRET` (the value from step 1)
+Owner action required. Do **not** add a paid `OPENROUTER_API_KEY` on Production until all of the following are set. See this file as the source checklist.
+
+1. Generate a secret: `openssl rand -base64 48` — store it only in Vercel; never commit it.
+2. Vercel project → Settings → Environment Variables, for **Production** (and Preview if you will sign in there):
+   - `AUTH_SECRET` (the value from step 1; ≥32 characters)
    - `AUTH_URL` = `https://arcel-codeworks.vercel.app` (or the preview URL you are testing)
    - `AUTH_GITHUB_ID` and `AUTH_GITHUB_SECRET` **or** `AUTH_GOOGLE_ID` and `AUTH_GOOGLE_SECRET`
-3. Keep `OPENROUTER_ALLOW_UNAUTHENTICATED_DEMO` **unset or false** on Production and shared Preview.
-4. Add `OPENROUTER_API_KEY` only after this session gate is deployed. Separate preview vs production keys.
+3. Keep `OPENROUTER_ALLOW_UNAUTHENTICATED_DEMO` **unset or false** on Production and shared Preview. CI forbids enabling it on tracked runtime paths.
+4. Add `OPENROUTER_API_KEY` **only after** steps 1–3. Use separate preview vs production keys.
+5. Confirm a real sign-in creates `/api/auth/session` with a `user.sub`, then retry generation.
+
+`AUTH_*` configuration is an owner action. Session code fails closed until it is done.
 
 ### GitHub OAuth App
 
@@ -69,16 +75,29 @@ Uses a **placeholder** (not real) OpenRouter key so you can see `AUTH_REQUIRED` 
 
 ## Checks
 
-`node scripts/ci-check.mjs` asserts:
+`node scripts/ci-check.mjs` runs `scripts/test-chat-gate.mjs`, `scripts/test-auth-gate.mjs`, and `scripts/test-sec01-isolation.mjs`.
 
-- omitting headers/cookies cannot reach the provider mock
-- the demo flag cannot authorize
-- tampered/expired/wrong-secret cookies fail closed
-- no committed secrets or `OPENROUTER_ALLOW_UNAUTHENTICATED_DEMO=true`
+Session spend gate (`POST /api/chat`, no provider call):
+
+| Case | Expected |
+|---|---|
+| missing session (omit headers/cookies) | `AUTH_REQUIRED`, no spend |
+| tampered cookie | `AUTH_REQUIRED`, no spend |
+| expired cookie | `AUTH_REQUIRED`, no spend |
+| wrong secret | `AUTH_REQUIRED`, no spend |
+| bearer token | rejected; not a session |
+| client-asserted `user` / `display_name` / `sub` | rejected |
+| `OPENROUTER_ALLOW_UNAUTHENTICATED_DEMO=true` | not a bypass |
+| extra identity headers (`x-user-id`) | rejected |
+| valid signed cookie | provider mock may run |
+
+In-memory object isolation (no live DB): cross-user personal workspaces, guessed IDs, revoked memberships, and client-asserted names. See [data-model README](./data-model/README.md) for **Postgres gaps**.
+
+CI also forbids committed secrets and `OPENROUTER_ALLOW_UNAUTHENTICATED_DEMO=true` on tracked runtime paths.
 
 ## Remaining (not this PR)
 
-- Configure IdP + `AUTH_SECRET` on production (owner)
-- Durable User/Workspace/Membership store and cross-user object tests (SEC-01 / ACC-01)
+- Configure IdP + `AUTH_SECRET` on production (**owner** — Vercel checklist above)
+- Durable User/Workspace/Membership store and Postgres cross-user object tests (SEC-01 / ACC-01)
 - Usage ledger (REL-03), observability (OPS-01), protected preview + branch protection
 - Magic-link email (not implemented; OAuth only)

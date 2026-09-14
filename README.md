@@ -23,7 +23,7 @@ Dependency-free static client (`index.html`, `app.js`, `styles.css`). Conversati
 
 Do not describe these as shipped:
 
-- Auth, sessions, or workspace membership — **partial:** signed session cookie + OAuth scaffold ([docs/AUTH.md](docs/AUTH.md)); no IdP in production, no durable membership/ACL (SEC-01 still Fail)
+- Auth, sessions, or workspace membership — **partial:** signed session cookie + OAuth scaffold ([docs/AUTH.md](docs/AUTH.md)); in-memory isolation fixtures only; no IdP in production, no durable membership/ACL (SEC-01 still Fail)
 - Persistence or durable chat history
 - Real research / web search with visible sources (Research is disabled in the composer)
 - File uploads
@@ -56,6 +56,8 @@ Neither command enables `OPENROUTER_ALLOW_UNAUTHENTICATED_DEMO`. Sign-in stays f
 
 The browser calls `/api/chat` with the session cookie; it never receives the OpenRouter key. Copy `.env.example` to `.env.local` for local Vercel/local-preview use, then set `OPENROUTER_API_KEY` in the Vercel project **only after** `AUTH_SECRET` + OAuth are configured. Keep `OPENROUTER_ALLOW_UNAUTHENTICATED_DEMO=false` on shared URLs.
 
+**Vercel owner action:** complete the [AUTH.md Vercel owner checklist](docs/AUTH.md) (`AUTH_SECRET`, `AUTH_URL`, GitHub or Google OAuth) before enabling OpenRouter on production.
+
 Optional `OPENROUTER_MODEL_*` slugs map the prototype tiers (Fast / Balanced / Deep) and Compare models. Those env maps are not a model registry.
 
 ## Docs
@@ -63,7 +65,7 @@ Optional `OPENROUTER_MODEL_*` slugs map the prototype tiers (Fast / Balanced / D
 | Doc | Role |
 |---|---|
 | [PRD merge status](docs/PRD-MERGE-STATUS.md) | Honest completion boundary |
-| [Auth](docs/AUTH.md) | How to set AUTH_SECRET + OAuth on Vercel; session gate; SEC-01 not done |
+| [Auth](docs/AUTH.md) | How to set AUTH_SECRET + OAuth on Vercel (owner checklist); session gate; SEC-01 not done |
 | [Preview CI](docs/PREVIEW-CI.md) | PR checks + protected preview expectations; WP-01 not done |
 | [Data model stubs](docs/data-model/README.md) | Canonical schemas; persistence not live |
 | [PRD](ARCEL-Codeworks-PRD.md) | Product requirements |

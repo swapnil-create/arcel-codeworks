@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Dependency-free CI for the vanilla HTML + Vercel function repo.
- * Syntax, JSON, generation-gate unit checks, secret/demo-flag scan, data-model stubs.
+ * Syntax, JSON, generation-gate unit checks, session isolation, secret/demo-flag scan, data-model stubs.
  */
 import { execFileSync } from "node:child_process";
 import { readdir } from "node:fs/promises";
@@ -137,6 +137,14 @@ async function main() {
     }
   });
 
+  check("classify: PERMISSION_DENIED is object ACL, not a session bypass", () => {
+    const failure = classifyGenerationFailure({ status: 403, code: "PERMISSION_DENIED" });
+    if (failure.state !== "permission-denied" || failure.taxonomy !== "permission_denied" || failure.retryable) {
+      throw new Error(JSON.stringify(failure));
+    }
+    if (failure.code !== "PERMISSION_DENIED") throw new Error("PERMISSION_DENIED must not collapse to AUTH_REQUIRED");
+  });
+
   check("classify: OPENROUTER_NOT_CONFIGURED is failed / provider_unavailable", () => {
     const failure = classifyGenerationFailure({ status: 503, code: "OPENROUTER_NOT_CONFIGURED" });
     if (failure.state !== "failed" || failure.taxonomy !== "provider_unavailable") {
@@ -240,11 +248,18 @@ async function main() {
     execFileSync("node", [join(ROOT, "scripts/test-auth-gate.mjs")], { cwd: ROOT, stdio: "pipe" });
   });
 
+  check("sec-01: session matrix + in-memory isolation fixtures", () => {
+    execFileSync("node", [join(ROOT, "scripts/test-sec01-isolation.mjs")], { cwd: ROOT, stdio: "pipe" });
+  });
+
   check("docs: AUTH.md present and secret-free", () => {
     const fs = require("node:fs");
     const auth = fs.readFileSync(join(ROOT, "docs/AUTH.md"), "utf8");
     if (!/AUTH_SECRET/.test(auth) || !/AUTH_GITHUB_ID/.test(auth) || !/\/api\/chat/.test(auth)) {
       throw new Error("AUTH.md missing configuration instructions");
+    }
+    if (!/Vercel owner checklist/.test(auth) || !/missing session/.test(auth)) {
+      throw new Error("AUTH.md must document the Vercel owner checklist and session-gate matrix");
     }
     if (/sk-or-v1-/i.test(auth) || /AUTH_SECRET=\S+/.test(auth)) {
       throw new Error("AUTH.md must not include secret values");

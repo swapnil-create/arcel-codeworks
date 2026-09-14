@@ -4,8 +4,12 @@
  * No database. Persistence is not live. Exit 1 on failure.
  */
 import { readFile, readdir } from "node:fs/promises";
+import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+
+const require = createRequire(import.meta.url);
+const { evaluateCase } = require("../lib/object-access.js");
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const MODEL = join(ROOT, "docs/data-model");
@@ -202,6 +206,23 @@ async function main() {
     rejected = true;
   }
   if (!rejected) fail("expected in-place terminal status change to be rejected");
+
+  const isolation = await loadJson(join(FIXTURE_DIR, "sec01-isolation-slice.json"));
+  for (const [collection, schemaName] of Object.entries(COLLECTIONS)) {
+    const schema = schemas[schemaName];
+    for (const [index, record] of (isolation[collection] || []).entries()) {
+      validateSchema(record, schema, `isolation.${collection}[${index}]`);
+    }
+  }
+  assertGraph(isolation);
+  if (!Array.isArray(isolation.cases) || isolation.cases.length < 8) {
+    fail("sec01-isolation-slice.json must include isolation cases");
+  }
+  for (const testCase of isolation.cases) {
+    if (!evaluateCase(isolation, testCase)) {
+      fail(`isolation case failed: ${testCase.name}`);
+    }
+  }
 
   console.log("data-model stubs: schemas + invariants ok (persistence is not live)");
 }

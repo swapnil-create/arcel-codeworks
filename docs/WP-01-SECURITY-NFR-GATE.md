@@ -44,7 +44,7 @@ Per PRD §24, WP-01 completion evidence requires **all three**:
 
 | ID | Status | Why it blocks R0 |
 |---|---|---|
-| **SEC-01** | **Fail** | Session cookie gate exists on `/api/chat`, but no IdP is configured in production and there are no cross-user / membership isolation tests |
+| **SEC-01** | **Fail** | Session cookie gate exists on `/api/chat`; in-memory isolation fixtures exist; no IdP is configured in production and there are no Postgres-backed cross-user / membership isolation tests |
 | **REL-03** | **Fail** | No usage ledger, idempotency keys, or retry/crash side-effect tests |
 | **OPS-01** | **Fail** | No per-run latency / failure / cost observability |
 | **Preview CI** (WP-01 exit) | **Fail** | Workflow scaffold exists; protected preview + manual prod approval + Vercel Git permissions not evidenced |
@@ -62,7 +62,7 @@ Secondary high-priority gaps (not all named R0 blockers above, but tied to hones
 | **Requirement summary** | Every object, retrieval, job, and tool path enforces authorization; guessed IDs and revoked memberships must fail closed. |
 | **Acceptance criteria** | Automated cross-user / cross-workspace tests (including guessed IDs and revoked memberships) prove unauthorized access is denied; server derives actor/workspace (never from client-asserted display names alone). |
 | **Current prototype status** | **Fail** |
-| **Evidence** | `POST /api/chat` requires a valid HMAC session cookie (`lib/session.js`); missing/tampered/expired cookies and omitted headers return `AUTH_REQUIRED` and do not call OpenRouter. OAuth login is env-configured and fail-closed ([docs/AUTH.md](./AUTH.md)). **Still Fail:** no IdP on production, no durable User/Workspace/Membership store, no automated cross-user / guessed-ID / revoked-membership tests. Architecture notes §1.3, §2 (auth row), [PR #1](https://github.com/swapnil-create/arcel-codeworks/pull/1). |
+| **Evidence** | `POST /api/chat` requires a valid HMAC session cookie (`lib/session.js`); missing/tampered/expired cookies, omitted headers, bearer tokens, client-asserted names, and the demo flag return `AUTH_REQUIRED` and do not call OpenRouter. OAuth login is env-configured and fail-closed ([docs/AUTH.md](./AUTH.md)). In-memory ACL fixtures (`docs/data-model/fixtures/sec01-isolation-slice.json`, `lib/object-access.js`) cover guessed IDs, revoked memberships, and cross-user reads **without a live DB**. **Still Fail:** no IdP on production (owner must complete the AUTH.md Vercel checklist before OpenRouter), no durable User/Workspace/Membership store, no Postgres row-level tests. Architecture notes §1.3, §2 (auth row), [PR #1](https://github.com/swapnil-create/arcel-codeworks/pull/1). |
 | **R0 blocker** | **Yes** — release blocker before public paid provider key (PRD §22). |
 
 ### SEC-02 — Secrets server-side; encrypted credentials; rotation and least privilege
