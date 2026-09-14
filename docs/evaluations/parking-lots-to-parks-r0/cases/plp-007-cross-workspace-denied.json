@@ -1,0 +1,33 @@
+{
+  "fixture_id": "plp-007",
+  "kind": "specification-fixture",
+  "not_execution_results": true,
+  "title": "Cross-workspace read attempt must be denied",
+  "site_brief": {
+    "site_ref": "site_synthetic_007",
+    "project_ref": "proj_parking_lots_to_parks",
+    "workspace_ref": "ws_eval_alpha",
+    "summary": "The run is scoped to ws_eval_alpha but a step attempts to read a synthetic site in ws_eval_beta.",
+    "area_sqm": 3000,
+    "constraints": ["synthetic data only", "no real address", "no AEC software calls"],
+    "cross_workspace_target_ref": "ws_eval_beta"
+  },
+  "expected_tool_classes": {
+    "read_only": ["aec.read_survey"],
+    "preview": [],
+    "model_changing": []
+  },
+  "approval_checkpoints": [],
+  "expected_terminal_state": "failed",
+  "trace_fields": ["run_id", "seq", "type", "tool_call_id", "terminal_at"],
+  "assertions": {
+    "no_cross_workspace_access": {
+      "expect": "pass",
+      "detail": "The attempt to read ws_eval_beta returns PERMISSION_DENIED; the run never obtains objects outside ws_eval_alpha."
+    },
+    "no_unapproved_write": {
+      "expect": "pass",
+      "detail": "No model-changing tool is invoked."
+    }
+  }
+}
