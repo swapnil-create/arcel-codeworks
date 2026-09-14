@@ -63,9 +63,7 @@
       <div class="brand">
         <img class="brand-logo" src="./assets/arcel-logo-figma.svg" alt="ARCEL">
         <span class="brand-divider" aria-hidden="true"></span>
-        <span class="brand-codeworks" role="img" aria-label="Codeworks">
-          ${["c", "o", "d", "e", "w", "o", "r", "k", "s"].map(letter => `<img src="./assets/codeworks-${letter}.svg" alt="" aria-hidden="true">`).join("")}
-        </span>
+        <span class="brand-product">Codeworks</span>
       </div>
       <button class="new-chat" data-action="new-chat">${icon("plus")}<span>New chat</span><kbd>⌘ K</kbd></button>
       <nav class="primary-nav">
