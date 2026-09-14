@@ -24,7 +24,7 @@ Last updated: 2026-09-14 · Zone: Asia/Dubai (GST)
 |---|---|---|---|---|
 | D01 | Approve product scope, naming, task/model/effort/expertise split | Swapnil (product) | in progress | Formal sign-off skipped 2026-09-14; proceeding on PRD §28 defaults until overridden. |
 | D02 | Traceable backlog from requirement IDs + WP-01…11 | Coder | done | Tracker commit `53b4a0f` + Notion board https://app.notion.com/p/ea26e00cc54643ab8d9849e89320c31e |
-| D03 | Clickable flows: first chat, model choice, files, research, artifacts, voice, quota/errors | UI UX Expert | done | R0 clickable (general-purpose only). Evidence: [FLOW-MAP.md](./docs/flows/FLOW-MAP.md) · [prototype](./docs/flows/prototype/index.html) · [Figma](https://www.figma.com/design/I7B2hqfQshLuqukyq73rNC). Coder: sync Notion D03 to done. |
+| D03 | Clickable flows: first chat, model choice, files, research, artifacts, voice, quota/errors | UI UX Expert | done | R0 clickable (general-purpose only). Landed on main via merged [PR #2](https://github.com/swapnil-create/arcel-codeworks/pull/2) (`59cd67d`). Evidence: [FLOW-MAP.md](./docs/flows/FLOW-MAP.md) · [prototype](./docs/flows/prototype/index.html) · [Figma](https://www.figma.com/design/I7B2hqfQshLuqukyq73rNC). Coder: sync Notion D03 to done. |
 | D04 | Provider spikes: streaming/tools, search citations, image edit, voice; log gaps + cost | Coder | in progress | Plan + harness (no live keys). Evidence: [docs/D04-PROVIDER-SPIKES.md](./docs/D04-PROVIDER-SPIKES.md) · [scripts/d04-provider-spike.mjs](./scripts/d04-provider-spike.mjs) · [PR #6](https://github.com/swapnil-create/arcel-codeworks/pull/6). SEC-01 blocks unauthenticated public spend; live costs blocked on private credentials. **Not done.** |
 | D05 | Identity, storage permissions, canonical data model, ledger, preview deploy pipeline | Coder + Standards | not started | WP-01 core |
 | D06 | Vertical slice: sign-in → attach → model → stream cited answer → save → reopen → revoke/delete | Coder | not started | After D05 contracts |
@@ -36,7 +36,7 @@ Last updated: 2026-09-14 · Zone: Asia/Dubai (GST)
 
 | Package | Scope | Depends | Status | Evidence |
 |---|---|---|---|---|
-| WP-01 | Architecture, schemas, env, auth, CI | R0 decisions | in progress | [PR #1](https://github.com/swapnil-create/arcel-codeworks/pull/1) architecture notes (`docs/WP-01-ARCHITECTURE.md`, `9bccc64`); [PR #3](https://github.com/swapnil-create/arcel-codeworks/pull/3) §20 security/NFR gate (`docs/WP-01-SECURITY-NFR-GATE.md`, `6faa73e`). Still not done — migration tests + protected preview Fail; R0 blockers SEC-01, REL-03, OPS-01, preview CI. |
+| WP-01 | Architecture, schemas, env, auth, CI | R0 decisions | in progress | Architecture + §20 gate docs **merged on main**: [WP-01-ARCHITECTURE.md](./docs/WP-01-ARCHITECTURE.md) via [PR #1](https://github.com/swapnil-create/arcel-codeworks/pull/1) (`ac69866`); [WP-01-SECURITY-NFR-GATE.md](./docs/WP-01-SECURITY-NFR-GATE.md) via [PR #3](https://github.com/swapnil-create/arcel-codeworks/pull/3) (merge `7ba380e`, tip `b33991b`). Still not done — migration tests + protected preview Fail; R0 blockers SEC-01, REL-03, OPS-01, preview CI. |
 | WP-02 | Chat/history/settings (ACC, CHAT, PER) | WP-01 | not started | |
 | WP-03 | Model gateway/registry/metering (MOD, BIL) | WP-01 | not started | Informed by D04 spike matrix (streaming/tools/cost). |
 | WP-04 | Upload/library/retrieval (FIL, PRJ) | WP-01 | not started | |
@@ -54,9 +54,9 @@ Last updated: 2026-09-14 · Zone: Asia/Dubai (GST)
 
 | Agent | Assignment | Status |
 |---|---|---|
-| Coder | D04 provider spikes (plan/harness) → then D05 / WP-01 contracts | in progress |
+| Coder | D04 plan/harness landed via [PR #6](https://github.com/swapnil-create/arcel-codeworks/pull/6); still in progress pending live keys; then D05 / WP-01 P1–P5. Architecture notes merged ([PR #1](https://github.com/swapnil-create/arcel-codeworks/pull/1)). | in progress |
 | UI UX Expert | D03 clickable flows from PRD §5 + acceptance scenarios §3 | done |
-| Standards Expert | Security/authz/NFR checklist from PRD §20; review WP-01 contracts | in progress | [PR #3](https://github.com/swapnil-create/arcel-codeworks/pull/3) evidence checklist merged path; WP-01 not done. |
+| Standards Expert | Security/authz/NFR checklist from PRD §20; review WP-01 contracts | in progress | §20 gate checklist **merged** via [PR #3](https://github.com/swapnil-create/arcel-codeworks/pull/3) (`7ba380e`); WP-01 contracts/review still ongoing — WP-01 itself not done. |
 | Chief of Staff | Ops cadence; keep Swapnil unblocked on D01 decisions | not started |
 
 ---
@@ -75,4 +75,6 @@ Last updated: 2026-09-14 · Zone: Asia/Dubai (GST)
 | 2026-09-14 03:05 | D03 FLOW-MAP marked authoritative; dark-theme prototype rewritten to match screens A–G + ACC-03 stamps |
 | 2026-09-14 03:12 | D03 ACC-03 / §5.4 state coverage mapped and tagged (flow-level only; WP-11 still owns full a11y). WP-01 unchanged. |
 | 2026-09-14 09:00 | Merged overnight PRD, WP-01 audits, and D03 prototype. Applied PRD §22 honesty corrections to the prototype; blockers and required decisions are recorded in `docs/PRD-MERGE-STATUS.md`. |
+| 2026-09-14 10:38 | [PR #3](https://github.com/swapnil-create/arcel-codeworks/pull/3) §20 security/NFR gate merged to main (`7ba380e` → `docs/WP-01-SECURITY-NFR-GATE.md`, tip `b33991b`). Same window: [PR #1](https://github.com/swapnil-create/arcel-codeworks/pull/1) architecture (`ac69866`) and [PR #2](https://github.com/swapnil-create/arcel-codeworks/pull/2) D03 (`59cd67d`) on main. WP-01 remains in progress. |
 | 2026-09-14 11:45 | D04 → in progress: provider spike plan + capability matrix + no-op harness (`docs/D04-PROVIDER-SPIKES.md`, `scripts/d04-provider-spike.mjs`). Live costs blocked on credentials; SEC-01 blocks unauthenticated public spend. |
+| 2026-09-14 13:33 | [PR #6](https://github.com/swapnil-create/arcel-codeworks/pull/6) merged to main (`eb5f2d5`): D04 plan/harness on main; D04 still in progress / not done. |
