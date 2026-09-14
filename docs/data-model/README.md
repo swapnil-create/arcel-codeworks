@@ -1,7 +1,7 @@
 # Canonical data model stubs (D05 / WP-01 P3)
 
-**Status:** Scaffold only. **Persistence is not live.**  
-**Source:** [PRD §19](../../ARCEL-Codeworks-PRD.md) · [WP-01 architecture §3.1](../WP-01-ARCHITECTURE.md)  
+**Status:** Scaffold only. **Persistence is not live.**
+**Source:** [PRD §19](../../ARCEL-Codeworks-PRD.md) · [WP-01 architecture §3.1](../WP-01-ARCHITECTURE.md)
 **This is not a database.** There is no Postgres instance, no object store, and no runtime that writes these records.
 
 These files freeze the R0 shapes so later auth, run-service, and ledger PRs have somewhere to land. Do not treat fixtures as user data. Do not mark REL-03, SEC-01, D05, or WP-01 done from this folder.

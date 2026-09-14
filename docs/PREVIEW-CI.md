@@ -1,6 +1,6 @@
 # Preview CI and protected deploy expectations (D05 / WP-01 P2)
 
-**Status:** In-repo CI **scaffold**. Protected preview / production policy is **not complete**.  
+**Status:** In-repo CI **scaffold**. Protected preview / production policy is **not complete**.
 **Does not satisfy** the WP-01 exit gate by itself. Owner actions below are still required.
 
 ## What this repo now runs on pull requests
