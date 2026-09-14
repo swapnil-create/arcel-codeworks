@@ -2,7 +2,7 @@
 
 **Source of truth for done vs not-done.** Update this file (or Notion mirror) whenever a task finishes.  
 PRD: [ARCEL-Codeworks-PRD.md](./ARCEL-Codeworks-PRD.md) · Repo: `swapnil-create/arcel-codeworks`  
-Last updated: 2026-09-14 (visual overhaul in progress) · Zone: Asia/Dubai (GST)
+Last updated: 2026-09-14 (visual overhaul PR #13 tip `d2df51e7`) · Zone: Asia/Dubai (GST)
 
 ## How to update
 - Status values: `not started` | `in progress` | `blocked` | `done` | `needs review`
@@ -26,7 +26,7 @@ Last updated: 2026-09-14 (visual overhaul in progress) · Zone: Asia/Dubai (GST)
 | D02 | Traceable backlog from requirement IDs + WP-01…11 | Coder | done | Tracker commit `53b4a0f` + Notion board https://app.notion.com/p/ea26e00cc54643ab8d9849e89320c31e |
 | D03 | Clickable flows: first chat, model choice, files, research, artifacts, voice, quota/errors | UI UX Expert | done | R0 clickable (general-purpose only). Landed on main via merged [PR #2](https://github.com/swapnil-create/arcel-codeworks/pull/2) (`59cd67d`). Evidence: [FLOW-MAP.md](./docs/flows/FLOW-MAP.md) · [prototype](./docs/flows/prototype/index.html) · [Figma](https://www.figma.com/design/I7B2hqfQshLuqukyq73rNC). Coder: sync Notion D03 to done. |
 | D04 | Provider spikes: streaming/tools, search citations, image edit, voice; log gaps + cost | Coder | in progress | **Paused for visual overhaul (Swapnil 2026-09-14).** Private live streaming **pass** remains; tools/search/image/voice still `unsupported_capability`. Do not expand backend until the ARCEL UI overhaul lands. Evidence unchanged: [docs/D04-LIVE-RESULTS.md](./docs/D04-LIVE-RESULTS.md). **Still in progress / not done.** |
-| D05 | Identity, storage permissions, canonical data model, ledger, preview deploy pipeline | Coder + Standards | in progress | **Paused for visual overhaul (Swapnil 2026-09-14).** Session/OAuth gate already merged; remaining IdP/DB/ledger/preview work waits. Do not add new backend on this branch. **Not done.** |
+| D05 | Identity, storage permissions, canonical data model, ledger, preview deploy pipeline | Coder + Standards | in progress | **Paused for visual overhaul (Swapnil 2026-09-14).** Session/OAuth gate already merged ([PR #11](https://github.com/swapnil-create/arcel-codeworks/pull/11), `2a9b14a`); remaining IdP/DB/ledger/preview work waits. Do not add new backend on this branch. **Not done.** |
 | D06 | Vertical slice: sign-in → attach → model → stream cited answer → save → reopen → revoke/delete | Coder | not started | After D05 contracts |
 | D07 | Review evidence, refine estimates, start R1 beta scope | All + Swapnil | not started | End of first 10 days |
 
@@ -36,7 +36,7 @@ Last updated: 2026-09-14 (visual overhaul in progress) · Zone: Asia/Dubai (GST)
 
 | Package | Scope | Depends | Status | Evidence |
 |---|---|---|---|---|
-| WP-01 | Architecture, schemas, env, auth, CI | R0 decisions | in progress | Architecture and §20 gate docs are merged; D05 now adds a fail-closed session/OAuth spend gate ([docs/AUTH.md](./docs/AUTH.md)). Still **not done** — SEC-01 remains Fail until production IdP configuration and cross-user tests; real DB migration tests, REL-03, OPS-01, and protected preview remain. |
+| WP-01 | Architecture, schemas, env, auth, CI | R0 decisions | in progress | Architecture and §20 gate docs are merged; D05 now adds a fail-closed session/OAuth spend gate ([docs/AUTH.md](./docs/AUTH.md), [PR #11](https://github.com/swapnil-create/arcel-codeworks/pull/11)). Still **not done** — SEC-01 remains Fail until production IdP configuration and cross-user tests; real DB migration tests, REL-03, OPS-01, and protected preview remain. |
 | WP-02 | Chat/history/settings (ACC, CHAT, PER) | WP-01 | not started | |
 | WP-03 | Model gateway/registry/metering (MOD, BIL) | WP-01 | not started | Informed by D04 spike matrix (streaming/tools/cost). |
 | WP-04 | Upload/library/retrieval (FIL, PRJ) | WP-01 | not started | |
@@ -54,9 +54,9 @@ Last updated: 2026-09-14 (visual overhaul in progress) · Zone: Asia/Dubai (GST)
 
 | Agent | Assignment | Status |
 |---|---|---|
-| Coder | **Backend expansion paused** per Swapnil 2026-09-14 until the visual overhaul PR lands. D04/D05 remain in progress, not done. | paused |
-| UI UX Expert | ARCEL visual overhaul (design system, motion, core screens) in vanilla `index.html` / `app.js` / `styles.css`. Brand file [1xzbayqWIOA9aTav8FkseQ](https://www.figma.com/design/1xzbayqWIOA9aTav8FkseQ). **In progress / not done.** | in progress |
-| Standards Expert | Security/authz/NFR checklist from PRD §20; review WP-01 contracts | in progress | §20 gate checklist **merged** via [PR #3](https://github.com/swapnil-create/arcel-codeworks/pull/3) (`7ba380e`); WP-01 contracts/review still ongoing — WP-01 itself not done. |
+| Coder | **Backend expansion paused** per Swapnil 2026-09-14 until visual overhaul [PR #13](https://github.com/swapnil-create/arcel-codeworks/pull/13) merges. D04/D05 remain in progress, not done. | paused |
+| UI UX Expert | ARCEL visual overhaul in [PR #13](https://github.com/swapnil-create/arcel-codeworks/pull/13) (`d2df51e7`): design system + motion + D1–D8 / M1–M6 locked to Figma [1xzbayqWIOA9aTav8FkseQ](https://www.figma.com/design/1xzbayqWIOA9aTav8FkseQ). Honesty preserved (Research disabled, banners not fake AI). **In progress / not done** — awaiting Swapnil merge (and any post-Figma-lock recheck). | in progress |
+| Standards Expert | Security/authz/NFR checklist from PRD §20; review WP-01 contracts; QA pass on visual overhaul vs Figma. | in progress | §20 gate checklist **merged** via [PR #3](https://github.com/swapnil-create/arcel-codeworks/pull/3) (`7ba380e`); WP-01 contracts/review still ongoing — WP-01 itself not done. |
 | Chief of Staff | Ops cadence; keep Swapnil unblocked on D01 decisions | not started |
 
 ---
@@ -83,3 +83,4 @@ Last updated: 2026-09-14 (visual overhaul in progress) · Zone: Asia/Dubai (GST)
 | 2026-09-14 14:55 | Private D04 live spike (operator harness): streaming pass (~0.000013 USD, `google/gemini-2.5-flash`); tools/search/image/voice `unsupported_capability`. Evidence: [docs/D04-LIVE-RESULTS.md](./docs/D04-LIVE-RESULTS.md). D04 still in progress / not done. |
 | 2026-09-14 16:00 | D05 foundation merged: honesty UX, CI scaffold, data-model stubs, and fail-closed GitHub/Google OAuth session gate. `POST /api/chat` requires a signed session; SEC-01 remains **Fail**. |
 | 2026-09-14 16:51 | **Priority shift (Swapnil):** complete ARCEL visual overhaul before further backend expansion. D04/D05 backend work paused. UI overhaul in progress on a PR branch (tokens, motion, core screens). No new product features, no fake AI, no `OPENROUTER_ALLOW_UNAUTHENTICATED_DEMO`. |
+| 2026-09-14 17:18 | [PR #13](https://github.com/swapnil-create/arcel-codeworks/pull/13) tip `d2df51e7`: lock D1–D8 / M1–M6 to Figma `1xzbayqWIOA9aTav8FkseQ` (tokens, composer, model/effort split, honesty banners, ⌘K palette, mobile sheets). Visual overhaul still **in progress / not done** pending Swapnil merge. Open tracker cite for PR #11 remains [PR #12](https://github.com/swapnil-create/arcel-codeworks/pull/12). |
