@@ -3,7 +3,7 @@
 **Repo:** `swapnil-create/arcel-codeworks`  
 **Source PRD:** [ARCEL-Codeworks-PRD.md](../ARCEL-Codeworks-PRD.md) (§18–§22, WP-01)  
 **Audit date:** 2026-09-14 (Asia/Dubai)  
-**Scope:** Notes and contracts only — no auth/billing implementation in this PR.  
+**Scope:** Architecture record for R0. A later D05 PR added a signed-session spend gate (`docs/AUTH.md`); billing/ledger and membership ACL are **not** implemented. Requirements are **not** claimed done.  
 **Status:** Draft architecture record for R0. Requirements are **not** claimed done.
 
 ---
@@ -21,21 +21,23 @@ Evidence is from `main` at audit time (static checkout + `api/chat.js`). This is
 | `lib/generation-errors.js` | Shared AUTH_REQUIRED / API-not-configured catalog (client + API) |
 | `styles.css` | UI styles |
 | `assets/` | Fonts (Inter, Plus Jakarta Sans), `arcel-logo-figma.svg`, `arcel-wordmark.svg`, per-letter Codeworks SVGs, hexagon mark |
-| `api/chat.js` | Sole backend: Vercel serverless OpenRouter proxy |
+| `api/chat.js` | OpenRouter proxy; requires signed session |
+| `api/auth/*` | OAuth login/callback/logout/session (fail-closed without env) |
+| `lib/session.js` | HMAC session cookie |
 | `vercel.json` | `functions.api/chat.js.maxDuration: 60` |
-| `.env.example` | `OPENROUTER_API_KEY` + optional model slug overrides |
+| `.env.example` | `OPENROUTER_API_KEY`, `AUTH_SECRET`, OAuth client slots (empty values) |
 | `README.md`, `DESIGN.md`, `DESIGN-AUDIT.md`, `ARCEL-Codeworks-PRD.md` | Product/docs |
 
 **Also on `main`:** `DELIVERY-TRACKER.md` (D05/D06, WP-01 status).
 
 **Not present on `main` (audit):** `package.json`, TypeScript, React/framework app, tests, `.github/` workflows, database migrations, object-storage config, auth SDK, metering/ledger, `docs/` (until this WP).
 
-**D05 scaffold (this branch, not a claim that WP-01 is done):** `.github/workflows/ci.yml`, `docs/PREVIEW-CI.md`, `docs/data-model/` stubs, `lib/generation-errors.js`. Still no live DB, IdP, or ledger.
+**D05 scaffold (this branch, not a claim that WP-01 is done):** `.github/workflows/ci.yml`, `docs/PREVIEW-CI.md`, `docs/data-model/` stubs, `lib/generation-errors.js`, signed-session OAuth (`docs/AUTH.md`). Still no live DB, production IdP, or ledger.
 
 ### 1.2 `/api/chat`
 
 - **Method:** `POST` only; `405` otherwise.
-- **Auth:** None. Any caller who can hit the deployment can spend the server-side OpenRouter key.
+- **Auth:** HMAC session cookie required (`readSession`). Missing session → `AUTH_REQUIRED`; does not call OpenRouter. OAuth (GitHub/Google) is env-configured and fail-closed. `OPENROUTER_ALLOW_UNAUTHENTICATED_DEMO` is not a spend bypass.
 - **Rate limits / quotas:** None in handler.
 - **Secrets:** Key read from `process.env.OPENROUTER_API_KEY`; returned to client only as errors/content — key itself stays server-side (**keep this boundary**).
 - **Input hygiene:** `cleanMessages` keeps roles `user`|`assistant`, **last 24 messages**, each content **truncated to 12 000 chars** (silent).
@@ -51,11 +53,11 @@ Evidence is from `main` at audit time (static checkout + `api/chat.js`). This is
 
 | Layer | Finding |
 |---|---|
-| Client | No sign-in, session, or account UI |
-| API | No session/JWT/API-key check |
-| Data ACL | N/A — no durable user-scoped objects |
+| Client | Settings sign-in / sign-out wired to `/api/auth/*`; unsigned chrome (no fake identity) |
+| API | Signed `arcel_session` cookie required on `POST /api/chat`; OAuth login/callback/logout/session routes |
+| Data ACL | **Still missing** — no durable user-scoped objects; session `sub` is not yet membership/workspace authz |
 
-**Release blocker** per PRD §22 before any public paid provider key.
+**SEC-01 remains Fail** (no IdP in production, no cross-user object tests). Session gate is the P4 spend boundary, not ACC-01 complete. See [AUTH.md](./AUTH.md).
 
 ### 1.4 Model routing (prototype behavior)
 
@@ -100,7 +102,7 @@ Evidence is from `main` at audit time (static checkout + `api/chat.js`). This is
 | Compare calls | Refactor | Parallel chat calls | Registry IDs, independent attempts, costs, real rubric/synthesis | High |
 | Length-based judge / first-sentence combine | Remove or disable | `judge` / `combine` actions in `app.js` | Disable or label non-intelligent until real implementation | **Critical** (honesty) |
 | Silent message truncation | Replace | `.slice(-24)` + `.slice(0, 12000)` | Context accounting, compaction, visible limits | High |
-| No auth/rate limits in handler | Release blocker | Open `api/chat.js` | Auth + rate/quota before public key spend | **Critical** |
+| No auth/rate limits in handler | Release blocker (P4 in progress) | Session cookie on `/api/chat`; no rate/quota; IdP not in prod | Finish IdP config + membership ACL + rate/quota before public key spend | **Critical** |
 | GitHub/Vercel auto-deploy | Resolve with owner | No `.github/` CI in repo; deploy path unverified here | Verify CI, preview deploy, manual prod approval, rollback | High (ops) |
 
 **Additional gaps implied by §18–§19 (not in §22 table but WP-01 blockers):**
@@ -233,18 +235,18 @@ R0 is foundation: contracts, auth boundary, CI/preview, metering skeleton, archi
 
 ### Top 5 gaps
 
-1. **Unauthenticated `/api/chat` with server-side provider key** — uncontrolled spend risk; release blocker.  
+1. **Public paid key still blocked** — session gate exists, but production IdP + membership ACL tests are missing (SEC-01 Fail).  
 2. **No durable data model** — chats/projects are ephemeral or seeded; no tenant boundary.  
-3. **Dishonest Compare Judge/Combine heuristics** — length and first-sentence presented as intelligent.  
+3. **Dishonest Compare Judge/Combine heuristics** — length and first-sentence presented as intelligent (disabled/labelled in the prototype).  
 4. **Silent context truncation** — 24 messages / 12k chars with no user-visible accounting.  
-5. **No CI / verified preview–prod controls** — deploy and rollback not evidenced in-repo.
+5. **Protected preview incomplete** — PR CI scaffold exists; GitHub→Vercel permissions and branch protection are not evidenced.
 
 ### Blockers
 
 | Blocker | Owner / note |
 |---|---|
 | D01 product defaults sign-off (Auto vs named, packaging) | Swapnil — proceeding on PRD §28 recommended defaults until overridden |
-| Identity vendor choice | Spike under D05; do not invent credentials in repo |
+| Identity vendor choice | GitHub/Google OAuth scaffold in-repo; Swapnil must set `AUTH_SECRET` + client IDs on Vercel ([AUTH.md](./AUTH.md)) |
 | GitHub ↔ Vercel permissions / manual prod approval | Owner permission required (§22) |
 | Provider spike results (streaming, tools, citations, cost) | D04 — informs gateway adapters |
 | Public key exposure until auth + rate limits | Ops: keep generation off or locked on shared previews |

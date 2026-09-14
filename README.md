@@ -16,13 +16,14 @@ Dependency-free static client (`index.html`, `app.js`, `styles.css`). Conversati
 - **Compare UI** — model selection, side-by-side cards, manual Choose (names stay hidden until you pick)
 - **Responsive states** — sidebar / mobile overlay, keyboard shortcuts (⌘K new chat, Esc close, ⌘Enter send)
 - **Honesty banners** — AUTH_REQUIRED, API-not-configured, and network failures as distinct alerts (`data-state`), not assistant replies
+- **Session chrome** — sign-in / sign-out in Settings when an OAuth provider is configured; unsigned account row (no fake identity)
 - **Brand** — ARCEL wordmark, ARCEL Blue, Plus Jakarta Sans headings, Inter UI type
 
 ## Not built
 
 Do not describe these as shipped:
 
-- Auth, sessions, or workspace membership
+- Auth, sessions, or workspace membership — **partial:** signed session cookie + OAuth scaffold ([docs/AUTH.md](docs/AUTH.md)); no IdP in production, no durable membership/ACL (SEC-01 still Fail)
 - Persistence or durable chat history
 - Real research / web search with visible sources (Research is disabled in the composer)
 - File uploads
@@ -32,7 +33,7 @@ Do not describe these as shipped:
 - **CI and GitHub→Vercel preview/prod policy** — PR static checks exist ([docs/PREVIEW-CI.md](docs/PREVIEW-CI.md)); protected preview, branch protection, and GitHub→Vercel permissions are not complete
 - Durable data model — schema stubs only ([docs/data-model/README.md](docs/data-model/README.md)); nothing is persisted
 
-Public OpenRouter generation is **disabled until auth**. `OPENROUTER_ALLOW_UNAUTHENTICATED_DEMO` is a kill-switch for a **restricted internal demo with a tightly capped key**. Do not enable it on the public deploy.
+Public OpenRouter generation is **disabled until a signed-in session exists**. `OPENROUTER_ALLOW_UNAUTHENTICATED_DEMO` is not authorization; CI forbids enabling it on tracked runtime paths. Do not enable it on the public deploy.
 
 ## Run locally
 
@@ -49,11 +50,11 @@ node scripts/local-preview.mjs                 # API not configured
 node scripts/local-preview.mjs --auth-required # AUTH_REQUIRED (placeholder env only; not a real key)
 ```
 
-Neither command enables `OPENROUTER_ALLOW_UNAUTHENTICATED_DEMO`.
+Neither command enables `OPENROUTER_ALLOW_UNAUTHENTICATED_DEMO`. Sign-in stays fail-closed until `AUTH_SECRET` and an OAuth app are set (see [AUTH.md](docs/AUTH.md)).
 
 ## OpenRouter (server-side)
 
-The browser calls `/api/chat`; it never receives the OpenRouter key. Copy `.env.example` to `.env.local` for local Vercel use, then set `OPENROUTER_API_KEY` in the Vercel project. Keep `OPENROUTER_ALLOW_UNAUTHENTICATED_DEMO=false` on shared URLs.
+The browser calls `/api/chat` with the session cookie; it never receives the OpenRouter key. Copy `.env.example` to `.env.local` for local Vercel/local-preview use, then set `OPENROUTER_API_KEY` in the Vercel project **only after** `AUTH_SECRET` + OAuth are configured. Keep `OPENROUTER_ALLOW_UNAUTHENTICATED_DEMO=false` on shared URLs.
 
 Optional `OPENROUTER_MODEL_*` slugs map the prototype tiers (Fast / Balanced / Deep) and Compare models. Those env maps are not a model registry.
 
@@ -62,6 +63,7 @@ Optional `OPENROUTER_MODEL_*` slugs map the prototype tiers (Fast / Balanced / D
 | Doc | Role |
 |---|---|
 | [PRD merge status](docs/PRD-MERGE-STATUS.md) | Honest completion boundary |
+| [Auth](docs/AUTH.md) | How to set AUTH_SECRET + OAuth on Vercel; session gate; SEC-01 not done |
 | [Preview CI](docs/PREVIEW-CI.md) | PR checks + protected preview expectations; WP-01 not done |
 | [Data model stubs](docs/data-model/README.md) | Canonical schemas; persistence not live |
 | [PRD](ARCEL-Codeworks-PRD.md) | Product requirements |

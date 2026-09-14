@@ -33,7 +33,8 @@
     arenaBusy: false,
     arenaReveal: false,
     generationError: null,
-    arenaError: null
+    arenaError: null,
+    auth: { configured: false, providers: [], user: null }
   };
 
   const app = document.querySelector("#app");
@@ -73,6 +74,7 @@
       retryable: true,
       request_id: input.request_id || null,
       ctas: globalThis.ArcelGenerationErrors?.GATE_CTAS || [
+        { action: "sign-in", label: "Sign in" },
         { action: "open-settings", label: "Open settings" },
         { action: "view-existing-work", label: "View existing work" }
       ]
@@ -81,6 +83,7 @@
 
   function bannerActions(error) {
     const ctas = Array.isArray(error.ctas) && error.ctas.length ? error.ctas : [
+      { action: "sign-in", label: "Sign in" },
       { action: "open-settings", label: "Open settings" },
       { action: "view-existing-work", label: "View existing work" }
     ];
@@ -100,16 +103,52 @@
     </aside>`;
   }
 
+  function initials(user) {
+    const source = String(user?.name || user?.email || user?.sub || "?").trim();
+    const parts = source.split(/[\s@._:-]+/).filter(Boolean);
+    if (parts.length >= 2) return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+    return source.slice(0, 2).toUpperCase() || "?";
+  }
+
+  function providerLabel(id) {
+    const match = (state.auth.providers || []).find(provider => provider.id === id);
+    if (match) return match.label;
+    if (id === "github") return "GitHub";
+    if (id === "google") return "Google";
+    return id || "Signed in";
+  }
+
   function settingsOverlay() {
+    const user = state.auth.user;
+    const providers = state.auth.providers || [];
+    let body;
+    if (user) {
+      body = `<p>Signed in as <strong>${escapeHTML(user.name || user.email || user.sub)}</strong> via ${escapeHTML(providerLabel(user.provider))}.</p>
+        <div class="auth-actions"><button type="button" class="ghost-button" data-action="sign-out">Sign out</button></div>
+        <p class="feature-note">Sign-out clears the session cookie. It does not delete chats — this prototype still has no durable store.</p>`;
+    } else if (state.auth.configured && providers.length) {
+      body = `<p>Sign in to generate. The server derives your identity from a signed session cookie, not from a name typed in the UI.</p>
+        <div class="auth-actions">${providers.map(provider => `<a class="primary-button" href="/api/auth/login?provider=${escapeHTML(provider.id)}">Sign in with ${escapeHTML(provider.label)}</a>`).join("")}</div>
+        <p class="feature-note">Opening settings does not fake a session or spend a provider key.</p>`;
+    } else {
+      body = `<p>Sign-in is not configured on this deployment. Set <code>AUTH_SECRET</code> and a GitHub or Google OAuth app on Vercel (see AUTH.md).</p>
+        <p class="feature-note">This screen cannot invent credentials. Generation stays blocked with AUTH_REQUIRED until a real session exists.</p>`;
+    }
     return `<div class="sheet-overlay" data-action="close-menu"><section onclick="event.stopPropagation()" role="dialog" aria-labelledby="settings-title" aria-modal="true">
       <header><h2 id="settings-title">Settings</h2><button type="button" data-action="close-menu" aria-label="Close">${icon("close")}</button></header>
+      ${body}
       <p>Instructions, tone, language, timezone, theme, and Enter-to-send are not connected yet. Nothing here is saved.</p>
-      <p class="feature-note">Sign-in and workspace membership are not available. Opening settings does not enable generation or spend a provider key.</p>
     </section></div>`;
   }
 
   function generationGateNote() {
-    return `<p class="generation-gate">Public generation stays off until sign-in exists. API and auth errors appear as banners, not as answers.</p>`;
+    if (state.auth.user) {
+      return `<p class="generation-gate">Signed in. Generation still needs a server-side OpenRouter key. Failures appear as banners, not as answers.</p>`;
+    }
+    if (state.auth.configured) {
+      return `<p class="generation-gate">Sign in to generate. Unauthenticated requests cannot spend the provider key. API and auth errors appear as banners, not as answers.</p>`;
+    }
+    return `<p class="generation-gate">Public generation stays off until a signed-in session exists. API and auth errors appear as banners, not as answers.</p>`;
   }
   const ledGlyphs = {
     " ": ["00000", "00000", "00000", "00000", "00000", "00000", "00000"],
@@ -149,7 +188,14 @@
         <p>Projects</p>
         ${projects.slice(0, 2).map(project => `<button data-action="open-project" data-project="${project.id}">${icon("folder")}<span>${escapeHTML(project.name)}</span></button>`).join("")}
       </section>
-      <div class="account"><span>SM</span><div><strong>Swapnil</strong><small>ARCEL</small></div><button data-action="account">${icon("more")}</button></div>
+      <div class="account${state.auth.user ? "" : " unsigned"}" data-action="open-settings">
+        ${state.auth.user ? `<span>${escapeHTML(initials(state.auth.user))}</span>` : ""}
+        <div>
+          <strong>${state.auth.user ? escapeHTML(state.auth.user.name || state.auth.user.email || "Signed in") : "Sign in"}</strong>
+          <small>${state.auth.user ? escapeHTML(providerLabel(state.auth.user.provider)) : (state.auth.configured ? "Required for generation" : "Not configured")}</small>
+        </div>
+        <button type="button" data-action="open-settings" aria-label="${state.auth.user ? "Account" : "Sign in"}">${icon("more")}</button>
+      </div>
     </aside>`;
   }
 
@@ -158,7 +204,7 @@
     return `<header class="topbar">
       <button class="mobile-menu" data-action="mobile-menu">${icon("grid")}</button>
       <button class="model-button" data-action="model-menu"><span>${escapeHTML(title)}</span>${state.view === "home" || state.view === "chat" ? icon("chevron") : ""}</button>
-      <div class="top-actions"><button data-action="share">Share</button><button class="user-button" data-action="account">SM</button></div>
+      <div class="top-actions"><button data-action="share">Share</button><button class="user-button${state.auth.user ? "" : " unsigned"}" data-action="open-settings" aria-label="${state.auth.user ? "Account" : "Sign in"}">${state.auth.user ? escapeHTML(initials(state.auth.user)) : "Sign in"}</button></div>
     </header>`;
   }
 
@@ -320,6 +366,7 @@
     try {
       response = await fetch("/api/chat", {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ messages, mode, tier, model })
       });
@@ -426,6 +473,8 @@
     if (action === "send") { const input = document.querySelector(`#${target.dataset.input}`); startChat(input?.value || ""); return; }
     if (action === "search") state.menu = "search";
     if (action === "account" || action === "open-settings") state.menu = "settings";
+    if (action === "sign-in") { beginSignIn(); return; }
+    if (action === "sign-out") { signOut(); return; }
     if (action === "view-existing-work") state.menu = "search";
     if (action === "model-menu") state.menu = state.menu === "model-switcher" ? null : "model-switcher";
     if (action === "select-primary-model") { state.currentModel = target.dataset.model; state.menu = null; }
@@ -447,5 +496,72 @@
     }
   });
 
+  function authErrorMessage(code) {
+    const messages = {
+      not_configured: "Sign-in is not configured on this deployment. AUTH_SECRET and an OAuth provider are required.",
+      unsupported_provider: "That sign-in provider is not configured.",
+      missing_origin: "AUTH_URL is required so the OAuth callback cannot be guessed from the Host header.",
+      state_mismatch: "Sign-in could not be verified (OAuth state mismatch). Nothing was granted.",
+      callback_failed: "Sign-in did not complete. No session was created.",
+      provider_error: "The identity provider rejected sign-in. No session was created."
+    };
+    return messages[code] || "Sign-in did not complete. No session was created.";
+  }
+
+  function beginSignIn() {
+    const providers = state.auth.providers || [];
+    if (state.auth.configured && providers.length === 1) {
+      window.location.assign(`/api/auth/login?provider=${encodeURIComponent(providers[0].id)}`);
+      return;
+    }
+    state.menu = "settings";
+    render();
+  }
+
+  async function loadSession() {
+    try {
+      const response = await fetch("/api/auth/session", { credentials: "include" });
+      if (!response.ok) {
+        state.auth = { configured: false, providers: [], user: null };
+        return;
+      }
+      const payload = await response.json().catch(() => ({}));
+      state.auth = {
+        configured: Boolean(payload.configured),
+        providers: Array.isArray(payload.providers) ? payload.providers : [],
+        user: payload.user && payload.user.sub ? payload.user : null
+      };
+    } catch {
+      state.auth = { configured: false, providers: [], user: null };
+    }
+  }
+
+  async function signOut() {
+    try {
+      await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+    } catch {
+      /* still clear local view */
+    }
+    state.auth = { ...state.auth, user: null };
+    state.menu = null;
+    render();
+  }
+
+  async function boot() {
+    const params = new URLSearchParams(window.location.search);
+    const authError = params.get("auth_error");
+    await loadSession();
+    if (authError) {
+      state.generationError = classifyFailure({
+        code: authError === "not_configured" ? "AUTH_NOT_CONFIGURED" : "AUTH_REQUIRED",
+        error: authErrorMessage(authError)
+      });
+      state.menu = "settings";
+      history.replaceState({}, "", window.location.pathname || "/");
+    }
+    render();
+  }
+
   render();
+  boot();
 })();

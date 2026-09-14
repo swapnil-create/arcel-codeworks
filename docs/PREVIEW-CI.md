@@ -14,7 +14,8 @@ The check is dependency-free (no `package.json` / npm install) and matches this 
 | `node --check` on `api/`, `app.js`, `lib/`, `scripts/` | Syntax |
 | JSON parse `vercel.json` + data-model schemas/fixtures | Static validity |
 | Data-model invariant fixtures | P3 stubs are coherent (not a live DB) |
-| Generation-gate unit checks | `AUTH_REQUIRED` / API-not-configured without keys |
+| Generation-gate unit checks | `AUTH_REQUIRED` without a session (including omitted headers); API-not-configured without keys |
+| Session / OAuth fail-closed | Signed cookie required; demo flag, bearer tokens, and client-asserted names cannot spend |
 | Demo-flag scan | Tracked runtime paths must not set `OPENROUTER_ALLOW_UNAUTHENTICATED_DEMO=true` |
 | Secret scan | Reject committed `.env` (except `.env.example`) and obvious key material |
 
@@ -26,11 +27,11 @@ Until GitHub→Vercel auto-deploy is linked with sufficient permissions (see [PR
 
 | Environment | Provider key | `OPENROUTER_ALLOW_UNAUTHENTICATED_DEMO` | Generation |
 |---|---|---|---|
-| **PR preview** | Restricted / capped key **or none** — never the production OpenRouter key | **`false`** | Gated (`AUTH_REQUIRED` or API-not-configured). No public unauthenticated spend. |
-| **Production** | Separate credentials; promote only with **manual approval** | **`false`** until real auth + rate/quota exist | Same gate. Do not flip the demo kill-switch on the public URL. |
-| **Internal demo** | Tightly capped key, IP allowlist or equivalent | `true` only on a **non-shared** preview Swapnil explicitly designates | Still not SEC-01 authorization |
+| **PR preview** | Restricted / capped key **or none** — never the production OpenRouter key | **`false`** | Requires a valid signed session (`AUTH_REQUIRED` or API-not-configured otherwise). No public unauthenticated spend. |
+| **Production** | Separate credentials; promote only with **manual approval** | **`false`** | Same session gate. Configure `AUTH_SECRET` + OAuth ([AUTH.md](./AUTH.md)) before enabling a paid key. Do not flip the demo flag on the public URL. |
+| **Internal demo** | Tightly capped key, IP allowlist or equivalent | **Do not use.** The flag is not a session and cannot authorize spend. | Use a real signed-in session instead. |
 
-`OPENROUTER_ALLOW_UNAUTHENTICATED_DEMO` is a **kill-switch**, not an identity provider. Do not enable it on any shared path.
+`OPENROUTER_ALLOW_UNAUTHENTICATED_DEMO` is **not** an identity provider and **not** a spend bypass. Do not enable it on any shared path.
 
 ## Branch protection (requested, not configured by this PR)
 
@@ -44,8 +45,8 @@ This PR cannot enable GitHub rulesets. Swapnil / repo admins should require:
 ## Still blocked (honest)
 
 - Vercel Git integration write/admin access was not available to the merge-status author
-- No auth provider, so previews that have a key remain spend-risky if the demo flag is turned on
-- No migration tests against a real database
+- Auth provider env (`AUTH_SECRET`, OAuth client) is **not** configured in production yet — session code fails closed
+- No migration tests against a real database; no cross-user object ACL tests (SEC-01 remains Fail)
 - No observability dashboards (OPS-01)
 
 *CI scaffold ≠ protected preview pipeline done.*

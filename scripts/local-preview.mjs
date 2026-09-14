@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 /**
- * Local static + /api/chat preview for honesty-UX checks.
+ * Local static + /api/chat + /api/auth preview.
  * Never enables OPENROUTER_ALLOW_UNAUTHENTICATED_DEMO.
- * Does not invent or load real provider credentials.
+ * Does not invent or load real provider credentials (optional .env.local if you created one).
  *
  *   node scripts/local-preview.mjs                 → OPENROUTER_NOT_CONFIGURED
- *   node scripts/local-preview.mjs --auth-required → AUTH_REQUIRED
+ *   node scripts/local-preview.mjs --auth-required → AUTH_REQUIRED (placeholder key, no session)
  */
-import { createReadStream, existsSync, statSync } from "node:fs";
+import { createReadStream, existsSync, readFileSync, statSync } from "node:fs";
 import { createServer } from "node:http";
 import { extname, join, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -15,7 +15,11 @@ import { createRequire } from "node:module";
 
 const require = createRequire(import.meta.url);
 const ROOT = join(fileURLToPath(new URL(".", import.meta.url)), "..");
-const handler = require("../api/chat.js");
+const chatHandler = require("../api/chat.js");
+const authLogin = require("../api/auth/login.js");
+const authCallback = require("../api/auth/callback.js");
+const authLogout = require("../api/auth/logout.js");
+const authSession = require("../api/auth/session.js");
 
 const TYPES = {
   ".html": "text/html; charset=utf-8",
@@ -27,11 +31,30 @@ const TYPES = {
   ".md": "text/markdown; charset=utf-8"
 };
 
+function loadEnvLocal() {
+  const path = join(ROOT, ".env.local");
+  if (!existsSync(path)) return;
+  for (const line of readFileSync(path, "utf8").split("\n")) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) continue;
+    const index = trimmed.indexOf("=");
+    if (index < 0) continue;
+    const key = trimmed.slice(0, index).trim();
+    let value = trimmed.slice(index + 1).trim();
+    if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+      value = value.slice(1, -1);
+    }
+    if (key && process.env[key] === undefined) process.env[key] = value;
+  }
+}
+
+loadEnvLocal();
+
 const authRequired = process.argv.includes("--auth-required");
 process.env.OPENROUTER_ALLOW_UNAUTHENTICATED_DEMO = "false";
 if (authRequired) {
-  process.env.OPENROUTER_API_KEY = "local-preview-not-a-secret";
-} else {
+  process.env.OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || "local-preview-not-a-secret";
+} else if (!process.env.OPENROUTER_API_KEY) {
   delete process.env.OPENROUTER_API_KEY;
 }
 
@@ -55,6 +78,10 @@ function vercelRes(res) {
     json(body) {
       res.setHeader("Content-Type", "application/json; charset=utf-8");
       res.end(JSON.stringify(body));
+    },
+    end(chunk) {
+      if (chunk !== undefined) res.end(chunk);
+      else res.end();
     }
   };
 }
@@ -78,21 +105,33 @@ async function readBody(req) {
   }
 }
 
+const API = {
+  "/api/chat": chatHandler,
+  "/api/auth/login": authLogin,
+  "/api/auth/callback": authCallback,
+  "/api/auth/logout": authLogout,
+  "/api/auth/session": authSession
+};
+
 const server = createServer(async (req, res) => {
   const url = new URL(req.url || "/", `http://${req.headers.host || "127.0.0.1"}`);
-  if (url.pathname === "/api/chat") {
+  const apiHandler = API[url.pathname];
+  if (apiHandler) {
     if (req.method === "OPTIONS") {
       res.writeHead(204, {
         "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Headers": "content-type",
-        "Access-Control-Allow-Methods": "POST"
+        "Access-Control-Allow-Headers": "content-type, cookie",
+        "Access-Control-Allow-Methods": "GET, POST"
       });
       return res.end();
     }
-    const body = req.method === "POST" ? await readBody(req) : {};
-    if (body === null) return json(res, 400, { error: "Invalid JSON body.", code: "INVALID_INPUT" });
-    req.body = body;
-    return handler(req, vercelRes(res));
+    req.query = Object.fromEntries(url.searchParams);
+    if (req.method === "POST" && url.pathname === "/api/chat") {
+      const body = await readBody(req);
+      if (body === null) return json(res, 400, { error: "Invalid JSON body.", code: "INVALID_INPUT" });
+      req.body = body;
+    }
+    return apiHandler(req, vercelRes(res));
   }
 
   if (req.method !== "GET" && req.method !== "HEAD") {
@@ -111,7 +150,8 @@ const server = createServer(async (req, res) => {
 });
 
 server.listen(port, "127.0.0.1", () => {
-  const mode = authRequired ? "AUTH_REQUIRED" : "OPENROUTER_NOT_CONFIGURED";
+  const mode = authRequired ? "AUTH_REQUIRED" : (process.env.OPENROUTER_API_KEY ? "key-present" : "OPENROUTER_NOT_CONFIGURED");
   console.log(`local-preview ${mode}  http://127.0.0.1:${port}`);
-  console.log("OPENROUTER_ALLOW_UNAUTHENTICATED_DEMO=false (shared-path spend stays gated)");
+  console.log("OPENROUTER_ALLOW_UNAUTHENTICATED_DEMO=false (not a session bypass)");
+  console.log(process.env.AUTH_SECRET ? "AUTH_SECRET is set (local)" : "AUTH_SECRET unset — sign-in fails closed");
 });
