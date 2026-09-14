@@ -21,10 +21,10 @@
   ];
 
   const arenaModels = [
-    { id: "balanced", name: "Balanced", available: true },
-    { id: "deep", name: "Deep", available: true },
-    { id: "fast", name: "Fast", available: true },
-    { id: "image", name: "Image", available: false }
+    { id: "arcel", name: "ARCEL", available: true },
+    { id: "claude", name: "Claude", available: true },
+    { id: "gpt", name: "GPT", available: true },
+    { id: "gemini", name: "Gemini", available: true }
   ];
 
   const state = {
@@ -35,6 +35,7 @@
     activeProject: null,
     messages: [],
     busy: false,
+    streamStarted: false,
     menu: null,
     menuExit: false,
     selectedModels: new Set(arenaModels.filter(model => model.available).map(model => model.id)),
@@ -388,7 +389,7 @@
       <div class="thread">
         ${state.messages.map(message => message.role === "user" ? userMessage(message) : assistantMessage(message)).join("")}
         ${state.threadNote ? `<p class="feature-note">${escapeHTML(state.threadNote)}</p>` : ""}
-        ${state.busy ? thinkingMessage() : ""}
+        ${state.busy && !state.streamStarted ? thinkingMessage() : ""}
         ${!state.busy ? runBanner(state.generationError) : ""}
       </div>
       <div class="chat-composer">${composer({ id: "chat-prompt" })}${generationGateNote()}<p>ARCEL can make mistakes. Review important work.</p></div>
@@ -403,8 +404,8 @@
     return `<article class="message assistant-message">
       <span class="message-role">Codeworks</span>
       <p>${escapeHTML(message.content)}</p>
-      <p class="source-note">Sources hidden — Research retrieval not configured.</p>
-      ${messageActions(false)}
+      <p class="source-note">${message.streaming ? "Generating live…" : "Sources hidden — Research retrieval not configured."}</p>
+      ${messageActions(Boolean(message.streaming))}
     </article>`;
   }
 
@@ -657,7 +658,7 @@
     return effortTiers.find(item => item.id === state.effort)?.tier || "balanced";
   }
 
-  async function requestCompletion({ messages, mode = "Chat", tier = "balanced", model = "arcel" }) {
+  async function requestCompletion({ messages, mode = "Chat", tier = "balanced", model = "arcel", onDelta = null }) {
     activeAbort = new AbortController();
     let response;
     try {
@@ -666,14 +667,14 @@
         credentials: "include",
         signal: activeAbort.signal,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages, mode, tier, model })
+        body: JSON.stringify({ messages, mode, tier, model, stream: true })
       });
     } catch (error) {
       if (error?.name === "AbortError") throw { aborted: true };
       throw classifyFailure({ code: "NETWORK", error: "The browser could not reach the chat API." });
     }
-    const payload = await response.json().catch(() => ({}));
     if (!response.ok) {
+      const payload = await response.json().catch(() => ({}));
       throw classifyFailure({
         status: response.status,
         code: payload.code,
@@ -681,7 +682,40 @@
         request_id: payload.request_id
       });
     }
-    return payload;
+    const contentType = response.headers.get("content-type") || "";
+    if (!contentType.includes("text/event-stream")) {
+      const payload = await response.json().catch(() => ({}));
+      if (!payload.content) throw classifyFailure({ code: "EMPTY_COMPLETION", error: "The model returned no content." });
+      return payload;
+    }
+
+    const reader = response.body?.getReader?.();
+    if (!reader) throw classifyFailure({ code: "OPENROUTER_UNREACHABLE", error: "The live response could not be read." });
+    const decoder = new TextDecoder();
+    let buffer = "";
+    let content = "";
+    let donePayload = null;
+    while (true) {
+      const { done, value } = await reader.read();
+      buffer += decoder.decode(value || new Uint8Array(), { stream: !done });
+      const events = buffer.split("\n\n");
+      buffer = done ? "" : events.pop();
+      for (const event of events) {
+        const line = event.split("\n").find(item => item.startsWith("data:"));
+        if (!line) continue;
+        let payload;
+        try { payload = JSON.parse(line.slice(5).trim()); } catch { continue; }
+        if (payload.type === "delta" && typeof payload.delta === "string") {
+          content += payload.delta;
+          onDelta?.(payload.delta, content);
+        }
+        if (payload.type === "error") throw classifyFailure({ code: payload.code, error: payload.error });
+        if (payload.type === "done") donePayload = payload;
+      }
+      if (done) break;
+    }
+    if (!content) throw classifyFailure({ code: "EMPTY_COMPLETION", error: "The model returned no content." });
+    return { content, usage: donePayload?.usage || null, provider: donePayload?.provider || null };
   }
 
   function asGenerationError(error) {
@@ -717,20 +751,38 @@
     state.threadNote = null;
     state.messages.push({ role: "user", content: value });
     state.busy = true;
+    state.streamStarted = false;
     clearComposerDrafts();
     render();
+    let streamingMessage = null;
     try {
       const completion = await requestCompletion({
         messages: state.messages,
         mode: state.mode,
-        tier: tierForCurrentModel()
+        tier: tierForCurrentModel(),
+        onDelta: (_delta, content) => {
+          if (!streamingMessage) {
+            streamingMessage = { role: "assistant", content: "", streaming: true };
+            state.messages.push(streamingMessage);
+            state.streamStarted = true;
+          }
+          streamingMessage.content = content;
+          render();
+        }
       });
-      state.messages.push({ role: "assistant", content: completion.content });
+      if (streamingMessage) {
+        streamingMessage.content = completion.content;
+        delete streamingMessage.streaming;
+      } else {
+        state.messages.push({ role: "assistant", content: completion.content });
+      }
     } catch (error) {
+      if (streamingMessage) state.messages = state.messages.filter(message => message !== streamingMessage);
       const classified = asGenerationError(error);
       if (classified) state.generationError = classified;
     } finally {
       state.busy = false;
+      state.streamStarted = false;
       render();
       window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
     }
@@ -740,19 +792,37 @@
     if (state.busy || !state.messages.length) return;
     state.generationError = null;
     state.busy = true;
+    state.streamStarted = false;
     render();
+    let streamingMessage = null;
     try {
       const completion = await requestCompletion({
         messages: state.messages,
         mode: state.mode,
-        tier: tierForCurrentModel()
+        tier: tierForCurrentModel(),
+        onDelta: (_delta, content) => {
+          if (!streamingMessage) {
+            streamingMessage = { role: "assistant", content: "", streaming: true };
+            state.messages.push(streamingMessage);
+            state.streamStarted = true;
+          }
+          streamingMessage.content = content;
+          render();
+        }
       });
-      state.messages.push({ role: "assistant", content: completion.content });
+      if (streamingMessage) {
+        streamingMessage.content = completion.content;
+        delete streamingMessage.streaming;
+      } else {
+        state.messages.push({ role: "assistant", content: completion.content });
+      }
     } catch (error) {
+      if (streamingMessage) state.messages = state.messages.filter(message => message !== streamingMessage);
       const classified = asGenerationError(error);
       if (classified) state.generationError = classified;
     } finally {
       state.busy = false;
+      state.streamStarted = false;
       render();
     }
   }
