@@ -1,5 +1,6 @@
 const crypto = require("crypto");
 const { generationGate, attachErrorMeta } = require("../lib/generation-errors");
+const { readSession } = require("../lib/session");
 
 const TIER_MODELS = {
   fast: process.env.OPENROUTER_MODEL_FAST || "google/gemini-2.5-flash",
@@ -60,7 +61,10 @@ module.exports = async function handler(req, res) {
     return json(res, 405, { error: "Method not allowed", code: "INVALID_INPUT" });
   }
 
-  const gate = generationGate(process.env);
+  // Actor is derived from the signed session cookie only. Body fields such as
+  // display_name / user / Authorization headers are not identity.
+  const session = readSession(req, process.env);
+  const gate = generationGate(process.env, session);
   if (gate) return json(res, gate.status, { error: gate.error, code: gate.code });
 
   const messageResult = validateMessages(req.body?.messages);

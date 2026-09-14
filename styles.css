@@ -75,7 +75,7 @@ button:focus-visible, textarea:focus-visible, input:focus-visible { outline: 2px
 .sidebar-section > button:hover i { display: block; }
 .sidebar-section .icon { width: 15px; }
 .projects-shortcut { border-top: 1px solid #e5e5e7; padding-top: 17px; }
-.account { margin-top: auto; height: 52px; border-top: 1px solid #e4e4e6; display: grid; grid-template-columns: 31px 1fr 28px; gap: 9px; align-items: end; padding: 11px 7px 0; }
+.account { margin-top: auto; height: 52px; border-top: 1px solid #e4e4e6; display: grid; grid-template-columns: 31px 1fr 28px; gap: 9px; align-items: end; padding: 11px 7px 0; cursor: pointer; }
 .account > span, .user-button { width: 31px; height: 31px; border-radius: 50%; display: grid; place-items: center; background: var(--ink); color: #fff; font-size: 10px; }
 .account > div { display: grid; }
 .account strong { font-size: 11px; }
@@ -245,6 +245,9 @@ button:focus-visible, textarea:focus-visible, input:focus-visible { outline: 2px
 .sheet-overlay header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
 .sheet-overlay h2 { margin: 0; font: 650 16px Inter, sans-serif; }
 .sheet-overlay p { margin: 0 0 8px; color: var(--ink); font-size: 13px; line-height: 1.5; }
+.sheet-overlay code { font-size: 12px; background: var(--pale); padding: 1px 4px; border-radius: 4px; }
+.auth-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 12px; }
+.auth-actions .primary-button, .auth-actions .ghost-button { text-decoration: none; min-height: 36px; }
 .mobile-overlay > .sidebar { display: flex; }
 .mobile-overlay > button { position: fixed; top: 13px; left: 260px; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: #fff; }
 

@@ -75,6 +75,14 @@ async function main() {
     if (/^OPENROUTER_API_KEY=.+$/m.test(example) && !/^OPENROUTER_API_KEY=$/m.test(example)) {
       throw new Error(".env.example must not contain an API key value");
     }
+    for (const name of ["AUTH_SECRET", "AUTH_GITHUB_SECRET", "AUTH_GOOGLE_SECRET"]) {
+      if (new RegExp(`^${name}=.+$`, "m").test(example) && !new RegExp(`^${name}=$`, "m").test(example)) {
+        throw new Error(`.env.example must not contain a ${name} value`);
+      }
+    }
+    if (!/^AUTH_SECRET=$/m.test(example) || !/^AUTH_GITHUB_ID=$/m.test(example)) {
+      throw new Error(".env.example must document empty AUTH_SECRET and OAuth client slots");
+    }
   });
 
   check("gate: missing key => OPENROUTER_NOT_CONFIGURED", () => {
@@ -84,7 +92,7 @@ async function main() {
     }
   });
 
-  check("gate: key without demo flag => AUTH_REQUIRED", () => {
+  check("gate: key without session => AUTH_REQUIRED", () => {
     const result = generationGate({
       OPENROUTER_API_KEY: "local-preview-not-a-secret",
       OPENROUTER_ALLOW_UNAUTHENTICATED_DEMO: "false"
@@ -94,15 +102,38 @@ async function main() {
     }
   });
 
-  check("gate: demo flag is not treated as authorization when unset", () => {
-    const result = generationGate({ OPENROUTER_API_KEY: "local-preview-not-a-secret" });
-    if (result?.code !== "AUTH_REQUIRED") throw new Error("unauthenticated spend must stay blocked");
+  check("gate: demo flag is not authorization", () => {
+    const unset = generationGate({ OPENROUTER_API_KEY: "local-preview-not-a-secret" });
+    const flagged = generationGate({
+      OPENROUTER_API_KEY: "local-preview-not-a-secret",
+      OPENROUTER_ALLOW_UNAUTHENTICATED_DEMO: "true"
+    });
+    if (unset?.code !== "AUTH_REQUIRED" || flagged?.code !== "AUTH_REQUIRED") {
+      throw new Error("unauthenticated spend must stay blocked even if the demo flag is true");
+    }
+  });
+
+  check("gate: session principal required to pass", () => {
+    const passed = generationGate(
+      { OPENROUTER_API_KEY: "local-preview-not-a-secret" },
+      { sub: "github:1" }
+    );
+    const blank = generationGate(
+      { OPENROUTER_API_KEY: "local-preview-not-a-secret" },
+      { sub: "  " }
+    );
+    if (passed !== null) throw new Error(JSON.stringify(passed));
+    if (blank?.code !== "AUTH_REQUIRED") throw new Error("blank sub must fail closed");
   });
 
   check("classify: AUTH_REQUIRED is permission-denied, not assistant text", () => {
     const failure = classifyGenerationFailure({ status: 403, code: "AUTH_REQUIRED" });
     if (failure.state !== "permission-denied" || failure.taxonomy !== "auth_required" || failure.retryable) {
       throw new Error(JSON.stringify(failure));
+    }
+    const labels = (failure.ctas || []).map(cta => cta.label);
+    if (!labels.includes("Sign in") || !labels.includes("Open settings") || !labels.includes("View existing work")) {
+      throw new Error("AUTH_REQUIRED catalog missing sign-in CTA");
     }
   });
 
@@ -124,6 +155,12 @@ async function main() {
     if (!/Open settings/.test(app) || !/View existing work/.test(app) || !/open-settings/.test(app) || !/view-existing-work/.test(app)) {
       throw new Error("app.js missing Figma gate CTAs");
     }
+    if (!/action === "sign-in"/.test(app) || !/\/api\/auth\/session/.test(app) || !/credentials: "include"/.test(app)) {
+      throw new Error("app.js missing real sign-in session wiring");
+    }
+    if (/<strong>Swapnil<\/strong>/.test(app)) {
+      throw new Error("app.js must not hardcode a signed-in identity");
+    }
   });
 
   check("catalog: QUOTA_EXHAUSTED is reserved, not billed", () => {
@@ -134,7 +171,7 @@ async function main() {
     const classified = classifyGenerationFailure({ code: "QUOTA_EXHAUSTED" });
     if (classified.state !== "quota-exhausted") throw new Error(JSON.stringify(classified));
     const labels = (classified.ctas || []).map(cta => cta.label);
-    if (!labels.includes("Open settings") || !labels.includes("View existing work")) {
+    if (!labels.includes("Open settings") || !labels.includes("View existing work") || !labels.includes("Sign in")) {
       throw new Error("quota catalog missing Figma CTAs");
     }
     if (!/does not meter or bill/i.test(entry.detail) || !/no automatic overage/i.test(entry.detail)) {
@@ -191,6 +228,29 @@ async function main() {
 
   check("api/chat: structured gate errors", () => {
     execFileSync("node", [join(ROOT, "scripts/test-chat-gate.mjs")], { cwd: ROOT, stdio: "pipe" });
+  });
+
+  check("api/auth: session cookie fail-closed", () => {
+    execFileSync("node", [join(ROOT, "scripts/test-auth-gate.mjs")], { cwd: ROOT, stdio: "pipe" });
+  });
+
+  check("docs: AUTH.md present and secret-free", () => {
+    const fs = require("node:fs");
+    const auth = fs.readFileSync(join(ROOT, "docs/AUTH.md"), "utf8");
+    if (!/AUTH_SECRET/.test(auth) || !/AUTH_GITHUB_ID/.test(auth) || !/\/api\/chat/.test(auth)) {
+      throw new Error("AUTH.md missing configuration instructions");
+    }
+    if (/sk-or-v1-/i.test(auth) || /AUTH_SECRET=\S+/.test(auth)) {
+      throw new Error("AUTH.md must not include secret values");
+    }
+  });
+
+  check("chat: demo flag is not a spend path", () => {
+    const chat = require("node:fs").readFileSync(join(ROOT, "api/chat.js"), "utf8");
+    if (/OPENROUTER_ALLOW_UNAUTHENTICATED_DEMO/.test(chat)) {
+      throw new Error("api/chat.js must not use the demo flag; session is the spend gate");
+    }
+    if (!/readSession/.test(chat)) throw new Error("api/chat.js must derive the actor from readSession");
   });
 
   check("data-model: fixture invariants", () => {

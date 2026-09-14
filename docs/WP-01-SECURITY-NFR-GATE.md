@@ -44,7 +44,7 @@ Per PRD §24, WP-01 completion evidence requires **all three**:
 
 | ID | Status | Why it blocks R0 |
 |---|---|---|
-| **SEC-01** | **Fail** | No auth on `/api/chat` or any object path — any caller can spend the server-side OpenRouter key |
+| **SEC-01** | **Fail** | Session cookie gate exists on `/api/chat`, but no IdP is configured in production and there are no cross-user / membership isolation tests |
 | **REL-03** | **Fail** | No usage ledger, idempotency keys, or retry/crash side-effect tests |
 | **OPS-01** | **Fail** | No per-run latency / failure / cost observability |
 | **Preview CI** (WP-01 exit) | **Fail** | Workflow scaffold exists; protected preview + manual prod approval + Vercel Git permissions not evidenced |
@@ -62,7 +62,7 @@ Secondary high-priority gaps (not all named R0 blockers above, but tied to hones
 | **Requirement summary** | Every object, retrieval, job, and tool path enforces authorization; guessed IDs and revoked memberships must fail closed. |
 | **Acceptance criteria** | Automated cross-user / cross-workspace tests (including guessed IDs and revoked memberships) prove unauthorized access is denied; server derives actor/workspace (never from client-asserted display names alone). |
 | **Current prototype status** | **Fail** |
-| **Evidence** | `api/chat.js`: no session/JWT/API-key check; POST open to any caller. Client (`app.js`): no sign-in / session UI. No durable user-scoped objects or ACL. Architecture notes §1.3, §2 (auth row), [PR #1](https://github.com/swapnil-create/arcel-codeworks/pull/1). |
+| **Evidence** | `POST /api/chat` requires a valid HMAC session cookie (`lib/session.js`); missing/tampered/expired cookies and omitted headers return `AUTH_REQUIRED` and do not call OpenRouter. OAuth login is env-configured and fail-closed ([docs/AUTH.md](./AUTH.md)). **Still Fail:** no IdP on production, no durable User/Workspace/Membership store, no automated cross-user / guessed-ID / revoked-membership tests. Architecture notes §1.3, §2 (auth row), [PR #1](https://github.com/swapnil-create/arcel-codeworks/pull/1). |
 | **R0 blocker** | **Yes** — release blocker before public paid provider key (PRD §22). |
 
 ### SEC-02 — Secrets server-side; encrypted credentials; rotation and least privilege
@@ -229,7 +229,7 @@ These are not separate §20 IDs but interact with SEC/REL/OPS readiness and prod
 
 | Gap | Prototype behavior | Gate / contract link |
 |---|---|---|
-| Unauthenticated chat | Open `POST /api/chat` spends server key | **SEC-01 Fail** (R0 blocker) |
+| Unauthenticated chat | `POST /api/chat` returns `AUTH_REQUIRED` without a session; spend still blocked until IdP + ACL tests | **SEC-01 Fail** (R0 blocker; session gate is not full authorization) |
 | Dishonest Judge Best | Longest `content.length` wins | Product honesty; disable/label (architecture P1) |
 | Dishonest Combine All | First-sentence join presented as synthesis | Product honesty; disable/label (architecture P1) |
 | Silent truncation | Last 24 messages; 12k chars/content | Context accounting; ties to safe/run contracts |
