@@ -302,24 +302,26 @@ code {
   padding: 16px 12px 12px;
   background: var(--sidebar);
   border-right: 1px solid #ededee;
+  overflow-x: hidden;
 }
 .brand {
   min-height: 40px;
   padding: 4px 8px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  min-width: 0;
 }
 .brand-logo {
   display: block;
-  width: 72px;
+  width: 64px;
   height: auto;
   aspect-ratio: 423 / 134;
   flex: none;
 }
 .brand-divider { width: 1px; height: 16px; background: #d7d8dc; flex: none; }
 .led-board {
-  width: 133px;
+  width: 124px;
   height: 20px;
   padding: 2px;
   display: grid;
@@ -343,7 +345,7 @@ code {
   height: 100%;
   min-width: 0;
   min-height: 0;
-  object-fit: contain;
+  object-fit: fill;
 }
 .new-chat {
   margin: 14px 2px 10px;
@@ -1084,6 +1086,14 @@ code {
   font-weight: 650;
   letter-spacing: .05em;
   text-transform: uppercase;
+}
+.search-overlay .palette-note {
+  margin: 10px 12px 0;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 400;
+  font-size: 12px;
+  color: var(--muted);
 }
 .search-overlay section > button,
 .palette-item {

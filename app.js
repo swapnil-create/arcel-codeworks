@@ -212,13 +212,13 @@
   function sidebar() {
     return `<aside class="sidebar" aria-label="Navigation">
       <div class="brand">
-        <img class="brand-logo" src="./assets/arcel-logo-figma.svg" width="72" height="23" alt="ARCEL">
+        <img class="brand-logo" src="./assets/arcel-logo-figma.svg" width="64" height="20" alt="ARCEL">
         <span class="brand-divider" aria-hidden="true"></span>
         ${ledBoard()}
       </div>
       <button class="new-chat" data-action="new-chat">${icon("plus")}<span>New chat</span><kbd>⌘ K</kbd></button>
       <nav class="primary-nav">
-        <button data-action="search" aria-haspopup="dialog">${icon("search")}<span>Search</span><kbd>⌘ /</kbd></button>
+        <button data-action="search" aria-haspopup="dialog">${icon("search")}<span>Search</span><kbd>⌘/</kbd></button>
         <button class="${state.view === "projects" || state.view === "project" ? "active" : ""}" data-action="projects">${icon("folder")}<span>Projects</span></button>
         <button class="${state.view === "arena" ? "active" : ""}" data-action="arena">${icon("compare")}<span>Compare</span><b>Beta</b></button>
       </nav>
@@ -442,9 +442,6 @@
       <p>Intelligence</p>
       <button type="button" class="active" role="menuitem"><span><strong>Auto</strong><small>Routes to third-party models. Auto is not an ARCEL-trained foundation model.</small></span>${icon("check")}</button>
       <p>Effort</p>
-      <div class="effort-pills" role="group" aria-label="Effort">
-        ${effortTiers.map(model => `<button type="button" class="${state.currentModel === model.name ? "active" : ""}" data-action="select-primary-model" data-model="${model.name}" data-tier="${model.tier}">${model.name.replace("Auto · ", "")}</button>`).join("")}
-      </div>
       ${effortTiers.map(model => `<button type="button" role="menuitemradio" aria-checked="${state.currentModel === model.name}" class="${state.currentModel === model.name ? "active" : ""}" data-action="select-primary-model" data-model="${model.name}" data-tier="${model.tier}"><span><strong>${model.name}</strong><small>${model.detail}</small></span>${state.currentModel === model.name ? icon("check") : ""}</button>`).join("")}
     </div>`;
   }
