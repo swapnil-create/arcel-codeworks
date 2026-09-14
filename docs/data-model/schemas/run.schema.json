@@ -1,0 +1,58 @@
+{
+  "$id": "https://arcel.local/schema/run",
+  "title": "Run",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "conversation_id", "workspace_id", "actor_user_id", "status", "task_type", "attempt", "idempotency_key", "created_at", "updated_at"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^run_" },
+    "conversation_id": { "type": "string", "pattern": "^conv_" },
+    "workspace_id": { "type": "string", "pattern": "^ws_" },
+    "actor_user_id": { "type": "string", "pattern": "^user_" },
+    "status": {
+      "type": "string",
+      "enum": ["queued", "running", "awaiting_approval", "cancelling", "completed", "failed", "cancelled"]
+    },
+    "task_type": { "type": "string", "enum": ["chat", "compare", "research", "code"] },
+    "model_selection": {
+      "type": "object",
+      "required": ["mode", "effort"],
+      "properties": {
+        "mode": { "type": "string", "enum": ["auto", "named"] },
+        "effort": { "type": "string", "enum": ["quick", "standard", "deep"] },
+        "named_model_id": { "type": ["string", "null"] }
+      }
+    },
+    "attempt": { "type": "integer", "minimum": 1 },
+    "parent_run_id": { "type": ["string", "null"] },
+    "idempotency_key": { "type": "string", "minLength": 8 },
+    "partial_content": { "type": "boolean" },
+    "error": {
+      "type": ["object", "null"],
+      "properties": {
+        "taxonomy": {
+          "type": "string",
+          "enum": [
+            "auth_required",
+            "permission_denied",
+            "invalid_input",
+            "unsupported_capability",
+            "quota_exceeded",
+            "provider_unavailable",
+            "rate_limited",
+            "content_blocked",
+            "tool_failed",
+            "context_limit",
+            "cancelled"
+          ]
+        },
+        "code": { "type": "string" },
+        "retryable": { "type": "boolean" },
+        "request_id": { "type": ["string", "null"] }
+      }
+    },
+    "created_at": { "type": "string", "format": "date-time" },
+    "updated_at": { "type": "string", "format": "date-time" },
+    "terminal_at": { "type": ["string", "null"] }
+  }
+}

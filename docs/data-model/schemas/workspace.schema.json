@@ -1,0 +1,14 @@
+{
+  "$id": "https://arcel.local/schema/workspace",
+  "title": "Workspace",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "kind", "status", "created_at"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^ws_" },
+    "kind": { "type": "string", "enum": ["personal", "team"] },
+    "status": { "type": "string", "enum": ["active", "suspended", "deleted"] },
+    "name": { "type": "string" },
+    "created_at": { "type": "string", "format": "date-time" }
+  }
+}

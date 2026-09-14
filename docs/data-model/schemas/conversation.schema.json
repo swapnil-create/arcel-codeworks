@@ -1,0 +1,17 @@
+{
+  "$id": "https://arcel.local/schema/conversation",
+  "title": "Conversation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "workspace_id", "created_by_user_id", "status", "created_at", "updated_at"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^conv_" },
+    "workspace_id": { "type": "string", "pattern": "^ws_" },
+    "created_by_user_id": { "type": "string", "pattern": "^user_" },
+    "title": { "type": ["string", "null"] },
+    "status": { "type": "string", "enum": ["active", "archived", "deleted"] },
+    "parent_conversation_id": { "type": ["string", "null"] },
+    "created_at": { "type": "string", "format": "date-time" },
+    "updated_at": { "type": "string", "format": "date-time" }
+  }
+}

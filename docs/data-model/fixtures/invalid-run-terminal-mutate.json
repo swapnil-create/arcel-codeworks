@@ -1,0 +1,14 @@
+{
+  "expect": "reject",
+  "reason": "Terminal run status is immutable; retries must create a linked attempt.",
+  "before": {
+    "id": "run_gated_auth",
+    "status": "failed",
+    "terminal_at": "2026-09-14T10:00:01.000Z"
+  },
+  "after": {
+    "id": "run_gated_auth",
+    "status": "running",
+    "terminal_at": "2026-09-14T10:00:01.000Z"
+  }
+}

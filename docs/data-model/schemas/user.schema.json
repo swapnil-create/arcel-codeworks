@@ -1,0 +1,13 @@
+{
+  "$id": "https://arcel.local/schema/user",
+  "title": "User",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "status", "created_at"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^user_" },
+    "status": { "type": "string", "enum": ["active", "disabled", "deleted"] },
+    "display_name": { "type": "string" },
+    "created_at": { "type": "string", "format": "date-time" }
+  }
+}

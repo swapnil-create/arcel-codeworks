@@ -1,0 +1,12 @@
+{
+  "expect": "reject",
+  "reason": "Authorization cannot be derived from a display name. Membership requires user_id, workspace_id, and role.",
+  "memberships": [
+    {
+      "id": "mem_display_only",
+      "display_name": "Swapnil",
+      "role": "owner",
+      "status": "active"
+    }
+  ]
+}

@@ -15,6 +15,7 @@ Dependency-free static client (`index.html`, `app.js`, `styles.css`). Conversati
 - **Search overlay** — UI only; lists seeded recents, does not search
 - **Compare UI** — model selection, side-by-side cards, manual Choose (names stay hidden until you pick)
 - **Responsive states** — sidebar / mobile overlay, keyboard shortcuts (⌘K new chat, Esc close, ⌘Enter send)
+- **Honesty banners** — AUTH_REQUIRED, API-not-configured, and network failures as distinct alerts (`data-state`), not assistant replies
 - **Brand** — ARCEL wordmark, ARCEL Blue, Plus Jakarta Sans headings, Inter UI type
 
 ## Not built
@@ -28,7 +29,8 @@ Do not describe these as shipped:
 - Model registry or verified catalog
 - Arena Judge Best or Combine All (manual choose only)
 - Voice, image generation, or code execution
-- CI and GitHub→Vercel preview/prod policy
+- **CI and GitHub→Vercel preview/prod policy** — PR static checks exist ([docs/PREVIEW-CI.md](docs/PREVIEW-CI.md)); protected preview, branch protection, and GitHub→Vercel permissions are not complete
+- Durable data model — schema stubs only ([docs/data-model/README.md](docs/data-model/README.md)); nothing is persisted
 
 Public OpenRouter generation is **disabled until auth**. `OPENROUTER_ALLOW_UNAUTHENTICATED_DEMO` is a kill-switch for a **restricted internal demo with a tightly capped key**. Do not enable it on the public deploy.
 
@@ -39,6 +41,15 @@ python3 -m http.server 4173
 ```
 
 Open [http://localhost:4173](http://localhost:4173). This serves the static UI only. `/api/chat` is a Vercel function.
+
+To exercise honesty banners locally without Vercel or real keys:
+
+```bash
+node scripts/local-preview.mjs                 # API not configured
+node scripts/local-preview.mjs --auth-required # AUTH_REQUIRED (placeholder env only; not a real key)
+```
+
+Neither command enables `OPENROUTER_ALLOW_UNAUTHENTICATED_DEMO`.
 
 ## OpenRouter (server-side)
 
@@ -51,6 +62,8 @@ Optional `OPENROUTER_MODEL_*` slugs map the prototype tiers (Fast / Balanced / D
 | Doc | Role |
 |---|---|
 | [PRD merge status](docs/PRD-MERGE-STATUS.md) | Honest completion boundary |
+| [Preview CI](docs/PREVIEW-CI.md) | PR checks + protected preview expectations; WP-01 not done |
+| [Data model stubs](docs/data-model/README.md) | Canonical schemas; persistence not live |
 | [PRD](ARCEL-Codeworks-PRD.md) | Product requirements |
 | [WP-01 architecture](docs/WP-01-ARCHITECTURE.md) | Prototype audit and R0 contracts |
 | [WP-01 security/NFR gate](docs/WP-01-SECURITY-NFR-GATE.md) | §20 checklist; WP-01 not done |
