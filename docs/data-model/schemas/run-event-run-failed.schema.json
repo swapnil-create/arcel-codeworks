@@ -1,0 +1,36 @@
+{
+  "$id": "https://arcel.local/schema/run-event/run.failed",
+  "title": "RunFailedPayload",
+  "description": "Terminal failure carrying the structured error taxonomy. No activity events may follow a terminal event.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["error"],
+  "properties": {
+    "error": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["taxonomy", "code", "retryable"],
+      "properties": {
+        "taxonomy": {
+          "type": "string",
+          "enum": [
+            "auth_required",
+            "permission_denied",
+            "invalid_input",
+            "unsupported_capability",
+            "quota_exceeded",
+            "provider_unavailable",
+            "rate_limited",
+            "content_blocked",
+            "tool_failed",
+            "context_limit",
+            "cancelled"
+          ]
+        },
+        "code": { "type": "string" },
+        "retryable": { "type": "boolean" },
+        "request_id": { "type": ["string", "null"] }
+      }
+    }
+  }
+}

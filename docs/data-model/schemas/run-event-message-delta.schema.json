@@ -1,0 +1,13 @@
+{
+  "$id": "https://arcel.local/schema/run-event/message.delta",
+  "title": "MessageDeltaPayload",
+  "description": "Incremental assistant output. Ordering is carried by the envelope seq.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["message_ref", "index", "text"],
+  "properties": {
+    "message_ref": { "type": "string", "pattern": "^msg_" },
+    "index": { "type": "integer", "minimum": 0 },
+    "text": { "type": "string" }
+  }
+}

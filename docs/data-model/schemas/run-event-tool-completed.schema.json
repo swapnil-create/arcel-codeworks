@@ -1,0 +1,37 @@
+{
+  "$id": "https://arcel.local/schema/run-event/tool.completed",
+  "title": "ToolCompletedPayload",
+  "description": "Terminal state of a single tool call. result_ref is an opaque pointer; no payloads, blobs, or credentials are inlined.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["tool_call_id", "status"],
+  "properties": {
+    "tool_call_id": { "type": "string", "pattern": "^tool_" },
+    "status": { "type": "string", "enum": ["completed", "failed"] },
+    "result_ref": { "type": ["string", "null"] },
+    "error": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "properties": {
+        "taxonomy": {
+          "type": "string",
+          "enum": [
+            "auth_required",
+            "permission_denied",
+            "invalid_input",
+            "unsupported_capability",
+            "quota_exceeded",
+            "provider_unavailable",
+            "rate_limited",
+            "content_blocked",
+            "tool_failed",
+            "context_limit",
+            "cancelled"
+          ]
+        },
+        "code": { "type": "string" },
+        "retryable": { "type": "boolean" }
+      }
+    }
+  }
+}

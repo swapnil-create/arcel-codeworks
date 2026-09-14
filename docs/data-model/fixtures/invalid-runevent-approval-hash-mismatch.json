@@ -1,0 +1,46 @@
+{
+  "expect": "reject",
+  "reason": "approval.required.payload_hash does not match sha256 of the referenced tool.requested {name, tool_class, arguments_ref}.",
+  "events": [
+    {
+      "version": "r0",
+      "run_id": "run_hashmiss_0001",
+      "seq": 1,
+      "occurred_at": "2026-09-14T21:00:00.000Z",
+      "type": "run.started",
+      "payload": {
+        "project_ref": "proj_demo",
+        "workflow_ref": "wf_demo",
+        "model_selection": { "mode": "auto", "effort": "standard", "named_model_id": null },
+        "max_budget_units": 500
+      }
+    },
+    {
+      "version": "r0",
+      "run_id": "run_hashmiss_0001",
+      "seq": 2,
+      "occurred_at": "2026-09-14T21:00:01.000Z",
+      "type": "tool.requested",
+      "payload": {
+        "tool_call_id": "tool_grade_site",
+        "name": "aec.apply_grading_plan",
+        "tool_class": "model_changing",
+        "arguments_ref": "args_grade_site_v1",
+        "requires_approval": true
+      }
+    },
+    {
+      "version": "r0",
+      "run_id": "run_hashmiss_0001",
+      "seq": 3,
+      "occurred_at": "2026-09-14T21:00:02.000Z",
+      "type": "approval.required",
+      "payload": {
+        "approval_id": "apr_grade_site",
+        "tool_call_id": "tool_grade_site",
+        "payload_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+        "reason": "Hash intentionally does not match the tool.requested payload."
+      }
+    }
+  ]
+}
