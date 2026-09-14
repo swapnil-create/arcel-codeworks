@@ -66,8 +66,9 @@ module.exports = async function handler(req, res) {
       sessionSetCookie(token, req, process.env),
       stateClearCookie(req, process.env)
     ]);
-  } catch {
-    return redirect(res, home(origin, "callback_failed"), clearState);
+  } catch (error) {
+    const code = error?.message === "google_domain_restricted" ? "domain_restricted" : "callback_failed";
+    return redirect(res, home(origin, code), clearState);
   }
 };
 

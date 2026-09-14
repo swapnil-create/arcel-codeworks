@@ -11,7 +11,7 @@ Vanilla HTML/JS + Vercel serverless (no Auth.js/NextAuth — too heavy for this 
 | Piece | Behavior |
 |---|---|
 | Session | HttpOnly `arcel_session` cookie, HMAC-SHA256 with `AUTH_SECRET` |
-| Sign-in | `/api/auth/login` → GitHub and/or Google OAuth → `/api/auth/callback` |
+| Sign-in | `/api/auth/login` → GitHub and/or Google OAuth → `/api/auth/callback`; Google requires a verified `@arcelintelligence.com` email |
 | Sign-out | `POST /api/auth/logout` clears cookies |
 | Who am I | `GET /api/auth/session` (no secrets) |
 | Spend gate | `POST /api/chat` requires a valid session **and** `OPENROUTER_API_KEY`. Missing session → `AUTH_REQUIRED`. No cookie / no `Authorization` header / client-asserted `user` names cannot bypass. |
@@ -37,6 +37,8 @@ Owner action required. Do **not** add a paid `OPENROUTER_API_KEY` on Production 
 5. Confirm a real sign-in creates `/api/auth/session` with a `user.sub`, then retry generation.
 
 `AUTH_*` configuration is an owner action. Session code fails closed until it is done.
+
+When Google is used, the callback applies a second server-side restriction in addition to Google Cloud's Internal audience: `email_verified` must be `true` and the address must end exactly in `@arcelintelligence.com`. GitHub behavior is unchanged. A rejected Google identity receives `domain_restricted` and no session cookie is minted.
 
 ### GitHub OAuth App
 

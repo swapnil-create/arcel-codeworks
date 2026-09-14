@@ -1,17 +1,14 @@
 (() => {
   "use strict";
 
-  const projects = [
-    { id: "launch", name: "Launch notes", detail: "3 chats · UI only", chats: ["Onboarding outline", "Tone pass", "(empty — UI only)"], available: true },
-    { id: "compare", name: "Compare drafts", detail: "Empty · UI only", chats: [], available: true },
-    { id: "research", name: "Research later", detail: "Unavailable until retrieval", chats: [], available: false }
-  ];
+  // Projects become real only when a durable workspace exists. Do not seed
+  // plausible chats, files, or counts into the product surface.
+  const projects = [];
 
   const intelligenceOptions = [
     { id: "auto", name: "Auto", detail: "Routes by task · Recommended" },
     { id: "balanced", name: "Balanced", detail: "Named mid-tier" },
-    { id: "deep", name: "Deep", detail: "Named high-reasoning" },
-    { id: "image", name: "Image", detail: "Not configured", disabled: true }
+    { id: "deep", name: "Deep", detail: "Named high-reasoning" }
   ];
 
   const effortTiers = [
@@ -23,8 +20,7 @@
   const arenaModels = [
     { id: "balanced", name: "Balanced", available: true },
     { id: "deep", name: "Deep", available: true },
-    { id: "fast", name: "Fast", available: true },
-    { id: "image", name: "Image", available: false }
+    { id: "fast", name: "Fast", available: true }
   ];
 
   const state = {
@@ -185,16 +181,14 @@
       return `<p class="sheet-status">Signed in</p>
         <p>Signed in as <strong>${escapeHTML(user.name || user.email || user.sub)}</strong> via ${escapeHTML(providerLabel(user.provider))}.</p>
         <div class="auth-actions"><button type="button" class="ghost-button" data-action="sign-out">Sign out</button></div>
-        <p class="feature-note">Sign-out clears the session cookie. It does not delete chats — this prototype still has no durable store.</p>`;
+        <p class="feature-note">Sign out of this device at any time.</p>`;
     }
     const oauth = state.auth.configured && providers.length
       ? `<div class="auth-actions">${providers.length === 1
         ? `<button type="button" class="primary-button" data-action="sign-in">Sign in with OAuth</button>`
         : providers.map(provider => `<a class="primary-button" href="/api/auth/login?provider=${escapeHTML(provider.id)}">Sign in with ${escapeHTML(provider.label)}</a>`).join("")}</div>`
       : `<div class="auth-actions"><button type="button" class="primary-button" data-action="sign-in">Sign in with OAuth</button></div>`;
-    return `<p class="sheet-status">Signed out</p>
-      ${oauth}
-      <p class="feature-note">Generation stays blocked until a real session exists. No fake “Signed in as …” chip.</p>`;
+    return `<p class="sheet-status">Sign in to continue.</p>${oauth}`;
   }
 
   function settingsOverlay() {
@@ -202,47 +196,13 @@
       ${state.compact ? '<div class="sheet-handle" aria-hidden="true"></div>' : ""}
       <header><h2 id="settings-title">Account</h2><button type="button" class="btn-icon" data-action="close-menu" aria-label="Close">${icon("close")}</button></header>
       <div class="sheet-section sheet-lead">${settingsBody()}</div>
-      <div class="sheet-section">
-        <h3>Workspace</h3>
-        <p>API / provider status: not configured</p>
-        <p class="feature-note feature-note-flush">OpenRouter key never shown in UI. Errors surface as banners.</p>
-        <div class="auth-actions"><button type="button" class="ghost-button" data-action="open-settings">Open settings</button></div>
-      </div>
     </section></div>`;
-  }
-
-  function generationGateNote() {
-    if (state.auth.user) {
-      return `<p class="generation-gate">Signed in. Generation still needs a server-side OpenRouter key. Failures appear as banners, not as answers.</p>`;
-    }
-    if (state.auth.configured) {
-      return `<p class="generation-gate">Sign in to generate. Unauthenticated requests cannot spend the provider key. API and auth errors appear as banners, not as answers.</p>`;
-    }
-    return `<p class="generation-gate">Public generation stays off until a signed-in session exists. API and auth errors appear as banners, not as answers.</p>`;
-  }
-
-  const ledGlyphs = {
-    " ": ["00000", "00000", "00000", "00000", "00000", "00000", "00000"],
-    C: ["01110", "10000", "10000", "10000", "10000", "10000", "01110"],
-    O: ["01110", "10001", "10001", "10001", "10001", "10001", "01110"],
-    D: ["11110", "10001", "10001", "10001", "10001", "10001", "11110"],
-    E: ["11111", "10000", "10000", "11110", "10000", "10000", "11111"],
-    W: ["10001", "10001", "10001", "10101", "10101", "11011", "10001"],
-    R: ["11110", "10001", "10001", "11110", "10100", "10010", "10001"],
-    K: ["10001", "10010", "10100", "11000", "10100", "10010", "10001"],
-    S: ["01111", "10000", "10000", "01110", "00001", "00001", "11110"]
-  };
-
-  function ledBoard() {
-    const characters = " CODEWORKS";
-    return `<span class="led-board" role="img" aria-label="Codeworks LED board">${[...characters].map(character => `<span class="led-glyph">${ledGlyphs[character].join("").split("").map(value => value === "1" ? '<img src="./assets/arcel-led-dot-green.svg" width="14" height="12" alt="">' : '<i></i>').join("")}</span>`).join("")}</span>`;
   }
 
   function brandLockup(compact = false) {
     return `<div class="brand${compact ? " brand-compact" : ""}">
       <img class="brand-logo" src="./assets/arcel-logo-figma.svg" width="64" height="20" alt="ARCEL">
-      <span class="brand-divider" aria-hidden="true"></span>
-      ${compact ? '<span class="brand-cw">CW</span>' : ledBoard()}
+      <span class="brand-product">Codeworks</span>
     </div>`;
   }
 
@@ -275,8 +235,6 @@
   function sidebar() {
     const nav = [
       { action: "search", label: "Search", icon: "search", view: null },
-      { action: "library", label: "Library", icon: "library", view: "library", stub: true },
-      { action: "tasks", label: "Tasks", icon: "tasks", view: "tasks", stub: true },
       { action: "projects", label: "Projects", icon: "folder", view: "projects" },
       { action: "arena", label: "Compare", icon: "compare", view: "arena" }
     ];
@@ -286,7 +244,6 @@
       <nav class="primary-nav">
         ${nav.map(item => `<button class="${item.view && (state.view === item.view || (item.view === "projects" && state.view === "project")) ? "active" : ""}" data-action="${item.action}">${icon(item.icon)}<span>${item.label}</span></button>`).join("")}
       </nav>
-      <p class="sidebar-honesty">Projects/history = UI states until persistence ships.</p>
       <div class="account${state.auth.user ? "" : " unsigned"}" data-action="open-settings">
         ${state.auth.user ? `<span>${escapeHTML(initials(state.auth.user))}</span>` : ""}
         <div>
@@ -299,10 +256,6 @@
 
   function headerContext() {
     if (state.view === "chat" && state.busy) return "Streaming…";
-    if (state.view === "home") return "Your AI workspace";
-    if (state.view === "arena") return "Manual choose only — no Judge Best / Combine";
-    if (state.view === "library") return "UI-only";
-    if (state.view === "tasks") return "UI-only";
     return "";
   }
 
@@ -310,8 +263,6 @@
     if (state.view === "arena") return "Prompt Arena";
     if (state.view === "projects") return "Projects";
     if (state.view === "project") return projects.find(project => project.id === state.activeProject)?.name || "Project";
-    if (state.view === "library") return "Library";
-    if (state.view === "tasks") return "Tasks";
     if (state.view === "chat" || state.view === "home") return modelLabel();
     return "ARCEL";
   }
@@ -345,15 +296,13 @@
 
   function composer({ id = "main-prompt", placeholder, attach = true, modelChip = true } = {}) {
     const value = escapeHTML(state.drafts[id] || "");
-    const research = "Research · Unavailable";
-    const text = placeholder || (state.compact ? "Ask anything…" : "Ask anything — no project or expertise required.");
+    const text = placeholder || (state.compact ? "Ask anything…" : "Ask anything, create a plan, or explore an idea…");
     const sendLabel = state.busy ? "Stop" : "Send";
     return `<section class="composer input-group">
       <textarea id="${id}" placeholder="${escapeHTML(text)}" aria-label="${escapeHTML(text)}" ${state.busy ? "disabled" : ""}>${value}</textarea>
       <div class="composer-bar">
         <div class="composer-chips">
-          ${attach && !state.compact ? `<button type="button" class="chip" data-action="attach">Attach</button>` : ""}
-          <button type="button" class="chip chip-unavailable" disabled title="Real retrieval and citations are not connected yet">${escapeHTML(research)}</button>
+          ${attach ? `<button type="button" class="composer-tool" data-action="attach" aria-label="Add a file or tool">${icon("plus")}<span>${state.compact ? "Add" : "Add"}</span></button>` : ""}
         </div>
         <div class="composer-send">
           ${modelChip && !state.compact ? `<button type="button" class="chip chip-model" data-action="model-menu">${escapeHTML(modelLabel())}</button>` : ""}
@@ -367,17 +316,15 @@
     const dataState = state.generationError ? state.generationError.state : "empty";
     return `<main class="home-view" data-screen="home" data-state="${dataState}">
       <div class="welcome">
-        <h1>What do you want to get done?</h1>
+        <p class="welcome-kicker">Codeworks</p>
+        <h1>What would you like to work on?</h1>
         ${composer()}
         ${runBanner(state.generationError)}
         ${state.compact ? "" : `<div class="suggestions">
           <button type="button" data-action="suggest" data-prompt="Explain a concept from first principles, with a short example.">Explain a concept</button>
-          <button type="button" data-action="suggest" data-prompt="Draft a calm project update for a general-purpose AI workspace. No invented metrics.">Draft a project update</button>
-          <button type="button" data-action="arena">Open Compare</button>
-        </div>
-        <p class="home-note">Examples fill/send a real prompt — never seeded fake history. Research chip unavailable.</p>`}
-        ${state.compact ? `<p class="home-note">Research chip disabled until retrieval ships.</p>` : ""}
-        ${generationGateNote()}
+          <button type="button" data-action="suggest" data-prompt="Draft a concise project update with next steps.">Draft an update</button>
+          <button type="button" data-action="arena">Compare perspectives</button>
+        </div>`}
       </div>
     </main>`;
   }
@@ -391,7 +338,7 @@
         ${state.busy ? thinkingMessage() : ""}
         ${!state.busy ? runBanner(state.generationError) : ""}
       </div>
-      <div class="chat-composer">${composer({ id: "chat-prompt" })}${generationGateNote()}<p>ARCEL can make mistakes. Review important work.</p></div>
+      <div class="chat-composer">${composer({ id: "chat-prompt" })}<p>Review important work.</p></div>
     </main>`;
   }
 
@@ -403,7 +350,6 @@
     return `<article class="message assistant-message">
       <span class="message-role">Codeworks</span>
       <p>${escapeHTML(message.content)}</p>
-      <p class="source-note">Sources hidden — Research retrieval not configured.</p>
       ${messageActions(false)}
     </article>`;
   }
@@ -416,7 +362,6 @@
         <span class="skeleton skeleton-line mid"></span>
         <span class="skeleton skeleton-line short"></span>
       </div>
-      <p class="source-note">Sources hidden — Research retrieval not configured.</p>
       ${messageActions(true)}
     </article>`;
   }
@@ -430,19 +375,13 @@
     </div>`;
   }
 
-  function stubView({ screen, title, copy }) {
-    return `<main class="library-view" data-screen="${screen}" data-state="empty">
-      <div class="library-head"><div><h1>${escapeHTML(title)}</h1><p>${escapeHTML(copy)}</p></div></div>
-      <div class="empty-state"><strong>UI-only</strong><p>Labeled chrome only. Nothing is stored or retrieved.</p></div>
-    </main>`;
-  }
-
   function projectsView() {
     return `<main class="library-view" data-screen="projects" data-state="empty">
-      <div class="library-head"><div><h1>Projects</h1><p>${state.compact ? "UI organization only — nothing persists yet." : "UI organization only — chats/files are not persisted yet. Moving a chat will confirm instructions/visibility when real."}</p></div>${state.compact ? "" : `<button type="button" class="primary-button" data-action="new-project">New project</button>`}</div>
-      <div class="project-list">
-        ${projects.map(project => `<button type="button" class="project-card${project.available ? "" : " is-unavailable"}" data-action="${project.available ? "open-project" : "unavailable-project"}" data-project="${project.id}"><strong>${escapeHTML(project.name)}</strong><small>${escapeHTML(state.compact && project.id === "launch" ? "3 chats · UI" : state.compact && project.id === "compare" ? "Empty" : state.compact ? "Unavailable" : project.detail)}</small></button>`).join("")}
-      </div>
+      <div class="library-head"><div><p class="section-kicker">Workspace</p><h1>Projects</h1><p>Keep related conversations and files together.</p></div><button type="button" class="primary-button" data-action="new-project">New project</button></div>
+      <section class="project-empty" aria-labelledby="project-empty-title">
+        <span class="project-empty-mark" aria-hidden="true">${icon("folder")}</span>
+        <div><h2 id="project-empty-title">A place for work that grows.</h2><p>Projects collect the conversations and materials that belong together.</p></div>
+      </section>
     </main>`;
   }
 
@@ -453,7 +392,6 @@
     return `<main class="project-view" data-screen="project" data-state="empty">
       <p class="project-heading"><button type="button" data-action="projects">Projects</button><span>/</span><strong>${escapeHTML(project.name)}</strong></p>
       <h1>${escapeHTML(project.name)}</h1>
-      <aside class="ui-only-banner"><strong>UI state only</strong><p>No durable files or chat history yet. Composer works for ephemeral prompts; nothing is saved to this project.</p></aside>
       <div class="project-split">
         <section>
           <h2>Chats in project</h2>
@@ -461,8 +399,7 @@
         </section>
         <section>
           <h2>Composer</h2>
-          ${composer({ id: "project-prompt", placeholder: "Continue in this project context (ephemeral until persistence).", attach: false, modelChip: false })}
-          ${generationGateNote()}
+          ${composer({ id: "project-prompt", placeholder: "Continue this conversation…", attach: false, modelChip: false })}
         </section>
       </div>
     </main>`;
@@ -471,23 +408,19 @@
   function arenaView() {
     const selected = arenaModels.filter(model => model.available && state.selectedModels.has(model.id));
     return `<main class="arena-view" data-screen="arena" data-state="${state.arenaBusy ? "loading" : state.arenaError ? state.arenaError.state : state.arenaResults.length ? "completed" : "empty"}">
-      <div class="arena-heading"><h1>Prompt Arena</h1><p>Manual choose only — no Judge Best / Combine</p></div>
+      <div class="arena-heading"><div><p class="section-kicker">Codeworks</p><h1>Compare perspectives.</h1><p>Run one prompt across the models you choose.</p></div></div>
       <section class="arena-prompt input-group">
-        <label for="arena-input">Shared prompt</label>
-        <textarea id="arena-input" placeholder="Write a calm product update for a general-purpose AI workspace launch.">${escapeHTML(state.drafts["arena-input"] || "")}</textarea>
-        <div class="arena-run"><button type="button" class="primary-button" data-action="run-arena" ${state.arenaBusy ? "disabled" : ""}>${state.arenaBusy ? "Running…" : "Run compare"}</button></div>
+        <label for="arena-input">Your prompt</label>
+        <textarea id="arena-input" placeholder="What would you like different perspectives on?">${escapeHTML(state.drafts["arena-input"] || "")}</textarea>
+        <div class="arena-run"><span>${selected.length} ${selected.length === 1 ? "model" : "models"} selected</span><button type="button" class="primary-button" data-action="run-arena" ${state.arenaBusy ? "disabled" : ""}>${state.arenaBusy ? "Running…" : "Run compare"}</button></div>
         ${runBanner(state.arenaError)}
-        ${generationGateNote()}
       </section>
-      <div class="arena-models" role="group" aria-label="Models">
-        ${arenaModels.map(model => model.available
-          ? `<button type="button" class="chip${state.selectedModels.has(model.id) ? " chip-model" : ""}" data-action="toggle-model" data-model="${model.id}">${escapeHTML(model.name)}${state.selectedModels.has(model.id) ? " ✓" : ""}</button>`
-          : `<button type="button" class="chip chip-unavailable" disabled>Image · Unavailable</button>`).join("")}
+      <div class="arena-model-rail" role="group" aria-label="Choose models">
+        <span>Models</span>${arenaModels.map(model => `<button type="button" class="arena-model${state.selectedModels.has(model.id) ? " selected" : ""}" data-action="toggle-model" data-model="${model.id}" aria-pressed="${state.selectedModels.has(model.id)}">${escapeHTML(model.name)}<i aria-hidden="true"></i></button>`).join("")}
       </div>
       <section class="arena-grid">
         ${state.arenaBusy ? arenaSkeletons(selected) : state.arenaResults.length ? state.arenaResults.map((result, index) => arenaCard(result, index)).join("") : emptyArena(selected)}
       </section>
-      <p class="arena-foot">${state.compact ? "No Judge Best / Combine on mobile either." : "One failure does not erase others. Cost includes every attempt. No auto-judge."}</p>
     </main>`;
   }
 
@@ -497,9 +430,9 @@
 
   function emptyArena(selected) {
     if (!selected.length) {
-      return `<div class="empty-state"><strong>Select at least one model</strong><p>Compare stays manual. There is no judge or combine step.</p></div>`;
+      return `<div class="empty-state"><strong>Choose a model to begin</strong><p>Select the perspectives you want to compare, then write your prompt.</p></div>`;
     }
-    return selected.map(model => `<article class="arena-empty"><strong>${escapeHTML(model.name)}</strong><small>Empty until a real run completes</small></article>`).join("");
+    return `<article class="arena-launch"><span aria-hidden="true">${icon("compare")}</span><div><strong>Your comparison desk is ready.</strong><p>Choose the models you want to hear from, write one prompt, then run the comparison.</p></div></article>`;
   }
 
   function arenaCard(result, index) {
@@ -509,7 +442,7 @@
     if (result.failure) {
       return `<article class="arena-card arena-card-error" data-state="${escapeHTML(result.failure.state)}" data-error-code="${escapeHTML(result.failure.code)}"><header><strong>${escapeHTML(result.model)}</strong><span>Failed</span></header><div>${runBanner(result.failure)}</div><footer>${choose}</footer></article>`;
     }
-    return `<article class="arena-card${result.winner ? " winner" : ""}"><header><strong>${escapeHTML(result.model)}</strong><span>${state.compact ? "Done" : "Completed"}</span></header><div><p>${escapeHTML(result.content)}</p></div><footer>${choose}</footer></article>`;
+    return `<article class="arena-card${result.winner ? " winner" : ""}" style="--arena-index:${index}"><header><strong>${escapeHTML(result.model)}</strong><span>${state.compact ? "Done" : "Completed"}</span></header><div><p>${escapeHTML(result.content)}</p></div><footer>${choose}</footer></article>`;
   }
 
   function paletteEntries() {
@@ -517,7 +450,7 @@
     const commands = [
       { id: "cmd-new", action: "new-chat", label: "New chat", hint: "Create" },
       { id: "cmd-arena", action: "arena", label: "Open Compare", hint: "Arena" },
-      { id: "cmd-projects", action: "projects", label: "Go to Projects", hint: "Navigate · UI state" },
+      { id: "cmd-projects", action: "projects", label: "Go to Projects", hint: "Navigate" },
       { id: "cmd-settings", action: "open-settings", label: "Sign in / Settings", hint: "Account" }
     ];
     return commands.filter(item => !query || item.label.toLowerCase().includes(query) || item.hint.toLowerCase().includes(query));
@@ -530,7 +463,6 @@
     return `<div class="search-overlay${state.menuExit ? " is-exiting" : ""}" data-action="close-menu"><section class="palette" data-dialog onclick="event.stopPropagation()" role="dialog" aria-labelledby="palette-title" aria-modal="true">
       <h2 id="palette-title" class="sr-only">Command palette</h2>
       <label><kbd>⌘K</kbd><input id="palette-input" data-autofocus value="${escapeHTML(state.paletteQuery)}" placeholder="Search chats, projects, commands…" aria-label="Filter command palette"></label>
-      <p class="feature-note palette-note">Search is UI-only. This list is local commands, not a connected index.</p>
       ${commands.length ? commands.map(item => `<button type="button" class="palette-item${item.id === activeId ? " active" : ""}" data-action="${item.action}" data-palette-id="${item.id}"><strong>${escapeHTML(item.label)}</strong><small>${escapeHTML(item.hint)}</small></button>`).join("") : `<div class="palette-empty">No matching items in this local list.</div>`}
     </section></div>`;
   }
@@ -540,11 +472,10 @@
       <div class="sheet-handle" aria-hidden="true"></div>
       <h2 id="nav-title">Menu</h2>
       <button type="button" data-action="new-chat">New chat</button>
-      <button type="button" data-action="projects">Projects · UI only</button>
-      <button type="button" data-action="arena">Compare · Manual</button>
-      <button type="button" data-action="search">Search · UI only</button>
+      <button type="button" data-action="projects">Projects</button>
+      <button type="button" data-action="arena">Compare</button>
+      <button type="button" data-action="search">Search</button>
       <button type="button" data-action="open-settings">Sign in / Settings</button>
-      <p class="feature-note">Slide up 220ms ease-out. Escape/backdrop dismiss. Focus trap while open.</p>
     </section></div>`;
   }
 
@@ -552,16 +483,14 @@
     if (state.menu !== "model-switcher") return "";
     const rows = intelligenceOptions.map(option => {
       const selected = !option.disabled && state.intelligence === option.id;
-      return `<button type="button" class="model-row${selected ? " selected" : ""}${option.disabled ? " is-unavailable" : ""}" ${option.disabled ? "disabled" : `data-action="select-intelligence" data-model="${option.id}"`}><strong>${escapeHTML(option.name)}${selected ? "  ✓" : ""}</strong><small>${escapeHTML(state.compact && option.id === "auto" ? "Recommended" : state.compact && option.id === "balanced" ? "Named" : state.compact && option.id === "image" ? "Unavailable" : option.detail)}</small></button>`;
+      return `<button type="button" class="model-row${selected ? " selected" : ""}${option.disabled ? " is-unavailable" : ""}" ${option.disabled ? "disabled" : `data-action="select-intelligence" data-model="${option.id}"`}><strong>${escapeHTML(option.name)}${selected ? "  ✓" : ""}</strong><small>${escapeHTML(state.compact && option.id === "auto" ? "Recommended" : state.compact && option.id === "balanced" ? "Named" : option.detail)}</small></button>`;
     });
     return `<div class="sheet-overlay${state.compact ? " sheet-bottom" : ""}${state.menuExit ? " is-exiting" : ""}" data-action="close-menu"><section class="model-sheet" data-dialog onclick="event.stopPropagation()" role="dialog" aria-labelledby="model-title" aria-modal="true">
       ${state.compact ? '<div class="sheet-handle" aria-hidden="true"></div>' : ""}
       <h2 id="model-title">${state.compact ? "Model & effort" : "Model"}</h2>
-      ${state.compact ? "" : `<p class="feature-note">Task / intelligence / effort stay separate (PRD §28).</p>`}
       ${rows.join("")}
       ${state.compact ? "" : "<p class=\"effort-label\">Effort</p>"}
       <div class="effort-pills">${effortTiers.map(tier => `<button type="button" class="chip${state.effort === tier.id ? " chip-model" : ""}" data-action="select-effort" data-tier="${tier.id}">${escapeHTML(tier.name)}${state.effort === tier.id ? " ✓" : ""}</button>`).join("")}</div>
-      ${state.compact ? "" : `<p class="feature-note">Unavailable models stay visible and disabled — never hidden.</p>`}
     </section></div>`;
   }
 
@@ -621,8 +550,6 @@
     if (state.view === "projects") content = projectsView();
     if (state.view === "project") content = projectView();
     if (state.view === "arena") content = arenaView();
-    if (state.view === "library") content = stubView({ screen: "library", title: "Library", copy: "UI-only. Files and retrieval are not connected yet." });
-    if (state.view === "tasks") content = stubView({ screen: "tasks", title: "Tasks", copy: "UI-only. Background tasks are not connected yet." });
     const overlayOpen = Boolean(state.menu);
     app.innerHTML = `<div class="app-shell"${overlayOpen ? ' inert aria-hidden="true"' : ""}>${sidebar()}<section class="workspace" id="workspace" tabindex="-1">${header()}${content}</section></div>${overlays()}${toastRegion()}`;
     restoreFocus();
@@ -814,17 +741,15 @@
     const { action } = target.dataset;
     if (action === "new-chat") { state.view = "home"; state.activeProject = null; state.messages = []; state.generationError = null; state.arenaError = null; state.threadNote = null; state.menu = null; state.menuExit = false; clearComposerDrafts(); }
     if (action === "projects") { state.view = "projects"; state.menu = null; state.menuExit = false; }
-    if (action === "library") { state.view = "library"; state.menu = null; state.menuExit = false; }
-    if (action === "tasks") { state.view = "tasks"; state.menu = null; state.menuExit = false; }
     if (action === "arena") { state.view = "arena"; state.menu = null; state.menuExit = false; }
     if (action === "open-project") { state.activeProject = target.dataset.project; state.view = "project"; state.menu = null; state.menuExit = false; }
-    if (action === "unavailable-project") { pushToast("Unavailable until retrieval."); return; }
+    if (action === "unavailable-project") { pushToast("This project is not available yet."); return; }
     if (action === "open-chat") {
       const title = target.dataset.title;
       if (!title) return;
       state.messages = [{ role: "user", content: title }];
       state.generationError = null;
-      state.threadNote = "Seeded title only — there is no stored transcript. Conversations are not persisted.";
+      state.threadNote = "";
       state.view = "chat";
       state.menu = null;
       state.menuExit = false;
@@ -848,13 +773,13 @@
     if (action === "toggle-model") state.selectedModels.has(target.dataset.model) ? state.selectedModels.delete(target.dataset.model) : state.selectedModels.add(target.dataset.model);
     if (action === "run-arena") { runArena(); return; }
     if (action === "vote-result") { state.arenaResults.forEach((result, index) => result.winner = index === Number(target.dataset.index)); state.arenaReveal = true; }
-    if (action === "attach") { pushToast("Uploads aren’t connected yet. Nothing was attached."); return; }
-    if (action === "new-project") { pushToast("Projects are a visual stub. Nothing is created or saved."); return; }
+    if (action === "attach") { pushToast("Attachments and tools are not available in this workspace yet."); return; }
+    if (action === "new-project") { pushToast("Project creation is being connected. Nothing was created."); return; }
     if (action === "copy") { copyMessage(target); return; }
     if (action === "retry") { retryChat(); return; }
     if (action === "details") {
       const id = state.generationError?.request_id;
-      pushToast(id ? `Request ${id}` : "No run details. Sources hidden — Research retrieval not configured.");
+      pushToast(id ? `Request ${id}` : "Run details will appear here when available.");
       return;
     }
     if (action === "dismiss-toast") { state.toasts = state.toasts.filter(toast => String(toast.id) !== target.dataset.toast); }
