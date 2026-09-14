@@ -1,0 +1,20 @@
+{
+  "$id": "https://arcel.local/schema/step",
+  "title": "Step",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "run_id", "ordinal", "kind", "status"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^step_" },
+    "run_id": { "type": "string", "pattern": "^run_" },
+    "ordinal": { "type": "integer", "minimum": 1 },
+    "kind": { "type": "string", "enum": ["policy", "model", "tool"] },
+    "status": {
+      "type": "string",
+      "enum": ["queued", "running", "completed", "failed", "cancelled"]
+    },
+    "model_registry_version": { "type": ["string", "null"] },
+    "started_at": { "type": ["string", "null"] },
+    "ended_at": { "type": ["string", "null"] }
+  }
+}

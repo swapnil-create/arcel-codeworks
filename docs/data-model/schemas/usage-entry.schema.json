@@ -1,0 +1,20 @@
+{
+  "$id": "https://arcel.local/schema/usage-entry",
+  "title": "UsageEntry",
+  "description": "Append-only ledger row. Unique idempotency_key per charge attempt. Persistence is not live.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "idempotency_key", "run_id", "workspace_id", "kind", "status", "created_at"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^use_" },
+    "idempotency_key": { "type": "string", "minLength": 8 },
+    "run_id": { "type": "string", "pattern": "^run_" },
+    "workspace_id": { "type": "string", "pattern": "^ws_" },
+    "provider": { "type": ["string", "null"] },
+    "provider_cost_usd": { "type": ["string", "null"] },
+    "user_charge_units": { "type": ["integer", "null"] },
+    "kind": { "type": "string", "enum": ["reservation", "settlement", "release"] },
+    "status": { "type": "string", "enum": ["reserved", "settled", "released"] },
+    "created_at": { "type": "string", "format": "date-time" }
+  }
+}

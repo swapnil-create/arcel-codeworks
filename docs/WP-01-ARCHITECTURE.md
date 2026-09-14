@@ -17,7 +17,8 @@ Evidence is from `main` at audit time (static checkout + `api/chat.js`). This is
 | Path | Role |
 |---|---|
 | `index.html` | Shell: `#app` mount, CSS/favicon only |
-| `app.js` | Entire client (~334 LOC IIFE): views, composer, chat, projects, Compare arena |
+| `app.js` | Entire client: views, composer, chat, projects, Compare arena; Flow G-style generation-error banners |
+| `lib/generation-errors.js` | Shared AUTH_REQUIRED / API-not-configured catalog (client + API) |
 | `styles.css` | UI styles |
 | `assets/` | Fonts (Inter, Plus Jakarta Sans), `arcel-logo-figma.svg`, `arcel-wordmark.svg`, per-letter Codeworks SVGs, hexagon mark |
 | `api/chat.js` | Sole backend: Vercel serverless OpenRouter proxy |
@@ -28,6 +29,8 @@ Evidence is from `main` at audit time (static checkout + `api/chat.js`). This is
 **Also on `main`:** `DELIVERY-TRACKER.md` (D05/D06, WP-01 status).
 
 **Not present on `main` (audit):** `package.json`, TypeScript, React/framework app, tests, `.github/` workflows, database migrations, object-storage config, auth SDK, metering/ledger, `docs/` (until this WP).
+
+**D05 scaffold (this branch, not a claim that WP-01 is done):** `.github/workflows/ci.yml`, `docs/PREVIEW-CI.md`, `docs/data-model/` stubs, `lib/generation-errors.js`. Still no live DB, IdP, or ledger.
 
 ### 1.2 `/api/chat`
 
@@ -195,9 +198,9 @@ D06 = vertical slice: sign-in → attach → model → stream cited answer → s
 | Order | PR theme | Maps to | Notes |
 |---|---|---|---|
 | **P0** | This architecture record + ADR stubs (stack spike checklist) | WP-01 / D05 start | Docs only — **this PR** |
-| **P1** | Disable dishonest Compare Judge/Combine (or hard-label as non-AI heuristics) + surface truncation limits in UI copy | §22 remove/disable | Small, honest UX; unblocks trust |
-| **P2** | Preview CI skeleton: workflow + branch protection notes + Vercel preview env checklist (no prod key) | D05 pipeline | May need owner permission on GitHub/Vercel |
-| **P3** | Data model migrations: User/Workspace/Membership, Conversation/Message, Run, UsageEntry (Postgres or equivalent) | D05 schemas | Empty app OK; tests for invariants |
+| **P1** | Disable dishonest Compare Judge/Combine (or hard-label as non-AI heuristics) + surface truncation limits in UI copy **+ AUTH_REQUIRED / API-not-configured banners** | §22 remove/disable; CHAT-07 / Flow G | Compare honesty landed on main; D05 adds gate banners. Do not store errors as assistant text. |
+| **P2** | Preview CI skeleton: workflow + branch protection notes + Vercel preview env checklist (no prod key) | D05 pipeline | Workflow + [PREVIEW-CI.md](./PREVIEW-CI.md) scaffold; owner must still enable protection and Vercel Git permissions |
+| **P3** | Data model migrations: User/Workspace/Membership, Conversation/Message, Run, UsageEntry (Postgres or equivalent) | D05 schemas | JSON Schema + SQL **stubs** + fixture invariants; **not** a live database |
 | **P4** | Auth integration spike → protect run creation; replace anonymous `/api/chat` spend path | D05 auth boundary | Keep server-side key boundary |
 | **P5** | Metering skeleton: reserve/settle + idempotency tests | D05 ledger | No Stripe/checkout yet |
 | **P6** | Model registry + routing matrix tests (explicit vs Auto; assert served model) | MOD / tier fix | Can parallelize after P3 |
@@ -250,7 +253,7 @@ R0 is foundation: contracts, auth boundary, CI/preview, metering skeleton, archi
 
 > Architecture record, migration tests, protected preview pipeline.
 
-This document satisfies the **architecture record** draft only. Migration tests and protected preview pipeline remain **not started**.
+This document satisfies the **architecture record** draft. D05 adds a CI workflow scaffold, preview-policy notes, and schema/migration **stubs** with fixture invariants. Migration tests against a real database and a protected preview pipeline (branch protection + Vercel Git + env isolation) remain **not done**.
 
 ---
 

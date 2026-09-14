@@ -20,8 +20,8 @@ Per PRD §24, WP-01 completion evidence requires **all three**:
 | Evidence item | Status |
 |---|---|
 | Architecture record | Draft in [PR #1](https://github.com/swapnil-create/arcel-codeworks/pull/1) (`docs/WP-01-ARCHITECTURE.md`) — **necessary but not sufficient** |
-| Migration tests | **Fail / not started** — no schema migrations or invariant tests in-repo |
-| Protected preview pipeline | **Fail / not started** — no `.github/` workflows; preview/prod controls unverified |
+| Migration tests | **Fail / not started against a real DB** — JSON Schema + SQL stubs + fixture invariants exist under `docs/data-model/`; nothing is provisioned or applied |
+| Protected preview pipeline | **Fail / incomplete** — PR workflow scaffold in `.github/workflows/ci.yml` and [PREVIEW-CI.md](./PREVIEW-CI.md); branch protection, Vercel Git permissions, and preview/prod key isolation are **not** evidenced |
 
 **This document does not flip WP-01 to done.** It records §20 Pass / Partial / Fail against the current static prototype so engineering can prioritize R0 blockers. WP-01 remains **not done** until migration tests, protected preview, and the Fail items below (especially R0 blockers) are addressed with acceptance evidence.
 
@@ -47,7 +47,7 @@ Per PRD §24, WP-01 completion evidence requires **all three**:
 | **SEC-01** | **Fail** | No auth on `/api/chat` or any object path — any caller can spend the server-side OpenRouter key |
 | **REL-03** | **Fail** | No usage ledger, idempotency keys, or retry/crash side-effect tests |
 | **OPS-01** | **Fail** | No per-run latency / failure / cost observability |
-| **Preview CI** (WP-01 exit) | **Fail** | No in-repo CI; protected preview + manual prod approval not evidenced |
+| **Preview CI** (WP-01 exit) | **Fail** | Workflow scaffold exists; protected preview + manual prod approval + Vercel Git permissions not evidenced |
 
 Secondary high-priority gaps (not all named R0 blockers above, but tied to honesty / release readiness): dishonest Compare Judge/Combine, silent truncation, missing run/error contracts — see architecture PR and rows below.
 
@@ -234,7 +234,7 @@ These are not separate §20 IDs but interact with SEC/REL/OPS readiness and prod
 | Dishonest Combine All | First-sentence join presented as synthesis | Product honesty; disable/label (architecture P1) |
 | Silent truncation | Last 24 messages; 12k chars/content | Context accounting; ties to safe/run contracts |
 | Missing run / error contracts | Single chat response; no run states / error taxonomy | PRD §19; needed for REL-03 / OPS-01 |
-| Preview CI missing | No `.github/` workflows | WP-01 exit Fail (R0 blocker) |
+| Preview CI missing | PR workflow + preview policy notes only; owner setup incomplete | WP-01 exit Fail (R0 blocker) |
 
 ---
 

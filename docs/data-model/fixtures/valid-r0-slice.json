@@ -1,0 +1,103 @@
+{
+  "users": [
+    {
+      "id": "user_r0_owner",
+      "status": "active",
+      "display_name": "Swapnil",
+      "created_at": "2026-09-14T08:00:00.000Z"
+    }
+  ],
+  "workspaces": [
+    {
+      "id": "ws_personal_r0",
+      "kind": "personal",
+      "status": "active",
+      "name": "Personal",
+      "created_at": "2026-09-14T08:00:00.000Z"
+    }
+  ],
+  "memberships": [
+    {
+      "id": "mem_owner_personal",
+      "user_id": "user_r0_owner",
+      "workspace_id": "ws_personal_r0",
+      "role": "owner",
+      "status": "active"
+    }
+  ],
+  "conversations": [
+    {
+      "id": "conv_first_chat",
+      "workspace_id": "ws_personal_r0",
+      "created_by_user_id": "user_r0_owner",
+      "title": "First gated prompt",
+      "status": "active",
+      "parent_conversation_id": null,
+      "created_at": "2026-09-14T10:00:00.000Z",
+      "updated_at": "2026-09-14T10:00:05.000Z"
+    }
+  ],
+  "messages": [
+    {
+      "id": "msg_user_1",
+      "conversation_id": "conv_first_chat",
+      "parent_message_id": null,
+      "role": "user",
+      "parts": [{ "type": "text", "text": "Help me outline onboarding." }],
+      "run_id": "run_gated_auth",
+      "version": 1,
+      "created_at": "2026-09-14T10:00:00.000Z"
+    }
+  ],
+  "runs": [
+    {
+      "id": "run_gated_auth",
+      "conversation_id": "conv_first_chat",
+      "workspace_id": "ws_personal_r0",
+      "actor_user_id": "user_r0_owner",
+      "status": "failed",
+      "task_type": "chat",
+      "model_selection": { "mode": "auto", "effort": "standard", "named_model_id": null },
+      "attempt": 1,
+      "parent_run_id": null,
+      "idempotency_key": "idem_run_gated_auth_1",
+      "partial_content": false,
+      "error": {
+        "taxonomy": "auth_required",
+        "code": "AUTH_REQUIRED",
+        "retryable": false,
+        "request_id": "req_fixture0001"
+      },
+      "created_at": "2026-09-14T10:00:00.000Z",
+      "updated_at": "2026-09-14T10:00:01.000Z",
+      "terminal_at": "2026-09-14T10:00:01.000Z"
+    }
+  ],
+  "steps": [
+    {
+      "id": "step_policy_1",
+      "run_id": "run_gated_auth",
+      "ordinal": 1,
+      "kind": "policy",
+      "status": "failed",
+      "model_registry_version": null,
+      "started_at": "2026-09-14T10:00:00.000Z",
+      "ended_at": "2026-09-14T10:00:01.000Z"
+    }
+  ],
+  "tool_calls": [],
+  "usage_entries": [
+    {
+      "id": "use_release_gated_auth",
+      "idempotency_key": "idem_use_gated_auth_release",
+      "run_id": "run_gated_auth",
+      "workspace_id": "ws_personal_r0",
+      "provider": null,
+      "provider_cost_usd": "0",
+      "user_charge_units": 0,
+      "kind": "release",
+      "status": "released",
+      "created_at": "2026-09-14T10:00:01.000Z"
+    }
+  ]
+}

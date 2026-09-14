@@ -1,0 +1,15 @@
+{
+  "$id": "https://arcel.local/schema/membership",
+  "title": "Membership",
+  "description": "Authorization is derived from user_id + workspace_id + role + status. display_name is never an authz input.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "user_id", "workspace_id", "role", "status"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^mem_" },
+    "user_id": { "type": "string", "pattern": "^user_" },
+    "workspace_id": { "type": "string", "pattern": "^ws_" },
+    "role": { "type": "string", "enum": ["owner", "member", "viewer"] },
+    "status": { "type": "string", "enum": ["active", "revoked"] }
+  }
+}

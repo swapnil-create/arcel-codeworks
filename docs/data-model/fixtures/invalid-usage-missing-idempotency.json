@@ -1,0 +1,14 @@
+{
+  "expect": "reject",
+  "reason": "UsageEntry requires a unique idempotency_key (BIL-01 / REL-03 path).",
+  "usage_entries": [
+    {
+      "id": "use_missing_key",
+      "run_id": "run_gated_auth",
+      "workspace_id": "ws_personal_r0",
+      "kind": "reservation",
+      "status": "reserved",
+      "created_at": "2026-09-14T10:00:00.000Z"
+    }
+  ]
+}

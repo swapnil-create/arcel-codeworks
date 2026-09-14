@@ -31,7 +31,9 @@
     selectedModels: new Set(models.filter(model => model.selected).map(model => model.id)),
     arenaResults: [],
     arenaBusy: false,
-    arenaReveal: false
+    arenaReveal: false,
+    generationError: null,
+    arenaError: null
   };
 
   const app = document.querySelector("#app");
@@ -57,6 +59,58 @@
     close: '<path d="m6 6 12 12M18 6 6 18"/>'
   };
   const icon = name => `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[name]}</svg>`;
+
+  function classifyFailure(input) {
+    if (globalThis.ArcelGenerationErrors?.classifyGenerationFailure) {
+      return globalThis.ArcelGenerationErrors.classifyGenerationFailure(input);
+    }
+    return {
+      code: input.code || "UNKNOWN",
+      title: "Request failed",
+      message: input.error || "The model could not complete this request.",
+      state: "failed",
+      taxonomy: "provider_unavailable",
+      retryable: true,
+      request_id: input.request_id || null,
+      ctas: globalThis.ArcelGenerationErrors?.GATE_CTAS || [
+        { action: "open-settings", label: "Open settings" },
+        { action: "view-existing-work", label: "View existing work" }
+      ]
+    };
+  }
+
+  function bannerActions(error) {
+    const ctas = Array.isArray(error.ctas) && error.ctas.length ? error.ctas : [
+      { action: "open-settings", label: "Open settings" },
+      { action: "view-existing-work", label: "View existing work" }
+    ];
+    return `<div class="run-banner-actions">${ctas.map((cta, index) => `<button type="button" class="${index === 0 ? "primary-button" : "ghost-button"}" data-action="${escapeHTML(cta.action)}">${escapeHTML(cta.label)}</button>`).join("")}</div>`;
+  }
+
+  function runBanner(error) {
+    if (!error) return "";
+    const retry = error.retryable ? "Safe to retry." : "Retrying will not bypass this gate.";
+    const request = error.request_id ? `<small>Request ${escapeHTML(error.request_id)}</small>` : "";
+    return `<aside class="run-banner" role="alert" data-state="${escapeHTML(error.state)}" data-error-code="${escapeHTML(error.code)}" data-taxonomy="${escapeHTML(error.taxonomy)}">
+      <strong>${escapeHTML(error.title)}</strong>
+      <p>${escapeHTML(error.message)}</p>
+      ${request}
+      <small>${retry} This is not an assistant message.</small>
+      ${bannerActions(error)}
+    </aside>`;
+  }
+
+  function settingsOverlay() {
+    return `<div class="sheet-overlay" data-action="close-menu"><section onclick="event.stopPropagation()" role="dialog" aria-labelledby="settings-title" aria-modal="true">
+      <header><h2 id="settings-title">Settings</h2><button type="button" data-action="close-menu" aria-label="Close">${icon("close")}</button></header>
+      <p>Instructions, tone, language, timezone, theme, and Enter-to-send are not connected yet. Nothing here is saved.</p>
+      <p class="feature-note">Sign-in and workspace membership are not available. Opening settings does not enable generation or spend a provider key.</p>
+    </section></div>`;
+  }
+
+  function generationGateNote() {
+    return `<p class="generation-gate">Public generation stays off until sign-in exists. API and auth errors appear as banners, not as answers.</p>`;
+  }
   const ledGlyphs = {
     " ": ["00000", "00000", "00000", "00000", "00000", "00000", "00000"],
     C: ["01110", "10000", "10000", "10000", "10000", "10000", "01110"],
@@ -126,12 +180,15 @@
   }
 
   function homeView() {
-    return `<main class="home-view">
+    const dataState = state.generationError ? state.generationError.state : "empty";
+    return `<main class="home-view" data-screen="home" data-state="${dataState}">
       <div class="welcome">
         <img src="./assets/arcel-logo-figma.svg" alt="ARCEL" class="welcome-logo">
         <h1>What are we working on?</h1>
         <p>Build, research, review, or compare—start with a prompt.</p>
         ${composer()}
+        ${runBanner(state.generationError)}
+        ${generationGateNote()}
         <div class="suggestions">
           <button data-action="suggest" data-prompt="Build a clean onboarding flow for this product">Build a feature</button>
           <button disabled title="Real retrieval and citations are not connected yet">Research · soon</button>
@@ -143,12 +200,14 @@
   }
 
   function chatView() {
-    return `<main class="chat-view">
+    const dataState = state.busy ? "loading" : state.generationError ? state.generationError.state : state.messages.length ? "completed" : "empty";
+    return `<main class="chat-view" data-screen="chat" data-state="${dataState}">
       <div class="thread">
         ${state.messages.map((message, index) => message.role === "user" ? userMessage(message) : assistantMessage(message, index)).join("")}
         ${state.busy ? thinkingMessage() : ""}
+        ${!state.busy ? runBanner(state.generationError) : ""}
       </div>
-      <div class="chat-composer">${composer({ compact: true, id: "chat-prompt" })}<p>ARCEL can make mistakes. Review important work.</p></div>
+      <div class="chat-composer">${composer({ compact: true, id: "chat-prompt" })}${generationGateNote()}<p>ARCEL can make mistakes. Review important work.</p></div>
     </main>`;
   }
 
@@ -160,7 +219,7 @@
     const sources = message.sources ? `<div class="source-list">${message.sources.map((source, index) => `<button><b>${index + 1}</b><span>${escapeHTML(source)}</span></button>`).join("")}</div>` : "";
     return `<article class="message assistant-message">
       <div class="assistant-mark"><img src="./assets/arcel-intelligence-hexagon.svg" alt=""></div>
-      <div class="message-body"><p>${message.content}</p>${sources}<div class="message-actions"><button aria-label="Copy">${icon("copy")}</button><button aria-label="Try again">${icon("refresh")}</button></div></div>
+      <div class="message-body"><p>${escapeHTML(message.content)}</p>${sources}<div class="message-actions"><button aria-label="Copy">${icon("copy")}</button><button aria-label="Try again">${icon("refresh")}</button></div></div>
     </article>`;
   }
 
@@ -184,19 +243,21 @@
       <div class="project-heading"><button data-action="projects">Projects</button><span>/</span><strong>${escapeHTML(project.name)}</strong></div>
       <section class="project-welcome"><span class="folder-mark large">${icon("folder")}</span><h1>${escapeHTML(project.name)}</h1><p>${escapeHTML(project.detail)}</p></section>
       <div class="project-recents"><p>Recent chats</p>${recentChats.slice(0, 3).map(title => `<button data-action="open-chat" data-title="${escapeHTML(title)}"><span>${icon("chat")}${escapeHTML(title)}</span><small>Updated recently</small></button>`).join("")}</div>
-      <div class="project-composer">${composer({ id: "project-prompt" })}</div>
+      <div class="project-composer">${composer({ id: "project-prompt" })}${generationGateNote()}</div>
     </main>`;
   }
 
   function arenaView() {
     const selected = models.filter(model => state.selectedModels.has(model.id));
     return `<main class="arena-view">
-      <div class="arena-heading"><div><span>Compare</span><h1>One prompt. Multiple perspectives.</h1><p>Run the same task across selected models, judge the strongest answer, or combine them.</p></div><button class="models-button" data-action="models">Models <b>${selected.length}</b>${icon("chevron")}</button></div>
+      <div class="arena-heading"><div><span>Compare</span><h1>One prompt. Multiple perspectives.</h1><p>Run the same task across selected models. Choose a response yourself — judging and synthesis are not implemented.</p></div><button class="models-button" data-action="models">Models <b>${selected.length}</b>${icon("chevron")}</button></div>
       <section class="arena-prompt">
         <label for="arena-input">Your prompt</label>
         <textarea id="arena-input" placeholder="Ask every selected model the same question…"></textarea>
         <div><button class="primary-button" data-action="run-arena" ${state.arenaBusy ? "disabled" : ""}>${state.arenaBusy ? "Comparing…" : "Compare models"}${icon("arrow")}</button></div>
         <p class="feature-note">Choose a response manually. Evidence-based judging and synthesis are unavailable until runs, citations, and evaluation records are implemented.</p>
+        ${runBanner(state.arenaError)}
+        ${generationGateNote()}
       </section>
       ${state.menu === "models" ? modelMenu() : ""}
       <section class="arena-grid">
@@ -210,6 +271,9 @@
   }
 
   function arenaCard(result, index) {
+    if (result.failure) {
+      return `<article class="arena-card arena-card-error" data-state="${escapeHTML(result.failure.state)}" data-error-code="${escapeHTML(result.failure.code)}"><header><span>Response ${String.fromCharCode(65 + index)}</span><strong>${state.arenaReveal ? escapeHTML(result.model) : "Model hidden"}</strong></header><div>${runBanner(result.failure)}</div><footer><span>${result.time}s</span></footer></article>`;
+    }
     return `<article class="arena-card ${result.winner ? "winner" : ""}"><header><span>Response ${String.fromCharCode(65 + index)}</span><strong>${state.arenaReveal ? escapeHTML(result.model) : "Model hidden"}</strong>${result.winner ? "<b>Best answer</b>" : ""}</header><div><p>${escapeHTML(result.content)}</p></div><footer><span>${result.time}s</span><button data-action="vote-result" data-index="${index}">${icon("vote")} Choose</button></footer></article>`;
   }
 
@@ -218,6 +282,7 @@
   }
 
   function overlays() {
+    if (state.menu === "settings") return settingsOverlay();
     if (state.menu !== "search" && state.menu !== "mobile") return "";
     if (state.menu === "mobile") return `<div class="mobile-overlay">${sidebar()}<button data-action="close-menu">${icon("close")}</button></div>`;
     return `<div class="search-overlay" data-action="close-menu"><section onclick="event.stopPropagation()"><label>${icon("search")}<input autofocus placeholder="Search chats and projects…"><kbd>Esc</kbd></label><p>Recent</p>${recentChats.map(title => `<button data-action="open-chat" data-title="${escapeHTML(title)}">${icon("chat")}<span>${escapeHTML(title)}</span></button>`).join("")}</section></div>`;
@@ -251,20 +316,47 @@
   }
 
   async function requestCompletion({ messages, mode = "Chat", tier = "balanced", model = "arcel" }) {
-    const response = await fetch("/api/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ messages, mode, tier, model })
-    });
+    let response;
+    try {
+      response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages, mode, tier, model })
+      });
+    } catch (error) {
+      throw classifyFailure({ code: "NETWORK", error: "The browser could not reach the chat API." });
+    }
     const payload = await response.json().catch(() => ({}));
-    if (!response.ok) throw new Error(payload.error || "The model could not complete this request.");
+    if (!response.ok) {
+      throw classifyFailure({
+        status: response.status,
+        code: payload.code,
+        error: payload.error,
+        request_id: payload.request_id
+      });
+    }
     return payload;
+  }
+
+  function asGenerationError(error) {
+    if (error && error.code && error.state) return error;
+    return classifyFailure({ error: error?.message || "The model could not complete this request." });
+  }
+
+  function sharedGateCodes(results) {
+    const failures = results.filter(result => result.failure);
+    if (!results.length || failures.length !== results.length) return null;
+    const codes = new Set(failures.map(result => result.failure.code));
+    if (codes.size !== 1) return null;
+    const code = [...codes][0];
+    return ["AUTH_REQUIRED", "OPENROUTER_NOT_CONFIGURED", "NETWORK", "API_UNAVAILABLE"].includes(code) ? code : null;
   }
 
   async function startChat(prompt) {
     const value = prompt.trim();
     if (!value) return;
     state.view = "chat";
+    state.generationError = null;
     state.messages.push({ role: "user", content: value });
     state.busy = true;
     render();
@@ -276,7 +368,7 @@
       });
       state.messages.push({ role: "assistant", content: completion.content });
     } catch (error) {
-      state.messages.push({ role: "assistant", content: `Unable to complete that request: ${error.message}` });
+      state.generationError = asGenerationError(error);
     } finally {
       state.busy = false;
       render();
@@ -291,6 +383,7 @@
     state.arenaBusy = true;
     state.arenaResults = [];
     state.arenaReveal = false;
+    state.arenaError = null;
     render();
     try {
       const selected = models.filter(model => state.selectedModels.has(model.id));
@@ -304,10 +397,15 @@
           });
           return { model: model.name, content: completion.content, time: ((performance.now() - startedAt) / 1000).toFixed(1), winner: false };
         } catch (error) {
-          return { model: model.name, content: `This model could not respond: ${error.message}`, time: ((performance.now() - startedAt) / 1000).toFixed(1), winner: false };
+          return { model: model.name, failure: asGenerationError(error), time: ((performance.now() - startedAt) / 1000).toFixed(1), winner: false };
         }
       }));
-      state.arenaResults = results;
+      if (sharedGateCodes(results)) {
+        state.arenaError = results[0].failure;
+        state.arenaResults = [];
+      } else {
+        state.arenaResults = results;
+      }
     } finally {
       state.arenaBusy = false;
       render();
@@ -318,7 +416,7 @@
     const target = event.target.closest("[data-action]");
     if (!target) return;
     const { action } = target.dataset;
-    if (action === "new-chat") { state.view = "home"; state.activeProject = null; state.messages = []; }
+    if (action === "new-chat") { state.view = "home"; state.activeProject = null; state.messages = []; state.generationError = null; state.arenaError = null; }
     if (action === "projects") state.view = "projects";
     if (action === "arena") { state.view = "arena"; state.menu = null; }
     if (action === "open-project") { state.activeProject = target.dataset.project; state.view = "project"; }
@@ -327,6 +425,8 @@
     if (action === "suggest") { startChat(target.dataset.prompt); return; }
     if (action === "send") { const input = document.querySelector(`#${target.dataset.input}`); startChat(input?.value || ""); return; }
     if (action === "search") state.menu = "search";
+    if (action === "account" || action === "open-settings") state.menu = "settings";
+    if (action === "view-existing-work") state.menu = "search";
     if (action === "model-menu") state.menu = state.menu === "model-switcher" ? null : "model-switcher";
     if (action === "select-primary-model") { state.currentModel = target.dataset.model; state.menu = null; }
     if (action === "mobile-menu") state.menu = "mobile";
@@ -340,7 +440,7 @@
 
   window.addEventListener("keydown", event => {
     if (event.key === "Escape" && state.menu) { state.menu = null; render(); }
-    if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") { event.preventDefault(); state.view = "home"; state.messages = []; render(); }
+    if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") { event.preventDefault(); state.view = "home"; state.messages = []; state.generationError = null; state.arenaError = null; render(); }
     if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
       const input = document.activeElement;
       if (input?.tagName === "TEXTAREA") input.id === "arena-input" ? runArena() : startChat(input.value);

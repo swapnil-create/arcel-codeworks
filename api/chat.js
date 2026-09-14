@@ -1,3 +1,6 @@
+const crypto = require("crypto");
+const { generationGate, attachErrorMeta } = require("../lib/generation-errors");
+
 const TIER_MODELS = {
   fast: process.env.OPENROUTER_MODEL_FAST || "google/gemini-2.5-flash",
   balanced: process.env.OPENROUTER_MODEL_BALANCED || "anthropic/claude-sonnet-4",
@@ -17,19 +20,36 @@ const MODE_INSTRUCTIONS = {
   Code: "Act as a senior product engineer. Explain the implementation briefly, then provide safe, production-ready code when it helps."
 };
 
+function newRequestId() {
+  return `req_${crypto.randomUUID().replace(/-/g, "").slice(0, 16)}`;
+}
+
 const json = (res, status, body) => {
-  res.status(status).json(body);
+  const request_id = body.request_id || newRequestId();
+  const payload = body.code
+    ? attachErrorMeta({ ...body, request_id }, status)
+    : { ...body, request_id };
+  res.status(status).json(payload);
 };
 
 function validateMessages(messages) {
-  if (!Array.isArray(messages) || !messages.length) return { error: "At least one message is required." };
-  if (messages.length > 24) return { error: "This conversation exceeds the current 24-message context limit. Context compaction is not available yet.", code: "CONTEXT_LIMIT" };
+  if (!Array.isArray(messages) || !messages.length) {
+    return { error: "At least one message is required.", code: "INVALID_INPUT" };
+  }
+  if (messages.length > 24) {
+    return {
+      error: "This conversation exceeds the current 24-message context limit. Context compaction is not available yet.",
+      code: "CONTEXT_LIMIT"
+    };
+  }
 
   for (const message of messages) {
     if (!message || !["user", "assistant"].includes(message.role) || typeof message.content !== "string") {
-      return { error: "Messages must contain a user or assistant role and text content." };
+      return { error: "Messages must contain a user or assistant role and text content.", code: "INVALID_INPUT" };
     }
-    if (message.content.length > 12000) return { error: "A message exceeds the current 12,000-character input limit.", code: "CONTEXT_LIMIT" };
+    if (message.content.length > 12000) {
+      return { error: "A message exceeds the current 12,000-character input limit.", code: "CONTEXT_LIMIT" };
+    }
   }
   return { messages };
 }
@@ -37,28 +57,17 @@ function validateMessages(messages) {
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
     res.setHeader("Allow", "POST");
-    return json(res, 405, { error: "Method not allowed" });
+    return json(res, 405, { error: "Method not allowed", code: "INVALID_INPUT" });
   }
 
-  if (!process.env.OPENROUTER_API_KEY) {
-    return json(res, 503, {
-      error: "OpenRouter is not configured.",
-      code: "OPENROUTER_NOT_CONFIGURED"
-    });
-  }
-
-  if (process.env.OPENROUTER_ALLOW_UNAUTHENTICATED_DEMO !== "true") {
-    return json(res, 403, {
-      error: "Generation is disabled until authenticated access is configured. Set OPENROUTER_ALLOW_UNAUTHENTICATED_DEMO=true only for a restricted internal demo.",
-      code: "AUTH_REQUIRED"
-    });
-  }
+  const gate = generationGate(process.env);
+  if (gate) return json(res, gate.status, { error: gate.error, code: gate.code });
 
   const messageResult = validateMessages(req.body?.messages);
   if (messageResult.error) return json(res, messageResult.code === "CONTEXT_LIMIT" ? 413 : 400, messageResult);
   const messages = messageResult.messages;
   if (!messages.some(message => message.role === "user")) {
-    return json(res, 400, { error: "A user message is required." });
+    return json(res, 400, { error: "A user message is required.", code: "INVALID_INPUT" });
   }
 
   const tier = ["fast", "balanced", "deep"].includes(req.body?.tier) ? req.body.tier : "balanced";
@@ -108,3 +117,5 @@ module.exports = async function handler(req, res) {
     return json(res, 502, { error: "Unable to reach OpenRouter.", code: "OPENROUTER_UNREACHABLE" });
   }
 };
+
+module.exports.generationGate = generationGate;

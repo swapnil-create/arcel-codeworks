@@ -1,0 +1,16 @@
+{
+  "$id": "https://arcel.local/schema/tool-call",
+  "title": "ToolCall",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "step_id", "run_id", "name", "status"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^tool_" },
+    "step_id": { "type": "string", "pattern": "^step_" },
+    "run_id": { "type": "string", "pattern": "^run_" },
+    "name": { "type": "string", "minLength": 1 },
+    "arguments_ref": { "type": ["string", "null"] },
+    "result_ref": { "type": ["string", "null"] },
+    "status": { "type": "string", "enum": ["pending", "completed", "failed"] }
+  }
+}
