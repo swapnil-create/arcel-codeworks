@@ -3,10 +3,10 @@
 **Repo:** `swapnil-create/arcel-codeworks`  
 **Branch:** `docs/d04-provider-spikes` (PR-only; never commit this work to `main` directly)  
 **Source PRD:** [ARCEL-Codeworks-PRD.md](../ARCEL-Codeworks-PRD.md) — next-ten-days item 4; §§6–7, 10, 13–14  
-**Related:** [WP-01 architecture](./WP-01-ARCHITECTURE.md) · [WP-01 security/NFR gate](./WP-01-SECURITY-NFR-GATE.md) · [delivery tracker](../DELIVERY-TRACKER.md)  
+**Related:** [WP-01 architecture](./WP-01-ARCHITECTURE.md) · [WP-01 security/NFR gate](./WP-01-SECURITY-NFR-GATE.md) · [delivery tracker](../DELIVERY-TRACKER.md) · [live results](./D04-LIVE-RESULTS.md)  
 **Harness:** [scripts/d04-provider-spike.mjs](../scripts/d04-provider-spike.mjs)  
 **Date:** 2026-09-14 (Asia/Dubai)  
-**Status:** **in progress** — plan + no-op harness only. Live keys are unavailable in this environment. **D04 is not done.**
+**Status:** **in progress** — private live streaming spike passed ([D04-LIVE-RESULTS.md](./D04-LIVE-RESULTS.md)); tools/search/image/voice remain `unsupported_capability`. **D04 is not done.**
 
 ---
 
