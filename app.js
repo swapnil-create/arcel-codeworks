@@ -44,6 +44,8 @@
     generationError: null,
     arenaError: null,
     auth: { configured: false, providers: [], user: null },
+    authLoading: true,
+    authNotice: null,
     drafts: { "main-prompt": "", "chat-prompt": "", "project-prompt": "", "arena-input": "" },
     paletteQuery: "",
     paletteIndex: 0,
@@ -242,6 +244,32 @@
       <span class="brand-divider" aria-hidden="true"></span>
       ${compact ? '<span class="brand-cw">CW</span>' : ledBoard()}
     </div>`;
+  }
+
+  function authGate() {
+    const ready = state.auth.configured && (state.auth.providers || []).length === 1;
+    const provider = state.auth.providers?.[0]?.label || "Google";
+    const description = state.authLoading
+      ? "Checking your workspace…"
+      : ready
+        ? "Sign in with your ARCEL Intelligence account to continue."
+        : "Sign-in is being configured. Please contact your workspace administrator.";
+    const action = ready
+      ? `<button class="primary-button auth-gate-button" type="button" data-action="sign-in">Continue with ${escapeHTML(provider)}</button>`
+      : "";
+    const notice = state.authNotice
+      ? `<p class="auth-gate-notice" role="alert">${escapeHTML(state.authNotice)}</p>`
+      : "";
+    return `<main class="auth-gate" aria-labelledby="auth-title">
+      <div class="auth-gate-brand">${brandLockup()}</div>
+      <section class="auth-gate-panel">
+        <p class="auth-gate-kicker">ARCEL Intelligence</p>
+        <h1 id="auth-title">Welcome to Codeworks.</h1>
+        <p>${escapeHTML(description)}</p>
+        ${action}
+        ${notice}
+      </section>
+    </main>`;
   }
 
   function sidebar() {
@@ -581,6 +609,12 @@
     const active = document.activeElement;
     restoreFocus.activeId = active?.id || "";
     restoreFocus.selection = typeof active?.selectionStart === "number" ? active.selectionStart : null;
+
+    if (state.authLoading || !state.auth.user) {
+      app.innerHTML = authGate();
+      restoreFocus();
+      return;
+    }
 
     let content = homeView();
     if (state.view === "chat") content = chatView();
@@ -933,6 +967,8 @@
       };
     } catch {
       state.auth = { configured: false, providers: [], user: null };
+    } finally {
+      state.authLoading = false;
     }
   }
 
@@ -953,11 +989,7 @@
     const authError = params.get("auth_error");
     await loadSession();
     if (authError) {
-      state.generationError = classifyFailure({
-        code: authError === "not_configured" ? "AUTH_NOT_CONFIGURED" : "AUTH_REQUIRED",
-        error: authErrorMessage(authError)
-      });
-      openMenu("settings");
+      state.authNotice = authErrorMessage(authError);
       history.replaceState({}, "", window.location.pathname || "/");
     }
     render();

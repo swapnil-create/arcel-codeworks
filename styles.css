@@ -289,6 +289,53 @@ code {
 .toast[data-tone="danger"] { border-color: var(--danger-line); background: var(--danger-bg); }
 .toast p { margin: 0; flex: 1; }
 
+/* ——— Signed-out entry ——— */
+.auth-gate {
+  min-height: 100vh;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 28px;
+  padding: 32px 20px;
+  background: var(--white);
+}
+.auth-gate-brand .brand { padding: 0; background: transparent; }
+.auth-gate-panel {
+  width: min(420px, 100%);
+  padding: 28px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sheet);
+  background: var(--white);
+  box-shadow: var(--shadow-md);
+}
+.auth-gate-kicker {
+  margin: 0 0 10px;
+  color: var(--blue);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.auth-gate h1 {
+  margin: 0;
+  color: var(--ink);
+  font: 700 clamp(26px, 4vw, 34px)/1.15 var(--font-display);
+  letter-spacing: -.04em;
+}
+.auth-gate-panel > p:not(.auth-gate-kicker):not(.auth-gate-notice) {
+  margin: 12px 0 22px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+.auth-gate-button { width: 100%; min-height: 42px; }
+.auth-gate-notice {
+  margin: 16px 0 0;
+  color: var(--danger);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
 /* ——— Shell / sidebar 254px ——— */
 .app-shell {
   min-height: 100vh;
@@ -846,6 +893,8 @@ code {
 }
 
 @media (max-width: 760px) {
+  .auth-gate { align-content: center; padding: 24px 16px; gap: 22px; }
+  .auth-gate-panel { padding: 24px 20px; }
   .app-shell { display: block; }
   .app-shell > .sidebar { display: none; }
   .workspace { grid-column: auto; }
