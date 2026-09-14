@@ -323,7 +323,7 @@
 
   function composer({ id = "main-prompt", placeholder, attach = true, modelChip = true } = {}) {
     const value = escapeHTML(state.drafts[id] || "");
-    const research = state.compact ? "Research · Off" : "Research · Unavailable";
+    const research = "Research · Unavailable";
     const text = placeholder || (state.compact ? "Ask anything…" : "Ask anything — no project or expertise required.");
     const sendLabel = state.busy ? "Stop" : "Send";
     return `<section class="composer input-group">
