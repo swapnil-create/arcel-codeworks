@@ -60,6 +60,8 @@
   let lastMenu = null;
   let closeTimer = 0;
   let activeAbort = null;
+  let liveTextFrame = 0;
+  let pendingLiveText = "";
 
   const escapeHTML = value => String(value).replace(/[&<>'"]/g, character => ({
     "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#039;", '"': "&quot;"
@@ -401,9 +403,9 @@
   }
 
   function assistantMessage(message) {
-    return `<article class="message assistant-message">
+    return `<article class="message assistant-message"${message.streaming ? ' data-live-response="true"' : ""}>
       <span class="message-role">Codeworks</span>
-      <p>${escapeHTML(message.content)}</p>
+      <p class="stream-content"${message.streaming ? ' aria-live="polite"' : ""}>${escapeHTML(message.content)}</p>
       <p class="source-note">${message.streaming ? "Generating live…" : "Sources hidden — Research retrieval not configured."}</p>
       ${messageActions(Boolean(message.streaming))}
     </article>`;
@@ -743,6 +745,25 @@
     if (activeAbort) activeAbort.abort();
   }
 
+  // Streaming used to call render() for every provider token. That rebuilt the
+  // complete shell (including the composer) and caused visible stutter. Keep
+  // state current, but paint only the response node at most once per frame.
+  function paintLiveResponse(content) {
+    pendingLiveText = content;
+    if (liveTextFrame) return;
+    liveTextFrame = window.requestAnimationFrame(() => {
+      const target = document.querySelector('[data-live-response="true"] .stream-content');
+      if (target) target.textContent = pendingLiveText;
+      liveTextFrame = 0;
+    });
+  }
+
+  function clearLiveResponsePaint() {
+    if (liveTextFrame) window.cancelAnimationFrame(liveTextFrame);
+    liveTextFrame = 0;
+    pendingLiveText = "";
+  }
+
   async function startChat(prompt) {
     const value = prompt.trim();
     if (!value) return;
@@ -762,12 +783,14 @@
         tier: tierForCurrentModel(),
         onDelta: (_delta, content) => {
           if (!streamingMessage) {
-            streamingMessage = { role: "assistant", content: "", streaming: true };
+            streamingMessage = { role: "assistant", content, streaming: true };
             state.messages.push(streamingMessage);
             state.streamStarted = true;
+            render();
+            return;
           }
           streamingMessage.content = content;
-          render();
+          paintLiveResponse(content);
         }
       });
       if (streamingMessage) {
@@ -781,6 +804,7 @@
       const classified = asGenerationError(error);
       if (classified) state.generationError = classified;
     } finally {
+      clearLiveResponsePaint();
       state.busy = false;
       state.streamStarted = false;
       render();
@@ -802,12 +826,14 @@
         tier: tierForCurrentModel(),
         onDelta: (_delta, content) => {
           if (!streamingMessage) {
-            streamingMessage = { role: "assistant", content: "", streaming: true };
+            streamingMessage = { role: "assistant", content, streaming: true };
             state.messages.push(streamingMessage);
             state.streamStarted = true;
+            render();
+            return;
           }
           streamingMessage.content = content;
-          render();
+          paintLiveResponse(content);
         }
       });
       if (streamingMessage) {
@@ -821,6 +847,7 @@
       const classified = asGenerationError(error);
       if (classified) state.generationError = classified;
     } finally {
+      clearLiveResponsePaint();
       state.busy = false;
       state.streamStarted = false;
       render();
