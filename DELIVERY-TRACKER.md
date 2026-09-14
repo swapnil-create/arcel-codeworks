@@ -36,7 +36,7 @@ Last updated: 2026-09-14 · Zone: Asia/Dubai (GST)
 
 | Package | Scope | Depends | Status | Evidence |
 |---|---|---|---|---|
-| WP-01 | Architecture, schemas, env, auth, CI | R0 decisions | in progress | [PR #1](https://github.com/swapnil-create/arcel-codeworks/pull/1) architecture notes (`docs/WP-01-ARCHITECTURE.md`, `9bccc64`); [PR #3](https://github.com/swapnil-create/arcel-codeworks/pull/3) §20 security/NFR gate (`docs/WP-01-SECURITY-NFR-GATE.md`, `6faa73e`). Still not done — migration tests + protected preview Fail; R0 blockers SEC-01, REL-03, OPS-01, preview CI. |
+| WP-01 | Architecture, schemas, env, auth, CI | R0 decisions | in progress | Architecture + §20 gate docs **merged on main**: [WP-01-ARCHITECTURE.md](./docs/WP-01-ARCHITECTURE.md) via [PR #1](https://github.com/swapnil-create/arcel-codeworks/pull/1) (`ac69866b6223ca23520462f2e1a09872c1cca870`); [WP-01-SECURITY-NFR-GATE.md](./docs/WP-01-SECURITY-NFR-GATE.md) via [PR #3](https://github.com/swapnil-create/arcel-codeworks/pull/3) (`7ba380e057ec5722a71c49c847b32052773753a6`). Still not done — migration tests + protected preview Fail; R0 blockers SEC-01, REL-03, OPS-01, preview CI. |
 | WP-02 | Chat/history/settings (ACC, CHAT, PER) | WP-01 | not started | |
 | WP-03 | Model gateway/registry/metering (MOD, BIL) | WP-01 | not started | |
 | WP-04 | Upload/library/retrieval (FIL, PRJ) | WP-01 | not started | |
@@ -54,9 +54,9 @@ Last updated: 2026-09-14 · Zone: Asia/Dubai (GST)
 
 | Agent | Assignment | Status |
 |---|---|---|
-| Coder | WP-01 audit → architecture notes PR open | in progress |
+| Coder | WP-01 architecture record on main; next D05 contracts / ordered P1–P5 from architecture notes | in progress |
 | UI UX Expert | D03 clickable flows from PRD §5 + acceptance scenarios §3 | done |
-| Standards Expert | Security/authz/NFR checklist from PRD §20; review WP-01 contracts | in progress | [PR #3](https://github.com/swapnil-create/arcel-codeworks/pull/3) evidence checklist open; WP-01 not done. |
+| Standards Expert | Security/authz/NFR checklist from PRD §20; review WP-01 contracts | in progress | [PR #3](https://github.com/swapnil-create/arcel-codeworks/pull/3) §20 gate checklist merged; WP-01 still not done. |
 | Chief of Staff | Ops cadence; keep Swapnil unblocked on D01 decisions | not started |
 
 ---
@@ -75,3 +75,4 @@ Last updated: 2026-09-14 · Zone: Asia/Dubai (GST)
 | 2026-09-14 03:05 | D03 FLOW-MAP marked authoritative; dark-theme prototype rewritten to match screens A–G + ACC-03 stamps |
 | 2026-09-14 03:12 | D03 ACC-03 / §5.4 state coverage mapped and tagged (flow-level only; WP-11 still owns full a11y). WP-01 unchanged. |
 | 2026-09-14 09:00 | Merged overnight PRD, WP-01 audits, and D03 prototype. Applied PRD §22 honesty corrections to the prototype; blockers and required decisions are recorded in `docs/PRD-MERGE-STATUS.md`. |
+| 2026-09-14 10:39 | Wave 1 docs on main: [PR #1](https://github.com/swapnil-create/arcel-codeworks/pull/1) architecture notes (`ac69866`), [PR #2](https://github.com/swapnil-create/arcel-codeworks/pull/2) D03 flows (`59cd67d`), [PR #3](https://github.com/swapnil-create/arcel-codeworks/pull/3) §20 gate (`7ba380e`). WP-01 remains in progress. |
