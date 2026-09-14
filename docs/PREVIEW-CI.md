@@ -16,6 +16,7 @@ The check is dependency-free (no `package.json` / npm install) and matches this 
 | Data-model invariant fixtures | P3 stubs are coherent (not a live DB) |
 | Generation-gate unit checks | `AUTH_REQUIRED` without a session (including omitted headers); API-not-configured without keys |
 | Session / OAuth fail-closed | Signed cookie required; demo flag, bearer tokens, and client-asserted names cannot spend |
+| SEC-01 isolation matrix | Missing/tampered/expired/wrong-secret cookies; guessed IDs and revoked memberships in fixtures (not a live DB) |
 | Demo-flag scan | Tracked runtime paths must not set `OPENROUTER_ALLOW_UNAUTHENTICATED_DEMO=true` |
 | Secret scan | Reject committed `.env` (except `.env.example`) and obvious key material |
 
@@ -28,7 +29,7 @@ Until GitHub→Vercel auto-deploy is linked with sufficient permissions (see [PR
 | Environment | Provider key | `OPENROUTER_ALLOW_UNAUTHENTICATED_DEMO` | Generation |
 |---|---|---|---|
 | **PR preview** | Restricted / capped key **or none** — never the production OpenRouter key | **`false`** | Requires a valid signed session (`AUTH_REQUIRED` or API-not-configured otherwise). No public unauthenticated spend. |
-| **Production** | Separate credentials; promote only with **manual approval** | **`false`** | Same session gate. Configure `AUTH_SECRET` + OAuth ([AUTH.md](./AUTH.md)) before enabling a paid key. Do not flip the demo flag on the public URL. |
+| **Production** | Separate credentials; promote only with **manual approval** | **`false`** | Same session gate. **Owner action:** configure `AUTH_SECRET` + OAuth using the [AUTH.md Vercel owner checklist](./AUTH.md) before enabling a paid key. Do not flip the demo flag on the public URL. |
 | **Internal demo** | Tightly capped key, IP allowlist or equivalent | **Do not use.** The flag is not a session and cannot authorize spend. | Use a real signed-in session instead. |
 
 `OPENROUTER_ALLOW_UNAUTHENTICATED_DEMO` is **not** an identity provider and **not** a spend bypass. Do not enable it on any shared path.
@@ -45,8 +46,8 @@ This PR cannot enable GitHub rulesets. Swapnil / repo admins should require:
 ## Still blocked (honest)
 
 - Vercel Git integration write/admin access was not available to the merge-status author
-- Auth provider env (`AUTH_SECRET`, OAuth client) is **not** configured in production yet — session code fails closed
-- No migration tests against a real database; no cross-user object ACL tests (SEC-01 remains Fail)
+- Auth provider env (`AUTH_SECRET`, OAuth client) is **not** configured in production yet — session code fails closed. Owner must complete the [AUTH.md Vercel owner checklist](./AUTH.md) before OpenRouter on production.
+- No migration tests against a real database; in-memory isolation fixtures exist, but Postgres-backed cross-user object ACL tests do not (SEC-01 remains Fail)
 - No observability dashboards (OPS-01)
 
 *CI scaffold ≠ protected preview pipeline done.*

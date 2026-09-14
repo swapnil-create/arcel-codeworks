@@ -200,4 +200,31 @@ const otherSecret = await call({
 assert(otherSecret.body.code === "AUTH_REQUIRED", "cookie signed with another secret must fail");
 assertNoSpend(otherSecret, "wrong secret");
 
+const malformed = await call({
+  env: { OPENROUTER_API_KEY: PLACEHOLDER_KEY, AUTH_SECRET: TEST_SECRET },
+  headers: { cookie: `${SESSION_COOKIE}=not.a.token` }
+});
+assert(malformed.body.code === "AUTH_REQUIRED", "malformed cookie must fail closed");
+assertNoSpend(malformed, "malformed cookie");
+
+const extraHeaders = await call({
+  env: { OPENROUTER_API_KEY: PLACEHOLDER_KEY, AUTH_SECRET: TEST_SECRET },
+  headers: { "x-user-id": "github:1", "x-forwarded-user": "admin" }
+});
+assert(extraHeaders.body.code === "AUTH_REQUIRED", "identity headers must not bypass session");
+assertNoSpend(extraHeaders, "identity headers");
+
+const mixed = await call({
+  env: { OPENROUTER_API_KEY: PLACEHOLDER_KEY, AUTH_SECRET: TEST_SECRET },
+  headers: { cookie: `${SESSION_COOKIE}=${validToken}` },
+  body: {
+    messages: [{ role: "user", content: "ping" }],
+    user: "other-user",
+    display_name: "Other",
+    sub: "github:999"
+  }
+});
+assert(mixed.status === 200, "valid cookie + asserted other user still uses the cookie principal");
+assert(mixed.fetchCalls.length === 1, "valid cookie may call provider mock");
+
 console.log("api/chat session gate: unauthenticated spend blocked; signed cookie required");

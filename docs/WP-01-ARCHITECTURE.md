@@ -55,9 +55,9 @@ Evidence is from `main` at audit time (static checkout + `api/chat.js`). This is
 |---|---|
 | Client | Settings sign-in / sign-out wired to `/api/auth/*`; unsigned chrome (no fake identity) |
 | API | Signed `arcel_session` cookie required on `POST /api/chat`; OAuth login/callback/logout/session routes |
-| Data ACL | **Still missing** — no durable user-scoped objects; session `sub` is not yet membership/workspace authz |
+| Data ACL | **Still missing on a live store** — in-memory isolation fixtures exist; session `sub` is not yet durable membership/workspace authz |
 
-**SEC-01 remains Fail** (no IdP in production, no cross-user object tests). Session gate is the P4 spend boundary, not ACC-01 complete. See [AUTH.md](./AUTH.md).
+**SEC-01 remains Fail** (no IdP in production, no Postgres-backed cross-user object tests). Session gate is the P4 spend boundary; in-memory fixtures are not ACC-01 complete. See [AUTH.md](./AUTH.md).
 
 ### 1.4 Model routing (prototype behavior)
 

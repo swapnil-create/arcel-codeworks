@@ -1,0 +1,339 @@
+{
+  "note": "In-memory SEC-01 isolation graph. Not persisted. Postgres RLS / live ACL tests are still required.",
+  "identities": [
+    { "sub": "github:101", "user_id": "user_alice" },
+    { "sub": "github:202", "user_id": "user_bob" },
+    { "sub": "github:303", "user_id": "user_carol" },
+    { "sub": "github:404", "user_id": "user_eve" }
+  ],
+  "users": [
+    {
+      "id": "user_alice",
+      "status": "active",
+      "display_name": "Alice",
+      "created_at": "2026-09-14T08:00:00.000Z"
+    },
+    {
+      "id": "user_bob",
+      "status": "active",
+      "display_name": "Bob",
+      "created_at": "2026-09-14T08:00:00.000Z"
+    },
+    {
+      "id": "user_carol",
+      "status": "active",
+      "display_name": "Carol",
+      "created_at": "2026-09-14T08:00:00.000Z"
+    },
+    {
+      "id": "user_eve",
+      "status": "active",
+      "display_name": "Eve",
+      "created_at": "2026-09-14T08:00:00.000Z"
+    }
+  ],
+  "workspaces": [
+    {
+      "id": "ws_alice",
+      "kind": "personal",
+      "status": "active",
+      "name": "Alice personal",
+      "created_at": "2026-09-14T08:00:00.000Z"
+    },
+    {
+      "id": "ws_bob",
+      "kind": "personal",
+      "status": "active",
+      "name": "Bob personal",
+      "created_at": "2026-09-14T08:00:00.000Z"
+    },
+    {
+      "id": "ws_team",
+      "kind": "team",
+      "status": "active",
+      "name": "Shared team",
+      "created_at": "2026-09-14T08:00:00.000Z"
+    }
+  ],
+  "memberships": [
+    {
+      "id": "mem_alice_personal",
+      "user_id": "user_alice",
+      "workspace_id": "ws_alice",
+      "role": "owner",
+      "status": "active"
+    },
+    {
+      "id": "mem_bob_personal",
+      "user_id": "user_bob",
+      "workspace_id": "ws_bob",
+      "role": "owner",
+      "status": "active"
+    },
+    {
+      "id": "mem_carol_alice_revoked",
+      "user_id": "user_carol",
+      "workspace_id": "ws_alice",
+      "role": "member",
+      "status": "revoked"
+    },
+    {
+      "id": "mem_alice_team",
+      "user_id": "user_alice",
+      "workspace_id": "ws_team",
+      "role": "owner",
+      "status": "active"
+    },
+    {
+      "id": "mem_eve_team",
+      "user_id": "user_eve",
+      "workspace_id": "ws_team",
+      "role": "member",
+      "status": "active"
+    }
+  ],
+  "conversations": [
+    {
+      "id": "conv_alice",
+      "workspace_id": "ws_alice",
+      "created_by_user_id": "user_alice",
+      "title": "Alice private chat",
+      "status": "active",
+      "parent_conversation_id": null,
+      "created_at": "2026-09-14T10:00:00.000Z",
+      "updated_at": "2026-09-14T10:00:05.000Z"
+    },
+    {
+      "id": "conv_bob",
+      "workspace_id": "ws_bob",
+      "created_by_user_id": "user_bob",
+      "title": "Bob private chat",
+      "status": "active",
+      "parent_conversation_id": null,
+      "created_at": "2026-09-14T10:00:00.000Z",
+      "updated_at": "2026-09-14T10:00:05.000Z"
+    },
+    {
+      "id": "conv_team",
+      "workspace_id": "ws_team",
+      "created_by_user_id": "user_alice",
+      "title": "Team shared chat",
+      "status": "active",
+      "parent_conversation_id": null,
+      "created_at": "2026-09-14T10:00:00.000Z",
+      "updated_at": "2026-09-14T10:00:05.000Z"
+    }
+  ],
+  "messages": [
+    {
+      "id": "msg_alice_1",
+      "conversation_id": "conv_alice",
+      "parent_message_id": null,
+      "role": "user",
+      "parts": [{ "type": "text", "text": "Alice only" }],
+      "run_id": "run_alice",
+      "version": 1,
+      "created_at": "2026-09-14T10:00:00.000Z"
+    },
+    {
+      "id": "msg_bob_1",
+      "conversation_id": "conv_bob",
+      "parent_message_id": null,
+      "role": "user",
+      "parts": [{ "type": "text", "text": "Bob only" }],
+      "run_id": "run_bob",
+      "version": 1,
+      "created_at": "2026-09-14T10:00:00.000Z"
+    },
+    {
+      "id": "msg_team_1",
+      "conversation_id": "conv_team",
+      "parent_message_id": null,
+      "role": "user",
+      "parts": [{ "type": "text", "text": "Team thread" }],
+      "run_id": "run_team",
+      "version": 1,
+      "created_at": "2026-09-14T10:00:00.000Z"
+    }
+  ],
+  "runs": [
+    {
+      "id": "run_alice",
+      "conversation_id": "conv_alice",
+      "workspace_id": "ws_alice",
+      "actor_user_id": "user_alice",
+      "status": "completed",
+      "task_type": "chat",
+      "model_selection": { "mode": "auto", "effort": "standard", "named_model_id": null },
+      "attempt": 1,
+      "parent_run_id": null,
+      "idempotency_key": "idem_run_alice_1",
+      "partial_content": false,
+      "error": null,
+      "created_at": "2026-09-14T10:00:00.000Z",
+      "updated_at": "2026-09-14T10:00:01.000Z",
+      "terminal_at": "2026-09-14T10:00:01.000Z"
+    },
+    {
+      "id": "run_bob",
+      "conversation_id": "conv_bob",
+      "workspace_id": "ws_bob",
+      "actor_user_id": "user_bob",
+      "status": "completed",
+      "task_type": "chat",
+      "model_selection": { "mode": "auto", "effort": "standard", "named_model_id": null },
+      "attempt": 1,
+      "parent_run_id": null,
+      "idempotency_key": "idem_run_bob_1",
+      "partial_content": false,
+      "error": null,
+      "created_at": "2026-09-14T10:00:00.000Z",
+      "updated_at": "2026-09-14T10:00:01.000Z",
+      "terminal_at": "2026-09-14T10:00:01.000Z"
+    },
+    {
+      "id": "run_team",
+      "conversation_id": "conv_team",
+      "workspace_id": "ws_team",
+      "actor_user_id": "user_alice",
+      "status": "completed",
+      "task_type": "chat",
+      "model_selection": { "mode": "auto", "effort": "standard", "named_model_id": null },
+      "attempt": 1,
+      "parent_run_id": null,
+      "idempotency_key": "idem_run_team_1",
+      "partial_content": false,
+      "error": null,
+      "created_at": "2026-09-14T10:00:00.000Z",
+      "updated_at": "2026-09-14T10:00:01.000Z",
+      "terminal_at": "2026-09-14T10:00:01.000Z"
+    }
+  ],
+  "steps": [],
+  "tool_calls": [],
+  "usage_entries": [
+    {
+      "id": "use_alice_settle",
+      "idempotency_key": "idem_use_alice_settle",
+      "run_id": "run_alice",
+      "workspace_id": "ws_alice",
+      "provider": null,
+      "provider_cost_usd": "0",
+      "user_charge_units": 0,
+      "kind": "settlement",
+      "status": "settled",
+      "created_at": "2026-09-14T10:00:01.000Z"
+    },
+    {
+      "id": "use_bob_settle",
+      "idempotency_key": "idem_use_bob_settle",
+      "run_id": "run_bob",
+      "workspace_id": "ws_bob",
+      "provider": null,
+      "provider_cost_usd": "0",
+      "user_charge_units": 0,
+      "kind": "settlement",
+      "status": "settled",
+      "created_at": "2026-09-14T10:00:01.000Z"
+    },
+    {
+      "id": "use_team_settle",
+      "idempotency_key": "idem_use_team_settle",
+      "run_id": "run_team",
+      "workspace_id": "ws_team",
+      "provider": null,
+      "provider_cost_usd": "0",
+      "user_charge_units": 0,
+      "kind": "settlement",
+      "status": "settled",
+      "created_at": "2026-09-14T10:00:01.000Z"
+    }
+  ],
+  "cases": [
+    {
+      "name": "owner can read own conversation",
+      "sub": "github:101",
+      "type": "conversation",
+      "id": "conv_alice",
+      "expect": "allow"
+    },
+    {
+      "name": "owner can read own run",
+      "sub": "github:101",
+      "type": "run",
+      "id": "run_alice",
+      "expect": "allow"
+    },
+    {
+      "name": "peer cannot read other personal conversation",
+      "sub": "github:202",
+      "type": "conversation",
+      "id": "conv_alice",
+      "expect": "PERMISSION_DENIED"
+    },
+    {
+      "name": "peer cannot read other personal run",
+      "sub": "github:202",
+      "type": "run",
+      "id": "run_alice",
+      "expect": "PERMISSION_DENIED"
+    },
+    {
+      "name": "guessed conversation id fails closed",
+      "sub": "github:101",
+      "type": "conversation",
+      "id": "conv_guessed_does_not_exist",
+      "expect": "PERMISSION_DENIED"
+    },
+    {
+      "name": "guessed run id fails closed",
+      "sub": "github:101",
+      "type": "run",
+      "id": "run_guessed_does_not_exist",
+      "expect": "PERMISSION_DENIED"
+    },
+    {
+      "name": "revoked membership cannot read former workspace",
+      "sub": "github:303",
+      "type": "conversation",
+      "id": "conv_alice",
+      "expect": "PERMISSION_DENIED"
+    },
+    {
+      "name": "missing session cannot read objects",
+      "sub": "",
+      "type": "conversation",
+      "id": "conv_alice",
+      "expect": "AUTH_REQUIRED"
+    },
+    {
+      "name": "client-asserted display name cannot steal a conversation",
+      "sub": "github:202",
+      "type": "conversation",
+      "id": "conv_alice",
+      "claimed": { "display_name": "Alice", "user": "user_alice", "sub": "github:101" },
+      "expect": "PERMISSION_DENIED"
+    },
+    {
+      "name": "team member can read shared workspace conversation",
+      "sub": "github:404",
+      "type": "conversation",
+      "id": "conv_team",
+      "expect": "allow"
+    },
+    {
+      "name": "outsider cannot read team conversation",
+      "sub": "github:202",
+      "type": "conversation",
+      "id": "conv_team",
+      "expect": "PERMISSION_DENIED"
+    },
+    {
+      "name": "team member cannot use membership to read a peer personal workspace",
+      "sub": "github:404",
+      "type": "conversation",
+      "id": "conv_alice",
+      "expect": "PERMISSION_DENIED"
+    }
+  ]
+}
