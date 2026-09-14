@@ -196,7 +196,7 @@
   }
 
   function settingsOverlay() {
-    return `<div class="sheet-overlay${state.compact ? " sheet-bottom" : ""}${state.menuExit ? " is-exiting" : ""}" data-action="close-menu"><section class="settings-sheet" data-dialog onclick="event.stopPropagation()" role="dialog" aria-labelledby="settings-title" aria-modal="true">
+    return `<div class="sheet-overlay${state.compact ? " sheet-bottom" : ""}${state.menuExit ? " is-exiting" : ""}" data-backdrop="close"><section class="settings-sheet" data-dialog role="dialog" aria-labelledby="settings-title" aria-modal="true">
       ${state.compact ? '<div class="sheet-handle" aria-hidden="true"></div>' : ""}
       <header><h2 id="settings-title">Account</h2><button type="button" class="btn-icon" data-action="close-menu" aria-label="Close">${icon("close")}</button></header>
       <div class="sheet-section sheet-lead">${settingsBody()}</div>
@@ -298,13 +298,19 @@
         : `<button class="mobile-menu btn-icon" data-action="mobile-menu" aria-label="Open navigation">${icon("menu")}</button>`;
       const center = state.view === "home"
         ? brandLockup(true)
-        : `<p class="mobile-title">${escapeHTML(state.view === "arena" ? "Arena" : headerTitle())}</p>`;
+        : canSwitchModel
+          ? `<button class="model-button mobile-title" type="button" data-action="model-menu" aria-haspopup="dialog" aria-expanded="${state.menu === "model-switcher"}">${escapeHTML(headerTitle())}${icon("chevron")}</button>`
+          : `<p class="mobile-title">${escapeHTML(state.view === "arena" ? "Arena" : headerTitle())}</p>`;
       const right = state.view === "arena"
         ? `<span class="manual-chip">Manual</span>`
         : state.view === "projects"
           ? `<button type="button" class="btn-ghost mobile-plus" data-action="new-project" aria-label="New project">+</button>`
           : `<button class="user-button${state.auth.user ? "" : " unsigned"}" data-action="open-settings" aria-label="${state.auth.user ? "Account" : "Sign in"}">${state.auth.user ? escapeHTML(initials(state.auth.user)) : "Sign in"}</button>`;
       return `<header class="topbar topbar-mobile">${left}${center}${right}</header>`;
+    }
+    const pageHasOwnTitle = state.view === "projects" || state.view === "project" || state.view === "arena" || state.view === "library" || state.view === "tasks";
+    if (pageHasOwnTitle) {
+      return `<header class="topbar topbar-quiet"><span class="sr-only">${escapeHTML(headerTitle())}</span></header>`;
     }
     return `<header class="topbar">
       <button class="model-button" type="button" ${canSwitchModel ? `data-action="model-menu" aria-haspopup="dialog" aria-expanded="${state.menu === "model-switcher"}"` : ""}><span>${escapeHTML(headerTitle())}</span>${canSwitchModel ? icon("chevron") : ""}</button>
@@ -499,7 +505,7 @@
     const commands = paletteEntries();
     if (state.paletteIndex >= commands.length) state.paletteIndex = 0;
     const activeId = commands[state.paletteIndex]?.id;
-    return `<div class="search-overlay${state.menuExit ? " is-exiting" : ""}" data-action="close-menu"><section class="palette" data-dialog onclick="event.stopPropagation()" role="dialog" aria-labelledby="palette-title" aria-modal="true">
+    return `<div class="search-overlay${state.menuExit ? " is-exiting" : ""}" data-backdrop="close"><section class="palette" data-dialog role="dialog" aria-labelledby="palette-title" aria-modal="true">
       <h2 id="palette-title" class="sr-only">Command palette</h2>
       <label><kbd>⌘K</kbd><input id="palette-input" data-autofocus value="${escapeHTML(state.paletteQuery)}" placeholder="Search chats, projects, commands…" aria-label="Filter command palette"></label>
       <p class="feature-note palette-note">Search is UI-only. This list is local commands, not a connected index.</p>
@@ -508,7 +514,7 @@
   }
 
   function mobileNavSheet() {
-    return `<div class="sheet-overlay sheet-bottom${state.menuExit ? " is-exiting" : ""}" data-action="close-menu"><section class="nav-sheet" data-dialog onclick="event.stopPropagation()" role="dialog" aria-labelledby="nav-title" aria-modal="true">
+    return `<div class="sheet-overlay sheet-bottom${state.menuExit ? " is-exiting" : ""}" data-backdrop="close"><section class="nav-sheet" data-dialog role="dialog" aria-labelledby="nav-title" aria-modal="true">
       <div class="sheet-handle" aria-hidden="true"></div>
       <h2 id="nav-title">Menu</h2>
       <button type="button" data-action="new-chat">New chat</button>
@@ -526,7 +532,7 @@
       const selected = !option.disabled && state.intelligence === option.id;
       return `<button type="button" class="model-row${selected ? " selected" : ""}${option.disabled ? " is-unavailable" : ""}" ${option.disabled ? "disabled" : `data-action="select-intelligence" data-model="${option.id}"`}><strong>${escapeHTML(option.name)}${selected ? "  ✓" : ""}</strong><small>${escapeHTML(state.compact && option.id === "auto" ? "Recommended" : state.compact && option.id === "balanced" ? "Named" : state.compact && option.id === "image" ? "Unavailable" : option.detail)}</small></button>`;
     });
-    return `<div class="sheet-overlay${state.compact ? " sheet-bottom" : ""}${state.menuExit ? " is-exiting" : ""}" data-action="close-menu"><section class="model-sheet" data-dialog onclick="event.stopPropagation()" role="dialog" aria-labelledby="model-title" aria-modal="true">
+    return `<div class="sheet-overlay${state.compact ? " sheet-bottom" : ""}${state.menuExit ? " is-exiting" : ""}" data-backdrop="close"><section class="model-sheet" data-dialog role="dialog" aria-labelledby="model-title" aria-modal="true">
       ${state.compact ? '<div class="sheet-handle" aria-hidden="true"></div>' : ""}
       <h2 id="model-title">${state.compact ? "Model & effort" : "Model"}</h2>
       ${state.compact ? "" : `<p class="feature-note">Task / intelligence / effort stay separate (PRD §28).</p>`}
@@ -775,6 +781,10 @@
   }
 
   app.addEventListener("click", event => {
+    if (event.target.closest("[data-backdrop='close']") && !event.target.closest("[data-dialog]")) {
+      closeMenu();
+      return;
+    }
     const target = event.target.closest("[data-action]");
     if (!target) return;
     const { action } = target.dataset;

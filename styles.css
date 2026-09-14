@@ -60,8 +60,8 @@
   --z-sidebar: 20;
   --z-topbar: 10;
   --z-dock: 8;
-  --z-overlay: 50;
-  --z-toast: 70;
+  --z-overlay: 80;
+  --z-toast: 90;
   --sidebar-width: 254px;
   --topbar-height: 58px;
   --focus-ring: 0 0 0 2px var(--blue);
@@ -542,6 +542,8 @@ code {
   padding: 32px 24px 96px;
 }
 .welcome { width: min(680px, 100%); text-align: center; }
+.welcome .generation-gate { display: none; }
+.topbar-quiet { display: none; }
 .welcome h1 {
   margin: 0 0 18px;
   font: 700 clamp(28px, 4vw, 32px)/1.15 var(--font-display);
@@ -718,6 +720,7 @@ code {
   background: var(--white);
   box-shadow: var(--shadow-lg);
   overflow: hidden;
+  isolation: isolate;
   animation: palette-in var(--duration-palette) var(--ease-out);
 }
 .search-overlay.is-exiting .palette { animation: fade-out var(--duration-fast) var(--ease-out) forwards; }
@@ -803,7 +806,7 @@ code {
   animation: sheet-up var(--duration-sheet) var(--ease-out);
   min-height: 320px;
 }
-.nav-sheet { display: flex; flex-direction: column; gap: 4px; background: var(--white); }
+.nav-sheet { display: flex; flex-direction: column; gap: 4px; background: var(--white); min-height: 480px; }
 .nav-sheet h2 { margin: 0 0 4px; font: 700 16px var(--font-display); }
 .nav-sheet button {
   width: 100%;
@@ -861,7 +864,10 @@ code {
   .arena-view { width: calc(100% - 32px); padding-top: 12px; }
   .project-card { width: 100%; }
   .toast-region { right: 12px; bottom: 12px; }
+  .library-view .library-head h1,
+  .arena-heading { display: none; }
 }
+#app:has([data-backdrop]) .chat-composer { visibility: hidden; }
 
 @media (min-width: 761px) {
   .topbar .user-button.unsigned { display: none; }
