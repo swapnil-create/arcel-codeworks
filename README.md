@@ -10,14 +10,14 @@ Composer-first AI workspace **prototype**. The intended product combines chat, r
 
 Dependency-free static client (`index.html`, `app.js`, `styles.css`). Conversation state is in-memory and resets on refresh.
 
-- **Chat shell** — composer-first home, Chat and Code prompt modes, Auto · Quick / Standard / Deep effort tiers, loading state
+- **Chat shell** — composer-first home, Chat and Code prompt modes, Auto · Quick / Standard / Deep effort tiers, streaming skeletons
 - **Projects UI stub** — hardcoded cards; not a real workspace
-- **Search overlay** — UI only; lists seeded recents, does not search
+- **Command palette** — UI only; local commands + seeded recents, does not search
 - **Compare UI** — model selection, side-by-side cards, manual Choose (names stay hidden until you pick)
-- **Responsive states** — sidebar / mobile overlay, keyboard shortcuts (⌘K new chat, Esc close, ⌘Enter send)
+- **Responsive states** — sidebar sheet, keyboard shortcuts (⌘K new chat, ⌘/ palette, Esc close, ⌘Enter send)
 - **Honesty banners** — AUTH_REQUIRED, API-not-configured, and network failures as distinct alerts (`data-state`), not assistant replies
 - **Session chrome** — sign-in / sign-out in Settings when an OAuth provider is configured; unsigned account row (no fake identity)
-- **Brand** — ARCEL wordmark, ARCEL Blue, Plus Jakarta Sans headings, Inter UI type
+- **Brand / design system** — official ARCEL marks, ARCEL Blue, Plus Jakarta Sans headings, Inter UI, reusable CSS components and motion (reduced-motion respected)
 
 ## Not built
 
