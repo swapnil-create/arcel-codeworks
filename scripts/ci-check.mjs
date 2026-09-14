@@ -121,6 +121,33 @@ async function main() {
     if (!/runBanner/.test(app) || !/generationError/.test(app)) {
       throw new Error("app.js missing honesty banner state");
     }
+    if (!/Open settings/.test(app) || !/View existing work/.test(app) || !/open-settings/.test(app) || !/view-existing-work/.test(app)) {
+      throw new Error("app.js missing Figma gate CTAs");
+    }
+  });
+
+  check("catalog: QUOTA_EXHAUSTED is reserved, not billed", () => {
+    const entry = CATALOG.QUOTA_EXHAUSTED;
+    if (!entry || entry.state !== "quota-exhausted" || entry.taxonomy !== "quota_exceeded" || entry.retryable) {
+      throw new Error(JSON.stringify(entry));
+    }
+    const classified = classifyGenerationFailure({ code: "QUOTA_EXHAUSTED" });
+    if (classified.state !== "quota-exhausted") throw new Error(JSON.stringify(classified));
+    const labels = (classified.ctas || []).map(cta => cta.label);
+    if (!labels.includes("Open settings") || !labels.includes("View existing work")) {
+      throw new Error("quota catalog missing Figma CTAs");
+    }
+    if (!/does not meter or bill/i.test(entry.detail) || !/no automatic overage/i.test(entry.detail)) {
+      throw new Error("quota catalog must not invent live billing");
+    }
+  });
+
+  check("gate: never emits quota or demo spend", () => {
+    const missing = generationGate({});
+    const auth = generationGate({ OPENROUTER_API_KEY: "local-preview-not-a-secret" });
+    if (missing?.code === "QUOTA_EXHAUSTED" || auth?.code === "QUOTA_EXHAUSTED") {
+      throw new Error("generationGate must not invent quota/billing");
+    }
   });
 
   check("catalog: Flow G states are canonical", () => {

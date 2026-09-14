@@ -71,8 +71,20 @@
       state: "failed",
       taxonomy: "provider_unavailable",
       retryable: true,
-      request_id: input.request_id || null
+      request_id: input.request_id || null,
+      ctas: globalThis.ArcelGenerationErrors?.GATE_CTAS || [
+        { action: "open-settings", label: "Open settings" },
+        { action: "view-existing-work", label: "View existing work" }
+      ]
     };
+  }
+
+  function bannerActions(error) {
+    const ctas = Array.isArray(error.ctas) && error.ctas.length ? error.ctas : [
+      { action: "open-settings", label: "Open settings" },
+      { action: "view-existing-work", label: "View existing work" }
+    ];
+    return `<div class="run-banner-actions">${ctas.map((cta, index) => `<button type="button" class="${index === 0 ? "primary-button" : "ghost-button"}" data-action="${escapeHTML(cta.action)}">${escapeHTML(cta.label)}</button>`).join("")}</div>`;
   }
 
   function runBanner(error) {
@@ -84,7 +96,16 @@
       <p>${escapeHTML(error.message)}</p>
       ${request}
       <small>${retry} This is not an assistant message.</small>
+      ${bannerActions(error)}
     </aside>`;
+  }
+
+  function settingsOverlay() {
+    return `<div class="sheet-overlay" data-action="close-menu"><section onclick="event.stopPropagation()" role="dialog" aria-labelledby="settings-title" aria-modal="true">
+      <header><h2 id="settings-title">Settings</h2><button type="button" data-action="close-menu" aria-label="Close">${icon("close")}</button></header>
+      <p>Instructions, tone, language, timezone, theme, and Enter-to-send are not connected yet. Nothing here is saved.</p>
+      <p class="feature-note">Sign-in and workspace membership are not available. Opening settings does not enable generation or spend a provider key.</p>
+    </section></div>`;
   }
 
   function generationGateNote() {
@@ -261,6 +282,7 @@
   }
 
   function overlays() {
+    if (state.menu === "settings") return settingsOverlay();
     if (state.menu !== "search" && state.menu !== "mobile") return "";
     if (state.menu === "mobile") return `<div class="mobile-overlay">${sidebar()}<button data-action="close-menu">${icon("close")}</button></div>`;
     return `<div class="search-overlay" data-action="close-menu"><section onclick="event.stopPropagation()"><label>${icon("search")}<input autofocus placeholder="Search chats and projects…"><kbd>Esc</kbd></label><p>Recent</p>${recentChats.map(title => `<button data-action="open-chat" data-title="${escapeHTML(title)}">${icon("chat")}<span>${escapeHTML(title)}</span></button>`).join("")}</section></div>`;
@@ -403,6 +425,8 @@
     if (action === "suggest") { startChat(target.dataset.prompt); return; }
     if (action === "send") { const input = document.querySelector(`#${target.dataset.input}`); startChat(input?.value || ""); return; }
     if (action === "search") state.menu = "search";
+    if (action === "account" || action === "open-settings") state.menu = "settings";
+    if (action === "view-existing-work") state.menu = "search";
     if (action === "model-menu") state.menu = state.menu === "model-switcher" ? null : "model-switcher";
     if (action === "select-primary-model") { state.currentModel = target.dataset.model; state.menu = null; }
     if (action === "mobile-menu") state.menu = "mobile";

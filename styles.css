@@ -53,6 +53,11 @@ button:focus-visible, textarea:focus-visible, input:focus-visible { outline: 2px
 .run-banner strong { display: block; margin-bottom: 4px; font-size: 13px; }
 .run-banner p { margin: 0 0 6px; color: var(--ink); font-size: 13px; line-height: 1.5; }
 .run-banner small { display: block; color: var(--muted); font-size: 11px; line-height: 1.4; }
+.run-banner-actions { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }
+.run-banner-actions .primary-button,
+.run-banner-actions .ghost-button { min-height: 32px; padding: 0 12px; font-size: 11px; }
+.ghost-button { height: 32px; padding: 0 12px; border: 1px solid var(--line); border-radius: 9px; background: var(--white); font-size: 11px; }
+.ghost-button:hover { border-color: #c5c7cd; }
 .run-banner[data-state="permission-denied"] { background: var(--pale); border-color: #cfd1f5; }
 .run-banner[data-state="failed"] { background: #fdecec; border-color: #f0c7c7; }
 .run-banner[data-state="quota-exhausted"] { background: #fff6e5; border-color: #f0d7a3; }
@@ -235,6 +240,11 @@ button:focus-visible, textarea:focus-visible, input:focus-visible { outline: 2px
 .search-overlay section > button { width: 100%; height: 42px; border-radius: 8px; display: flex; gap: 10px; align-items: center; padding: 0 10px; text-align: left; }
 .search-overlay section > button:hover { background: #f4f4f5; }
 .search-overlay .icon { width: 15px; }
+.sheet-overlay { position: fixed; inset: 0; z-index: 50; background: rgba(17, 24, 39, .28); backdrop-filter: blur(4px); display: grid; align-items: start; justify-items: center; padding-top: 11vh; }
+.sheet-overlay section { width: min(480px, calc(100% - 32px)); padding: 16px; border-radius: 15px; background: #fff; box-shadow: 0 22px 70px rgba(17, 24, 39, .2); text-align: left; }
+.sheet-overlay header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.sheet-overlay h2 { margin: 0; font: 650 16px Inter, sans-serif; }
+.sheet-overlay p { margin: 0 0 8px; color: var(--ink); font-size: 13px; line-height: 1.5; }
 .mobile-overlay > .sidebar { display: flex; }
 .mobile-overlay > button { position: fixed; top: 13px; left: 260px; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: #fff; }
 
