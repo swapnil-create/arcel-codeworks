@@ -3,6 +3,7 @@
  * Fixture + invariant checks for docs/data-model.
  * No database. Persistence is not live. Exit 1 on failure.
  */
+import { createHash } from "node:crypto";
 import { readFile, readdir } from "node:fs/promises";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
@@ -30,6 +31,25 @@ const COLLECTIONS = {
 
 const TERMINAL = new Set(["completed", "failed", "cancelled"]);
 const ERROR_AS_ASSISTANT = /unable to complete that request|generation is disabled until authenticated|openrouter is not configured/i;
+
+const RUN_EVENT_TERMINAL = new Set(["run.completed", "run.failed", "run.cancelled"]);
+const RUN_EVENT_PAYLOAD_SCHEMAS = {
+  "run.started": "run-event-run-started.schema.json",
+  "message.delta": "run-event-message-delta.schema.json",
+  "tool.requested": "run-event-tool-requested.schema.json",
+  "tool.completed": "run-event-tool-completed.schema.json",
+  "approval.required": "run-event-approval-required.schema.json",
+  "usage.updated": "run-event-usage-updated.schema.json",
+  "run.completed": "run-event-run-completed.schema.json",
+  "run.failed": "run-event-run-failed.schema.json",
+  "run.cancelled": "run-event-run-cancelled.schema.json"
+};
+const SECRET_KEY_NAMES = /^(api[_-]?key|secret|password|passwd|credential|credentials|authorization|access[_-]?token|refresh[_-]?token|private[_-]?key|bearer)$/i;
+const SECRET_VALUE_PATTERNS = [
+  /sk-or-v1-[a-z0-9]{10,}/i,
+  /-----BEGIN (?:RSA |OPENSSH |EC )?PRIVATE KEY-----/,
+  /\bBearer\s+[A-Za-z0-9._-]{8,}/
+];
 
 function fail(message) {
   throw new Error(message);
@@ -153,6 +173,82 @@ function assertTerminalImmutable(fixture) {
   }
 }
 
+function toolRequestHash(payload) {
+  const canonical = JSON.stringify({
+    name: payload.name,
+    tool_class: payload.tool_class,
+    arguments_ref: payload.arguments_ref ?? null
+  });
+  return `sha256:${createHash("sha256").update(canonical).digest("hex")}`;
+}
+
+function scanNoSecrets(value, path) {
+  if (value === null || value === undefined) return;
+  if (typeof value === "string") {
+    for (const pattern of SECRET_VALUE_PATTERNS) {
+      if (pattern.test(value)) fail(`${path}: run-event payload appears to contain a secret or credential`);
+    }
+    return;
+  }
+  if (Array.isArray(value)) {
+    value.forEach((item, index) => scanNoSecrets(item, `${path}[${index}]`));
+    return;
+  }
+  if (typeof value === "object") {
+    for (const [key, child] of Object.entries(value)) {
+      if (SECRET_KEY_NAMES.test(key)) fail(`${path}.${key}: secret-like field is not allowed in a run-event payload`);
+      scanNoSecrets(child, `${path}.${key}`);
+    }
+  }
+}
+
+/**
+ * Validates a single ordered run-event sequence (RunEvent envelope + typed
+ * payload) and its cross-event invariants: strictly increasing seq, a single
+ * run_id, no activity after a terminal event, an approval hash that binds to its
+ * tool.requested, and no secrets in any payload. Contract only — nothing here
+ * implements a queue, transport, or persistence.
+ */
+function assertRunEventSequence(fixture, schemas) {
+  const events = fixture.events;
+  if (!Array.isArray(events) || !events.length) fail("run-event fixture must contain a non-empty events array");
+  const envelopeSchema = schemas["run-event.schema.json"];
+  if (!envelopeSchema) fail("missing run-event.schema.json");
+
+  let prevSeq = 0;
+  let runId = null;
+  let terminalSeen = false;
+  const toolRequests = new Map();
+
+  events.forEach((event, index) => {
+    const at = `event[${index}]`;
+    validateSchema(event, envelopeSchema, at);
+
+    const payloadSchema = schemas[RUN_EVENT_PAYLOAD_SCHEMAS[event.type]];
+    if (!payloadSchema) fail(`${at}: no payload schema registered for ${event.type}`);
+    validateSchema(event.payload, payloadSchema, `${at}.payload`);
+    scanNoSecrets(event.payload, `${at}.payload`);
+
+    if (runId === null) runId = event.run_id;
+    else if (event.run_id !== runId) fail(`${at}: mixes run_id ${event.run_id} into a sequence for ${runId}`);
+
+    if (event.seq <= prevSeq) fail(`${at}: seq ${event.seq} must be strictly greater than previous ${prevSeq}`);
+    prevSeq = event.seq;
+
+    if (terminalSeen) fail(`${at}: ${event.type} occurs after a terminal event`);
+    if (RUN_EVENT_TERMINAL.has(event.type)) terminalSeen = true;
+
+    if (event.type === "tool.requested") toolRequests.set(event.payload.tool_call_id, event.payload);
+    if (event.type === "approval.required") {
+      const requested = toolRequests.get(event.payload.tool_call_id);
+      if (!requested) fail(`${at}: approval references unknown tool_call_id ${event.payload.tool_call_id}`);
+      if (event.payload.payload_hash !== toolRequestHash(requested)) {
+        fail(`${at}: approval payload_hash does not match the referenced tool.requested`);
+      }
+    }
+  });
+}
+
 async function main() {
   const schemaFiles = (await readdir(SCHEMA_DIR)).filter(name => name.endsWith(".schema.json"));
   const schemas = {};
@@ -224,7 +320,30 @@ async function main() {
     }
   }
 
+  // Run-event contract (agent-harness R0). Contract only — no queue, transport,
+  // or persistence is implemented here.
+  const validSequence = await loadJson(join(FIXTURE_DIR, "runevent-valid-sequence.json"));
+  assertRunEventSequence(validSequence, schemas);
+
+  const runEventRejects = [
+    "invalid-runevent-duplicate-seq.json",
+    "invalid-runevent-out-of-order.json",
+    "invalid-runevent-activity-after-terminal.json",
+    "invalid-runevent-approval-hash-mismatch.json"
+  ];
+  for (const name of runEventRejects) {
+    const fixture = await loadJson(join(FIXTURE_DIR, name));
+    let rejected = false;
+    try {
+      assertRunEventSequence(fixture, schemas);
+    } catch {
+      rejected = true;
+    }
+    if (!rejected) fail(`expected ${name} to be rejected by run-event invariants`);
+  }
+
   console.log("data-model stubs: schemas + invariants ok (persistence is not live)");
+  console.log("run-event contract: envelope + payload schemas and sequence invariants ok (contract only)");
 }
 
 main().catch(error => {

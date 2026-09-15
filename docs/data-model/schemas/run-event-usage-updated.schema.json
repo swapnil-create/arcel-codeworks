@@ -1,0 +1,13 @@
+{
+  "$id": "https://arcel.local/schema/run-event/usage.updated",
+  "title": "UsageUpdatedPayload",
+  "description": "Budget accounting signal mirroring the UsageEntry ledger kinds. Units only — no provider cost secrets or billing identifiers.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["kind", "units"],
+  "properties": {
+    "kind": { "type": "string", "enum": ["reservation", "settlement", "release"] },
+    "units": { "type": "integer", "minimum": 0 },
+    "provider": { "type": ["string", "null"] }
+  }
+}

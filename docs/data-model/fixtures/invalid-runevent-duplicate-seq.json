@@ -1,0 +1,35 @@
+{
+  "expect": "reject",
+  "reason": "Two events share seq 2; sequence numbers must be strictly increasing.",
+  "events": [
+    {
+      "version": "r0",
+      "run_id": "run_dupe_0001",
+      "seq": 1,
+      "occurred_at": "2026-09-14T21:00:00.000Z",
+      "type": "run.started",
+      "payload": {
+        "project_ref": "proj_demo",
+        "workflow_ref": "wf_demo",
+        "model_selection": { "mode": "auto", "effort": "quick", "named_model_id": null },
+        "max_budget_units": 100
+      }
+    },
+    {
+      "version": "r0",
+      "run_id": "run_dupe_0001",
+      "seq": 2,
+      "occurred_at": "2026-09-14T21:00:01.000Z",
+      "type": "message.delta",
+      "payload": { "message_ref": "msg_dupe", "index": 0, "text": "first" }
+    },
+    {
+      "version": "r0",
+      "run_id": "run_dupe_0001",
+      "seq": 2,
+      "occurred_at": "2026-09-14T21:00:02.000Z",
+      "type": "message.delta",
+      "payload": { "message_ref": "msg_dupe", "index": 1, "text": "duplicate seq" }
+    }
+  ]
+}

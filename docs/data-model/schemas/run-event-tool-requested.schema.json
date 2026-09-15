@@ -1,0 +1,15 @@
+{
+  "$id": "https://arcel.local/schema/run-event/tool.requested",
+  "title": "ToolRequestedPayload",
+  "description": "A tool the harness intends to invoke. arguments_ref is an opaque pointer to stored arguments — raw connector credentials or provider secrets must never appear here. Model-changing classes must be gated by an approval.required event.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["tool_call_id", "name", "tool_class", "requires_approval"],
+  "properties": {
+    "tool_call_id": { "type": "string", "pattern": "^tool_" },
+    "name": { "type": "string", "minLength": 1 },
+    "tool_class": { "type": "string", "enum": ["read_only", "preview", "model_changing"] },
+    "arguments_ref": { "type": ["string", "null"] },
+    "requires_approval": { "type": "boolean" }
+  }
+}

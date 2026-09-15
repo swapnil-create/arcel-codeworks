@@ -1,0 +1,29 @@
+{
+  "$id": "https://arcel.local/schema/run-event",
+  "title": "RunEvent",
+  "description": "Versioned run-event envelope for the agent harness (R0 contract only — no queue, transport, or persistence is implemented). The payload must never contain a provider secret or a raw connector credential; only opaque *_ref pointers and non-sensitive fields are allowed. Per-type payload shapes live in run-event-*.schema.json.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "run_id", "seq", "occurred_at", "type", "payload"],
+  "properties": {
+    "version": { "type": "string", "enum": ["r0"] },
+    "run_id": { "type": "string", "pattern": "^run_" },
+    "seq": { "type": "integer", "minimum": 1 },
+    "occurred_at": { "type": "string", "format": "date-time" },
+    "type": {
+      "type": "string",
+      "enum": [
+        "run.started",
+        "message.delta",
+        "tool.requested",
+        "tool.completed",
+        "approval.required",
+        "usage.updated",
+        "run.completed",
+        "run.failed",
+        "run.cancelled"
+      ]
+    },
+    "payload": { "type": "object" }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "$id": "https://arcel.local/schema/run-event/run.completed",
+  "title": "RunCompletedPayload",
+  "description": "Terminal success. No activity events may follow a terminal event in a sequence.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["final_message_ref", "usage_settled"],
+  "properties": {
+    "final_message_ref": { "type": ["string", "null"] },
+    "usage_settled": { "type": "boolean" }
+  }
+}

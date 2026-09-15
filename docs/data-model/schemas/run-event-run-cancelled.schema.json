@@ -1,0 +1,12 @@
+{
+  "$id": "https://arcel.local/schema/run-event/run.cancelled",
+  "title": "RunCancelledPayload",
+  "description": "Terminal cancellation. cancelled_by_user_ref is the server-derived principal, never a client-asserted name. No activity events may follow a terminal event.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["reason", "cancelled_by_user_ref"],
+  "properties": {
+    "reason": { "type": "string", "minLength": 1 },
+    "cancelled_by_user_ref": { "type": "string", "pattern": "^user_" }
+  }
+}

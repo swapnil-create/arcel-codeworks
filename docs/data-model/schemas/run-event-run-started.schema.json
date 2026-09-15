@@ -1,0 +1,23 @@
+{
+  "$id": "https://arcel.local/schema/run-event/run.started",
+  "title": "RunStartedPayload",
+  "description": "Emitted once when a run is accepted. References only; no secrets or credentials.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["project_ref", "workflow_ref", "model_selection", "max_budget_units"],
+  "properties": {
+    "project_ref": { "type": "string", "pattern": "^proj_" },
+    "workflow_ref": { "type": "string", "pattern": "^wf_" },
+    "model_selection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "effort"],
+      "properties": {
+        "mode": { "type": "string", "enum": ["auto", "named"] },
+        "effort": { "type": "string", "enum": ["quick", "standard", "deep"] },
+        "named_model_id": { "type": ["string", "null"] }
+      }
+    },
+    "max_budget_units": { "type": "integer", "minimum": 0 }
+  }
+}

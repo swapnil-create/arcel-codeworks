@@ -1,0 +1,14 @@
+{
+  "$id": "https://arcel.local/schema/run-event/approval.required",
+  "title": "ApprovalRequiredPayload",
+  "description": "A checkpoint that must be satisfied before a model-changing tool call proceeds. payload_hash binds the approval to the exact tool.requested it gates (sha256:<hex> over the canonical {name, tool_class, arguments_ref}). A mismatched hash must be rejected.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["approval_id", "tool_call_id", "payload_hash", "reason"],
+  "properties": {
+    "approval_id": { "type": "string", "pattern": "^apr_" },
+    "tool_call_id": { "type": "string", "pattern": "^tool_" },
+    "payload_hash": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "reason": { "type": "string", "minLength": 1 }
+  }
+}
