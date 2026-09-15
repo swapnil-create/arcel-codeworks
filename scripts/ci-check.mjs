@@ -244,6 +244,10 @@ async function main() {
     execFileSync("node", [join(ROOT, "scripts/test-chat-gate.mjs")], { cwd: ROOT, stdio: "pipe" });
   });
 
+  check("browser-boundary: no Hermes/provider key/bridge/mcp/v1 in browser assets", () => {
+    execFileSync("node", [join(ROOT, "scripts/test-browser-boundary.mjs")], { cwd: ROOT, stdio: "pipe" });
+  });
+
   check("api/auth: session cookie fail-closed", () => {
     execFileSync("node", [join(ROOT, "scripts/test-auth-gate.mjs")], { cwd: ROOT, stdio: "pipe" });
   });
