@@ -29,6 +29,82 @@ Locked now (schema + invariants only):
 
 Not implemented as writable APIs: Project, File, Source, Artifact, MemoryItem, Approval, Connection, Task.
 
+## Schema reference (field-by-field)
+
+These are JSON Schema **notes**, not DDL and not a live validator surface. Every schema sets
+`additionalProperties: false`, and IDs use a typed prefix (e.g. `conv_`, `run_`) enforced by a
+`pattern`. `docs/data-model/schemas` is checked by `scripts/validate-data-model.mjs`, a small
+hand-rolled walker — **there is no database, no ACL enforcement, and no row-level security
+behind these files.** Timestamps are `date-time` strings, not stored rows.
+
+- **`user.schema.json`** (`user_`): `id`, `status` (`active` | `disabled` | `deleted`),
+  `created_at` required; optional `display_name`. A display name is descriptive only and is
+  **never** an authorization input.
+- **`workspace.schema.json`** (`ws_`): `id`, `kind` (`personal` | `team`), `status`
+  (`active` | `suspended` | `deleted`), `created_at` required; optional `name`. Personal vs team
+  is a shape distinction only; nothing provisions or persists workspaces yet.
+- **`membership.schema.json`** (`mem_`): `id`, `user_id`, `workspace_id`, `role`
+  (`owner` | `member` | `viewer`), `status` (`active` | `revoked`) required. Authorization is
+  derived from `user_id` + `workspace_id` + `role` + `status` — the schema deliberately has no
+  place for a `display_name`, so a name-only membership is rejected.
+- **`conversation.schema.json`** (`conv_`): `id`, `workspace_id`, `created_by_user_id`, `status`
+  (`active` | `archived` | `deleted`), `created_at`, `updated_at` required; optional `title` and
+  `parent_conversation_id` (branch pointer). Scope is the workspace; ownership does not by itself
+  grant cross-workspace reads.
+- **`message.schema.json`** (`msg_`): `id`, `conversation_id`, `role`
+  (`user` | `assistant` | `system`), `parts` (≥1 item, each `text` or `refusal`), `version`
+  (≥1), `created_at` required; optional `parent_message_id` and `run_id`. Assistant response
+  versions are immutable, and generation failures must be **Run errors, not Messages** — an
+  assistant message carrying gate copy (e.g. "OpenRouter is not configured") is rejected by the
+  validator.
+- **`run.schema.json`** (`run_`): `id`, `conversation_id`, `workspace_id`, `actor_user_id`,
+  `status`, `task_type` (`chat` | `compare` | `research` | `code`), `attempt` (≥1),
+  `idempotency_key` (≥8 chars), `created_at`, `updated_at` required; optional `model_selection`
+  (`mode` `auto`/`named`, `effort` `quick`/`standard`/`deep`, `named_model_id`), `parent_run_id`
+  (retry linkage), `partial_content`, `error` (taxonomy/code/retryable/request_id), and
+  `terminal_at`. Run `status` moves `queued → running → (awaiting_approval) → cancelling →`
+  terminal `completed`/`failed`/`cancelled`; terminal rows are treated as immutable.
+- **`step.schema.json`** (`step_`): `id`, `run_id`, `ordinal` (≥1), `kind`
+  (`policy` | `model` | `tool`), `status` required; optional `model_registry_version`,
+  `started_at`, `ended_at`. Steps are ordered children of a run.
+- **`tool-call.schema.json`** (`tool_`): `id`, `step_id`, `run_id`, `name`, `status`
+  (`pending` | `completed` | `failed`) required; optional `arguments_ref` / `result_ref`
+  (references only — no payloads or blobs are stored here).
+- **`usage-entry.schema.json`** (`use_`): `id`, `idempotency_key` (≥8 chars, unique within a
+  fixture set), `run_id`, `workspace_id`, `kind` (`reservation` | `settlement` | `release`),
+  `status` (`reserved` | `settled` | `released`), `created_at` required; optional `provider`,
+  `provider_cost_usd` (string), `user_charge_units`. This is the append-only ledger **shape**;
+  the prototype does not meter, reserve, settle, or bill.
+
+## Fixture reference
+
+Fixtures are static JSON graphs used by `scripts/validate-data-model.mjs`. They are **not user
+data and not a store** — nothing reads or writes them at runtime. Positive fixtures must pass
+schema + graph invariants; `invalid-*` fixtures exist to prove the checks reject bad shapes.
+
+- **`valid-r0-slice.json`** — one connected example: a personal workspace with an owner
+  membership, a conversation, a user message, and a **failed** `AUTH_REQUIRED` run with a policy
+  step and a matching usage `release`. It demonstrates that a gated failure is recorded as a Run
+  error (not an assistant message) and that a released reservation costs nothing.
+- **`sec01-isolation-slice.json`** — a two-personal-workspace + shared-team graph with a
+  **revoked** membership and mapped `sub → user_id` identities. Its `cases[]` array is the
+  authorization matrix exercised by `lib/object-access.js` via `evaluateCase`: owner reads own
+  objects (allow); a peer, a guessed ID, a revoked member, and an outsider all fail closed
+  (`PERMISSION_DENIED`); a missing session is `AUTH_REQUIRED`; a client-asserted display
+  name/`sub` cannot steal another user's object; and a team member can read the shared team
+  conversation but not a peer's personal one. **This is in-memory only** — it does not prove
+  real query behavior, timing, or transactions, and it is not RLS.
+- **`invalid-membership-display-name.json`** — a membership with only a `display_name` (no
+  `user_id`/`workspace_id`/`role`); must be **rejected**, proving names are not authorization.
+- **`invalid-error-as-assistant-message.json`** — an assistant message whose text is a gate
+  failure ("Unable to complete that request… authenticated access…"); must be **rejected** so
+  failures stay Run errors.
+- **`invalid-run-terminal-mutate.json`** — a `before`/`after` pair that flips a terminal
+  `failed` run back to `running` in place; must be **rejected** (retries create a linked attempt
+  instead).
+- **`invalid-usage-missing-idempotency.json`** — a `UsageEntry` without `idempotency_key`; must
+  be **rejected** so ledger rows cannot double-charge.
+
 ## Run states (locked)
 
 `queued` → `running` → (`awaiting_approval`) → `cancelling` → terminal `completed` | `failed` | `cancelled`
