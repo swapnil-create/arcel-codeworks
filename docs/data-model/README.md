@@ -27,7 +27,10 @@ Locked now (schema + invariants only):
 - **Run / Step / ToolCall** — run states, attempts, model/registry version slots, usage placeholders
 - **UsageEntry** — append-only ledger row with a unique **idempotency key**; reservation vs settlement vs release
 
-Not implemented as writable APIs: Project, File, Source, Artifact, MemoryItem, Approval, Connection, Task.
+The harness R0 migration stub also introduces Project, Workflow/WorkflowVersion,
+RunEvent, Approval, Artifact/ArtifactVersion, Connection, BudgetPolicy, OutboxEvent
+and AuditLog. These are still **not** writable APIs and do not imply a provisioned
+database, queue, worker, connector or ledger.
 
 ## Run states (locked)
 
